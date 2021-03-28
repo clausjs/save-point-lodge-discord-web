@@ -1,0 +1,20 @@
+.main {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    p.links {
+        display: flex;
+        align-self: center;
+    }
+}
+
+img.banner-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 1500px;
+    height: auto;
+    max-height: 500px;
+}
