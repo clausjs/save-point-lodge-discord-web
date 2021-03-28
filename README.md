@@ -1,4 +1,6 @@
-A barebones react/express app built from the ground up to help with webpack/express/react scaffolding. This is a great way to learn, and hopefully a great way to scaffold future projects
+A single page react-router based application which connects to Discord.js and Google Firebase to retrieve information about users of the Planet Express Discord.
+
+# Running
 
 1. To start `cd` into project directory
 2. Install node modules with `npm i`
