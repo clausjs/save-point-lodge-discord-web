@@ -30,3 +30,10 @@
     width: 100%;
     padding: 0 0 0 20px;
 }
+
+.result-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    max-height: inherit;
+}

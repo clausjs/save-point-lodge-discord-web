@@ -22,7 +22,15 @@ module.exports = {
       {
         test: [/\.(s*)css$/, /\.sass$/],
         use:['style-loader','css-loader', 'sass-loader']
-      }
+      },
+      {
+        test: /\.(png|jpg)$/,
+        loader: 'url-loader'
+      },
+      {
+        test: /\.(eot|svg|ttf|woff|woff2)$/,
+        loader: 'file-loader?name=/fonts/[name].[ext]'
+      },
     ]
   },
   plugins: [

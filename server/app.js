@@ -83,7 +83,7 @@ passport.use(new Strategy({
 }));
 
 app.use(session({
-    secret: 'keyboard cat',
+    secret: 'save-point-lodge-discord-secret',
     resave: false,
     saveUninitialized: false
 }));
@@ -104,6 +104,14 @@ app.use('/api/user', function (req, res, next) {
     req.db = db;
     next(); 
 }, require('./api/user'));
+
+app.use('/api/movies', function(req, res, next) {
+    if (req.isAuthenticated()) {
+        req.db = db;
+        return next();
+    }
+    res.status(401).send("User is not authenticated");
+}, require('./api/movies'));
 
 function checkAuth(req, res, next) {
     if (req.isAuthenticated()) return next();

@@ -56,6 +56,21 @@ class UserData {
             return [];
         }
     }
+    getVotedMovieStatistics = async () => {
+        const { serverdata } = this;
+
+        try { 
+            const movies = await serverdata.getVotedMovies(this.userId);
+            const totalMoviegoers = await serverdata.getMoviegoerCount();
+            return {
+                movies,
+                totalMoviegoers
+            }
+        } catch (err) {
+            console.error(err);
+            return [];
+        }
+    }
     addVote = async (movieId) => {
         const { serverdata, userId } = this;
 

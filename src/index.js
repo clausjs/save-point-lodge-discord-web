@@ -28,17 +28,22 @@ const useStyles = makeStyles((theme) => ({
 
 //Views
 import Home from "./components/Home/Home.jsx";
+import Bots from './components/Bots/Bots.jsx';
 import Members from "./components/Members/Members.jsx";
 import Movies from './components/Movies/Movies.jsx';
 
 const views = {
     Home: {
         to: "/"
+    },
+    "Our Bots": {
+        to: "/our-bots"
     }
 }
 
 const pages = {
     "/": "Home",
+    "/our-bots": "Our Bots",
     "/members": "Member Options",
     "/movies": "Movies"
 };
@@ -177,6 +182,9 @@ const App = () => {
             <Switch>
                 <Route path="/" exact>
                     <Home />
+                </Route>
+                <Route path="/our-bots">
+                    <Bots />
                 </Route>
                 <Route path="/members">
                     <Members />

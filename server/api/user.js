@@ -37,24 +37,4 @@ router.post('/opts', async function(req, res) {
     }
 });
 
-router.get('/vote', async function(req, res) {
-    try {
-        const movies = await req.db.userdata.getUnvotedMovies();
-        res.status(200).send(movies);
-    } catch(err) {
-        console.error(err);
-        res.status(500).send(err);
-    }
-});
-
-router.post('/vote', async function(req, res) {
-    try {
-        const newMovies = await req.db.userdata.addVote(req.body.movieId);
-        res.status(200).send(newMovies);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send(err);
-    }
-});
-
 module.exports = router;

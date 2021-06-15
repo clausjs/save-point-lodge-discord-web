@@ -7,13 +7,18 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
-import TabPanel from './TabPanel.jsx';
-import Watch from './Watch.jsx';
-import Vote from './Vote.jsx';
+import TabPanel from './components/TabPanel.jsx';
+import Watch from './components/Watch.jsx';
+import Vote from './components/Vote.jsx';
+import Results from './components/Results.jsx';
+import AddNew from './components/AddNew.jsx';
 
 import "../../sass/movies.scss";
 
 const useStyles = makeStyles((theme) => ({
+    body: {
+        maxHeight: "800px"
+    },
     root: {
         flexGrow: 1,
     },
@@ -71,10 +76,10 @@ const Movies = () => {
                             <Vote auth={auth} />
                         </TabPanel>
                         <TabPanel value={value} index={1}>
-                            Item Two
+                            <Results />
                         </TabPanel>
                         <TabPanel value={value} index={2}>
-                            Item Three
+                            <AddNew />
                         </TabPanel>
                     </Grid>
                     <Grid item xs={9}>

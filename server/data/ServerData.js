@@ -55,7 +55,7 @@ class ServerData {
             let movies = {};
             moviesResponse.forEach(movieRes => {
                 let movie = movieRes.data();
-                if (movie.voted && Object.keys(movie.voted).includes(userId)) {
+                if (movie.voted && Object.keys(movie.voted).includes(userId) && !movie.watched) {
                     movies[movieRes.id] = movie;
                 }
             });
@@ -69,10 +69,10 @@ class ServerData {
         const userList = await this.#getMoviegoerIds();
         return userList.includes(userId);
     }
-    // getMoviegoerCount = async () => {
-    //     const userList = await this.#getMoviegoerIds();
-    //     return userList.length;
-    // }
+    getMoviegoerCount = async () => {
+        const userList = await this.#getMoviegoerIds();
+        return userList.length;
+    }
     getVotedMovies = async (userId) => {
         const movies = this.#getVotedMovies(userId);
         return movies;

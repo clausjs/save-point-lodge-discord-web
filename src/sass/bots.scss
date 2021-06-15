@@ -1,0 +1,14 @@
+@import './globals';
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+ul.third-party-list {
+    span.subtext {
+        font-size: 10px;
+        font-weight: 700;
+    }
+}
