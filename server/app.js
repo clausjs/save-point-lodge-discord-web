@@ -30,7 +30,7 @@ app.use(history({
             }
         },
         {
-            from: /\/logout\//,
+            from: /\/logout/,
             to: function(context) {
                 return context.parsedUrl.pathname;
             }
@@ -40,31 +40,6 @@ app.use(history({
 app.use("/", express.static('./build', {
     index: "index.html"
 }));
-app.use(cors());
-
-//Kill event
-process.on('kill', function() {
-    console.log('Process has been murdered.');
-    db.shutdown();
-});
-  
-//Ctrl + C event
-process.on('SIGINT', function() { 
-    console.log('Manual kill executed.');
-    db.shutdown();
-});
-
-//Errors and Ctrl + C will fire this event.
-// process.on('exit', function() {
-//     logger.silly("You should have killed me when you had the chance");
-// });
-
-passport.serializeUser(function(user, done) {
-  done(null, user);
-});
-passport.deserializeUser(function(obj, done) {
-  done(null, obj);
-});
 
 var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
@@ -96,8 +71,41 @@ app.get('/login-redirect',
 );
 
 app.get('/logout', function(req, res) {
+    console.log("hit logout")
     req.logout();
     res.redirect('/');
+});
+
+app.use(cors());
+
+// this middleware will be executed for every request to the app
+app.use("/js/*", function (req, res, next) {
+    res.header("Content-Type",'application/json');
+    next();
+});
+
+//Kill event
+process.on('kill', function() {
+    console.log('Process has been murdered.');
+    db.shutdown();
+});
+  
+//Ctrl + C event
+process.on('SIGINT', function() { 
+    console.log('Manual kill executed.');
+    db.shutdown();
+});
+
+//Errors and Ctrl + C will fire this event.
+// process.on('exit', function() {
+//     logger.silly("You should have killed me when you had the chance");
+// });
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+passport.deserializeUser(function(obj, done) {
+  done(null, obj);
 });
 
 app.use('/api/user', function (req, res, next) {
@@ -117,12 +125,6 @@ function checkAuth(req, res, next) {
     if (req.isAuthenticated()) return next();
     res.redirect('/login');
 }
-
-// this middleware will be executed for every request to the app
-app.use("/js/*", function (req, res, next) {
-    res.header("Content-Type",'application/json');
-    next();
-});
 
 // app.use(bodyParser.urlencoded({extended: true}));
 

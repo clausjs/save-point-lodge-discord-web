@@ -14,6 +14,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import Button from '@material-ui/core/Button';
 
+import './sass/_globals.scss';
+
 const useStyles = makeStyles((theme) => ({
     root: {
       flexGrow: 1,
@@ -90,7 +92,7 @@ const Navigation = () => {
 
     return (
         <div className={classes.root}>
-            <AppBar position="static">
+            <AppBar className="spl-header" position="static" color="inherit">
                 <Toolbar>
                     <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
                         <MenuIcon

@@ -1,33 +1,22 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 
 import {
     CssBaseline,
-    Container
+    Container,
 } from '@material-ui/core';
 
 import '../../sass/home.scss';
 
-const useStyles = makeStyles({
-    root: {
-      width: '100%',
-      maxWidth: 500,
-    },
-  });
-
 const Home = (props) => {
-    const classes = useStyles();
-
     return (
         <div className="home-content">
-            <div className={classes.root}></div>
+            <div className="header">
+                <h1><span>WELCOME TO SAVE POINT LODGE</span></h1>
+                <img id="home_bg" src="/img/home_bg.png" />
+            </div>
             <React.Fragment>
                 <CssBaseline />
                 <Container maxWidth="md">
-                    <div className="header">
-                        <h1><span>WELCOME TO SAVE POINT LODGE</span></h1>
-                        <img id='home_bg' src="img/home_bg.png" />
-                    </div>
                     <div className="about-us">
                         <p>
                             Save Point Lodge (or SPL) started in 2016 as a communal space on the internet to share a 
@@ -49,13 +38,11 @@ const Home = (props) => {
 
                         <h3>Our Promise</h3>
                         <span className='promise'>This is a 'Save Point'; as such no goblins, Lich Kings, or Walls of Death can harm you here. Our doors are open
-                            to weary travelers but this space will be kept safe.</span>
+                            to weary travelers and this space will be kept safe.</span>
                         
                         <div className="invite">
                             <h3>Join us on Discord!</h3>
                             <iframe src="https://discord.com/widget?id=184535415363993600&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
-
-                            {/* <p className='links'><a href="https://discord.gg/kZZGSU3">Join us on Discord!</a></p> */}
                         </div>
 
                         <p className="links">If you're already a member,&nbsp;<a href="/login">sign in</a>&nbsp;above to configure user specific items to Save Point Lodge!</p>

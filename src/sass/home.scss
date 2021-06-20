@@ -2,18 +2,13 @@
 
 .home-content {
     height: 100%;
-    min-height: 750px;
 }
 
 .header {
-    font-family: Pixelmania;
+    font-family: 'Pixelmania';
     display: flex;
     flex-direction: column;
     align-items: center;
-
-    h1 {
-        background-color: $color-pallette-light-blue;
-    }
 
     span {
         display: inline;
@@ -30,7 +25,7 @@
 .about-us {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    align-items: center;
 
     h3 {
         display: flex;
@@ -39,24 +34,17 @@
 
     .promise {
         font-size: 18px;
-        font-weight: 700;
+        font-weight: 800;
     }
-
-    .invite {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-
 }
 
-img.banner-image {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 100%;
-    max-width: 1500px;
-    height: auto;
-    max-height: 500px;
+.invite {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.links {
+    align-self: center;
 }
