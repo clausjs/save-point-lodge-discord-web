@@ -1,0 +1,124 @@
+[
+  {
+    "options": [
+      {
+        "name": "query",
+        "required": true,
+        "description": "The search terms to provide to urban dictionary",
+        "type": "STRING"
+      }
+    ],
+    "name": "urbandictionary",
+    "description": "Provides the top 3 results for an urban dictionary search with a provided search terms"
+  },
+  {
+    "description": "Searches for and returns a \"Let Me Google That For You\" link",
+    "name": "lmgtfy",
+    "options": [
+      {
+        "required": true,
+        "description": "Search terms to provide to LMGTFY",
+        "type": "STRING",
+        "name": "query"
+      },
+      {
+        "required": false,
+        "type": "STRING",
+        "name": "user",
+        "description": "A user to mention when adding the link to a channel"
+      }
+    ]
+  },
+  {
+    "description": "Converts currency using real time exchange rates or temperatures from Fahrenheit to Celsius",
+    "name": "convert",
+    "options": [
+      {
+        "name": "query",
+        "type": "STRING",
+        "required": true,
+        "description": "The thing to convert (e.g. \"$25USD\", \"13F\", \"$40CAD\", \"46C\")"
+      }
+    ]
+  },
+  {
+    "name": "roll",
+    "options": [
+      {
+        "type": "INTEGER",
+        "choices": [
+          { "name": "d2", "value": 2 },
+          { "name": "d3", "value": 3 },
+          { "value": 4, "name": "d4" },
+          { "value": 6, "name": "d6" },
+          { "name": "d8", "value": 8 },
+          { "value": 10, "name": "d10" },
+          { "value": 12, "name": "d12" },
+          { "value": 20, "name": "d20" }
+        ],
+        "required": true,
+        "description": "The type of die to roll",
+        "name": "die"
+      },
+      {
+        "name": "quantity",
+        "type": "INTEGER",
+        "required": false,
+        "description": "Number of dice to roll (Min: 1, Max: 10)"
+      }
+    ],
+    "description": "Roll a provided number of dice, including different types of die"
+  },
+  {
+    "description": "Searches and returns results from an imdb search",
+    "name": "imdb",
+    "options": [
+      {
+        "description": "The search terms to provide to IMDb",
+        "type": "STRING",
+        "name": "query",
+        "required": true
+      }
+    ]
+  },
+  {
+    "description": "Perform a bing image search and get the top result",
+    "options": [
+      {
+        "description": "The search terms to provide to Bing",
+        "required": true,
+        "type": "STRING",
+        "name": "query"
+      }
+    ],
+    "name": "image"
+  },
+  {
+    "options": [
+      {
+        "type": "STRING",
+        "required": true,
+        "name": "query",
+        "description": "Search terms to provide to wikipedia"
+      }
+    ],
+    "name": "wikipedia",
+    "description": "Search wikipedia and get back results"
+  },
+  {
+    "description": "Calculates remaining time until 12:00 am EST on the next Friday",
+    "name": "next friday"
+  },
+  {
+    "options": [
+      {
+        "description": "Search terms to provide to YouTube",
+        "name": "query",
+        "required": true,
+        "type": "STRING"
+      }
+    ],
+    "name": "youtube",
+    "description": "Searches YouTube and returns the top result in chat"
+  }
+]

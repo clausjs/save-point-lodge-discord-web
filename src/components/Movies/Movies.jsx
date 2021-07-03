@@ -16,17 +16,9 @@ import AddNew from './components/AddNew.jsx';
 import "../../sass/movies.scss";
 
 const useStyles = makeStyles((theme) => ({
-    body: {
-        maxHeight: "800px"
-    },
     root: {
         flexGrow: 1,
-    },
-    paper: {
-        padding: theme.spacing(2),
-        textAlign: 'center',
-        color: theme.palette.text.secondary,
-    },
+    }
 }));
 
 function a11yProps(index) {
@@ -58,12 +50,12 @@ const Movies = () => {
     };
 
     return (
-        <div className={classes.root}>
+        <div className={`${classes.root} movie-content`}>
             {(!auth || !auth.isMoviegoer) && (
                 <h4 className="not_authorized">Sorry, you must be a member of planet express and in the appropriate group to use this page.</h4>
             )}
             {auth && auth.isMoviegoer && (
-                <Grid container>
+                <Grid container className='movie-grid'>
                     <Grid item xs={3}>
                         <AppBar color='transparent' position="static">
                             <Tabs value={value} onChange={handleChange} aria-label="movie database viewer tabs">
@@ -72,13 +64,13 @@ const Movies = () => {
                                 <Tab label="Request New" {...a11yProps(2)} />
                             </Tabs>
                         </AppBar>
-                        <TabPanel value={value} index={0}>
+                        <TabPanel className={"interaction-panel"} value={value} index={0}>
                             <Vote auth={auth} />
                         </TabPanel>
-                        <TabPanel value={value} index={1}>
+                        <TabPanel className={"interaction-panel"} value={value} index={1}>
                             <Results />
                         </TabPanel>
-                        <TabPanel value={value} index={2}>
+                        <TabPanel className={"interaction-panel"} value={value} index={2}>
                             <AddNew />
                         </TabPanel>
                     </Grid>

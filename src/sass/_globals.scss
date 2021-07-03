@@ -4,6 +4,10 @@
     font-weight: normal;
 }
 
+@function addOpacity($base, $alphaPercent) {
+    @return rgba($base, $alphaPercent)
+}
+
 $color-pallette-light-blue: #44E5E7;
 $color-pallette-dark-blue: #1C364A;
 $color-pallette-orange: #F26419;
@@ -12,7 +16,8 @@ $color-pallette-black: #000000;
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: $color-pallette-light-blue !important;
+    margin: 0;
+    width: 100%;
 }
 
 .spl-header {

@@ -1,6 +1,26 @@
-.not_authorized {
-    display: flex;
-    justify-content: center;
+@import './globals';
+
+$max-movie-height: 1000px;
+
+.movie-content {
+    height: auto;
+    overflow: hidden;
+}
+
+.movie-results {
+
+    #results-table {
+
+        .overall-ratio {
+
+            .ratio-inner {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-evenly;
+                align-items: center;
+            }
+        }
+    }
 }
 
 .poster-cell {
@@ -27,13 +47,9 @@
 }
 
 .movie-container {
-    width: 100%;
-    padding: 0 0 0 20px;
-}
-
-.result-item {
     display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    max-height: inherit;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    padding: 20px;
 }

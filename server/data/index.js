@@ -1,14 +1,13 @@
 const firebase = require('firebase');
-const keys = require('../../keys.json');
 
-const { FIREBASE_API_KEY: apiKey, FIREBASE_PROJECT_ID: projectId, FIREBASE_SENDER_ID: senderId } = process.env;
+const { DB_KEY: apiKey, DB_PROJECTID: projectId, DB_SENDERID: senderId } = process.env;
 const app = firebase.initializeApp({
-    apiKey: apiKey || keys.db.key,
-    authDomain: `${projectId || keys.db.projectId}.firebaseapp.com`,
-    databaseURL: `${projectId || keys.db.projectId}.firebaseio.com`,
-    projectId: projectId || keys.db.projectId,
-    storageBucket: `${projectId || keys.db.projectId}.appspot.com`,
-    messagingSenderId: senderId || keys.db.senderId
+    apiKey: apiKey,
+    authDomain: `${projectId}.firebaseapp.com`,
+    databaseURL: `${projectId}.firebaseio.com`,
+    projectId: projectId,
+    storageBucket: `${projectId}.appspot.com`,
+    messagingSenderId: senderId
 });
 let db = app.firestore();
 db.settings({ timestampsInSnapshots: true });
@@ -27,8 +26,8 @@ const initializeUserData = (userId) => {
 };
 
 async function authenticate() {
-    const { FIREBASE_EMAIL: email, FIREBASE_PASSWORD: pass } = process.env;
-    await app.auth().signInWithEmailAndPassword(email || keys.db.email, pass || keys.db.password);
+    const { DB_EMAIL: email, DB_PASSWORD: pass } = process.env;
+    await app.auth().signInWithEmailAndPassword(email, pass);
 }
 
 async function shutdown() {
@@ -38,6 +37,7 @@ async function shutdown() {
 
 module.exports = {
     initializeUserData,
+    serverdata,
     authenticate,
     shutdown
 }

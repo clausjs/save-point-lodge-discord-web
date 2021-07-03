@@ -2,6 +2,7 @@ const COLLECTION_NAME = "WEB";
 const WEB_MOVIEGOERS_DOC = "moviegoers";
 
 const MOVIES_COLLECTION = "movies";
+const COMMANDS_COLLECTION = 'commands';
 
 class ServerData {
     constructor(store) {
@@ -89,6 +90,22 @@ class ServerData {
         const movie = getMovieResponse.data();
         movie.voted[userId] = true;
         return await collection.doc(movieId).update(movie);
+    }
+    getCommands = async () => {
+        const { db } = this;
+        const collection = db.collection(COMMANDS_COLLECTION);
+
+        const getCommandsResponse = await collection.get();
+
+        const commands = [];
+        getCommandsResponse.forEach(res => {
+            const command = res.data();
+
+            if (res.id.indexOf('_input') === -1) {
+                commands.push(command);
+            }
+        });
+        return commands;
     }
 }
 

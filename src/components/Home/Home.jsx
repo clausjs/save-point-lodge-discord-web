@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-    CssBaseline,
+    Button,
     Container,
 } from '@material-ui/core';
 
@@ -10,14 +10,25 @@ import '../../sass/home.scss';
 const Home = (props) => {
     return (
         <div className="home-content">
-            <div className="header">
-                <h1><span>WELCOME TO SAVE POINT LODGE</span></h1>
-                <img id="home_bg" src="/img/home_bg.png" />
+            <div className="main-header">
+                <div className="logo">
+                    <img src="/img/logo.png" />
+                </div>
+                <div className="heading">
+                    <h1>SAVE POINT LODGE</h1>
+                </div>
             </div>
-            <React.Fragment>
-                <CssBaseline />
-                <Container maxWidth="md">
-                    <div className="about-us">
+            <div className="about-us">
+                <div className="banner">
+                    <img src="/img/home_bg2.png" />
+                    <Button className="join-btn" variant='contained' href="https://discord.gg/kZZGSU3" color="primary">Join Now!</Button>
+                </div>
+                <div className="info">
+                    <Container className="text" maxWidth="md">
+                        <div className="flair">
+                            <div className="top"></div>
+                            <div className="bottom"></div>
+                        </div>
                         <p>
                             Save Point Lodge (or SPL) started in 2016 as a communal space on the internet to share a 
                             love of gaming and built around the ideals of inclusivity, respect, and accessibility.
@@ -39,16 +50,20 @@ const Home = (props) => {
                         <h3>Our Promise</h3>
                         <span className='promise'>This is a 'Save Point'; as such no goblins, Lich Kings, or Walls of Death can harm you here. Our doors are open
                             to weary travelers and this space will be kept safe.</span>
-                        
-                        <div className="invite">
-                            <h3>Join us on Discord!</h3>
-                            <iframe src="https://discord.com/widget?id=184535415363993600&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+                    </Container>
+                    <Container className="invite" maxWidth="sm">
+                        <h2>See below to join!</h2>
+                        <div className="widget-container">
+                            <div className="flair">
+                                <div className="top"></div>
+                                <div className="bottom"></div>
+                            </div>
+                            <iframe src="https://discord.com/widget?id=184535415363993600&theme=dark" width="350" height="500" allowtransparency="true" frameBorder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
                         </div>
-
-                        <p className="links">If you're already a member,&nbsp;<a href="/login">sign in</a>&nbsp;above to configure user specific items to Save Point Lodge!</p>
-                    </div>
-                </Container>
-            </React.Fragment>
+                        <p className="signin">Or&nbsp;<a href="/login">sign in</a>&nbsp;if you're already a member.</p>
+                    </Container>
+                </div>
+            </div>
         </div>
     );
 };

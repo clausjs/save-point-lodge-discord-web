@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom';
 import fetch from 'node-fetch';
 import { BrowserRouter as Router, Switch, Route, Link, useLocation } from "react-router-dom";
 
+import { Provider } from 'react-redux';
+import store from './store/configureStore';
+
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -14,23 +17,26 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import Button from '@material-ui/core/Button';
 
+import { SnackbarProvider } from 'notistack';
+
 import './sass/_globals.scss';
 
 const useStyles = makeStyles((theme) => ({
     root: {
-      flexGrow: 1,
+      flexGrow: 0,
     },
     menuButton: {
       marginRight: theme.spacing(2),
     },
     title: {
       flexGrow: 1,
-    },
+    }
   }));
 
 //Views
 import Home from "./components/Home/Home.jsx";
-import Bots from './components/Bots/Bots.jsx';
+import Bots from './components/Bots/Bots';
+import Commands from './components/Bots/Commands';
 import Members from "./components/Members/Members.jsx";
 import Movies from './components/Movies/Movies.jsx';
 
@@ -38,14 +44,18 @@ const views = {
     Home: {
         to: "/"
     },
-    "Our Bots": {
+    "Bots on SPL": {
         to: "/our-bots"
+    },
+    "Joe_Bot Commands": {
+        to: "/commands"
     }
 }
 
 const pages = {
     "/": "Home",
-    "/our-bots": "Our Bots",
+    "/our-bots": "Bots on SPL",
+    "/commands": "Joe_Bot Commands",
     "/members": "Member Options",
     "/movies": "Movies"
 };
@@ -82,7 +92,7 @@ const Navigation = () => {
         setAuthAnchorEl(null)
     }
 
-    const handleNavManu = (event) => {
+    const handleNavMenu = (event) => {
         setNavAnchorEl(event.currentTarget);
     }
 
@@ -99,11 +109,12 @@ const Navigation = () => {
                             aria-label="Navigation"
                             aria-controls="menu-appbar"
                             aria-haspopup="true"
-                            onClick={handleNavManu}
+                            onClick={handleNavMenu}
                             color="inherit"
                         ></MenuIcon>
                         <Menu
                             id="nav-menu"
+                            variant="menu"
                             anchorEl={navAchorEl}
                             anchorOrigin={{
                                 vertical: "top",
@@ -140,6 +151,7 @@ const Navigation = () => {
                             </IconButton>
                             <Menu
                                 id="account-menu"
+                                variant="menu"
                                 anchorEl={authAnchorEl}
                                 anchorOrigin={{
                                     vertical: "top",
@@ -179,27 +191,34 @@ const Navigation = () => {
 
 const App = () => {
     return (
-        <Router>
-            <Navigation />
-            <Switch>
-                <Route path="/" exact>
-                    <Home />
-                </Route>
-                <Route path="/our-bots">
-                    <Bots />
-                </Route>
-                <Route path="/members">
-                    <Members />
-                </Route>
-                <Route path="/movies">
-                    <Movies />
-                </Route>
-            </Switch>
-        </Router>
+        <Provider store={store}>
+            <Router>
+                <Navigation />
+                <Switch>
+                    <Route path="/" exact>
+                        <Home />
+                    </Route>
+                    <Route path="/our-bots">
+                        <Bots />
+                    </Route>
+                    <Route path="/members">
+                        <Members />
+                    </Route>
+                    <Route path="/movies">
+                        <Movies />
+                    </Route>
+                    <Route path="/commands">
+                        <Commands />
+                    </Route>
+                </Switch>
+            </Router>
+        </Provider>
     );
 }
 
 ReactDOM.render(
-  <App />,
+  <SnackbarProvider>
+      <App />
+  </SnackbarProvider>,
   document.getElementById('root')
 );

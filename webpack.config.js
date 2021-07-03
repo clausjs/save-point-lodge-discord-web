@@ -15,13 +15,18 @@ module.exports = {
   module: {
     rules: [
       {
-        test: [/\.js$/, /\.jsx$/],
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         loader: "babel-loader"
       },
       {
+        test: /\.(ts|tsx)$/,
+        use: 'ts-loader',
+        exclude: '/node_modules/'
+      },
+      {
         test: [/\.(s*)css$/, /\.sass$/],
-        use:['style-loader','css-loader', 'sass-loader']
+        use: ['style-loader','css-loader', 'sass-loader']
       },
       {
         test: /\.(png|jpg)$/,
@@ -32,6 +37,9 @@ module.exports = {
         loader: 'file-loader?name=/fonts/[name].[ext]'
       },
     ]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx', '.tsx', '.ts']
   },
   plugins: [
     new HtmlWebpackPlugin({

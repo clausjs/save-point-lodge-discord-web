@@ -4,47 +4,198 @@
     height: 100%;
 }
 
-.header {
-    font-family: 'Pixelmania';
+.main-header {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    justify-content: space-evenly;
+    background-color: transparent;
+    padding-top: 10px;
+    margin-bottom: -75px;
 
-    span {
-        display: inline;
-        font-size: 20px;
+    .logo {
+        min-width: 75px;
+        min-height: 75px;
+        max-width: 150px;
+        max-height: 150px;
+        background: 4px white;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        img {
+            max-width: 90%;
+            max-height: 90%;
+        }
     }
 
-    img#home_bg {
-        min-width: 448px;
-        min-height: 243px;
-        width: 100%;
+    .heading {
+        display: flex;
+        justify-content: flex-start;
+        max-height: 75px;
+        line-height: 10px;
+        font-family: 'Pixelmania';
+
+        /* If the screen size is 951px wide or more, ... */
+        @media screen and (min-width: 951px) {
+            font-size: 18px;
+        }
+
+        /* If the screen size is 950px >= x =< 751px, ... */
+        @media screen and (max-width: 950px) and (min-width: 751px) {
+            font-size: 14px;
+        }
+
+        /* If the screen size is 750px >= x =< 671px, ... */
+        @media screen and (max-width: 750px) and (min-width: 671px) {
+            font-size: 12px;
+        }
+
+        /* If the screen size is 670px >= x =< 579px, ... */
+        @media screen and (max-width: 670px) and (min-width: 579px) {
+            font-size: 10px;
+        }
+
+        /* If the screen size is 578px >= x =< 495px, ... */
+        @media screen and (max-width: 578px) and (min-width: 495px) {
+            font-size: 8px;
+        }
+
+        /* If the screen size is 494px >= x <=  or less, ... */
+        @media screen and (max-width: 494px) and (min-width: 410px) {
+            font-size: 6px;
+        }
+
+        @media screen and (max-width: 409px) {
+            h1 {
+                display: none;
+            }
+        }
     }
 }
 
 .about-us {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    
+    .banner {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background: -moz-linear-gradient(bottom, rgba(0,0,0,0) 0%,rgba(250,250,250, 0.49) 90%, rgba(250, 250, 250, 1) 99%, rgba(0,0,0,0) 100%);
+        background: -webkit-gradient(linear, left bottom, left bottom, color-stop(0%,rgba(0,0,0,0.65)), color-stop(100%,rgba(0,0,0,0)));
+        background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(250,250,250, 0.49) 90%, rgba(250, 250, 250, 1) 99%, rgba(0,0,0,0) 100%);
+        background: -o-linear-gradient(bottom, rgba(0,0,0,0) 0%,rgba(250,250,250, 0.49) 90%, rgba(250, 250, 250, 1) 99%, rgba(0,0,0,0) 100%);
+        background: -ms-linear-gradient(bottom, rgba(0,0,0,0) 0%,rgba(250,250,250, 0.49) 90%, rgba(250, 250, 250, 1) 99%, rgba(0,0,0,0) 100%);
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(255,255,255, 0.49) 90%, rgba(255, 255, 255, 1) 100%);
 
-    h3 {
+        .join-btn {
+            position: absolute;
+            border-radius: 10px;
+            top: 50%;
+            left: 45%;
+            width: 15%;
+            height: 15%;
+            background-color: $color-pallette-dark-blue;
+            color: $color-pallette-orange;
+            font-size: 2vw;
+        }
+
+        img {
+            position:relative;
+            z-index:-1;
+            display:block;
+            width: 100%;
+        }
+    }
+
+    .info {
         display: flex;
-        justify-content: center;
+        flex-direction: row;
+        align-self: center;
+        flex-wrap: wrap;
+        
+        .text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+            flex: 1 1 500px;
+            
+            .flair {
+                width: 75%;
+                height: 50px;
+                align-self: flex-start;
+    
+                .top {
+                    width: 95%;
+                    height: 20px;
+                    background-color: $color-pallette-orange;
+                    margin-bottom: -5px;
+                }
+    
+                .bottom {
+                    width: 90%;
+                    height: 25px;
+                    background-color: $color-pallette-dark-blue;
+                    position: relative;
+                    z-index: -1;
+                }
+            }
+
+            span {
+                font-weight: 700;
+                font-size: 18px;
+            }
+        }
+
+        .invite {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1 1 500px;
+            overflow: hidden;
+
+            .widget-container {
+                width: 350px;
+                height: 500px;
+                position: relative;
+                padding-top: 50px;
+
+                iframe {
+                    position: relative;
+                    top: -525px;
+                    left: 0;
+                }
+
+                .flair {
+                    max-width: inherit;
+                    height: inherit;
+                    position: relative;
+
+                    .top {
+                        height: 100%;
+                        width: 100%;
+                        background-color: $color-pallette-dark-blue;
+                        position: relative;
+                        top: -50px;
+                        left: -25px;
+                    }
+    
+                    .bottom {
+                        height: 100%;
+                        width: 100%;
+                        background-color: $color-pallette-orange;
+                        position: relative;
+                        top: -500px;
+                        left: 25px;
+                    }
+                }
+            }
+
+            .singin {
+                padding-top: 20px;
+            }
+        }
     }
-
-    .promise {
-        font-size: 18px;
-        font-weight: 800;
-    }
-}
-
-.invite {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.links {
-    align-self: center;
 }

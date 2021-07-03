@@ -1,3 +1,5 @@
+
+const dotenv = require('dotenv').config();
 const express = require('express')
 const session  = require('express-session');
 const bodyParser = require('body-parser');
@@ -108,18 +110,22 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
-app.use('/api/user', function (req, res, next) {
+app.use('/api', function(req, res, next) {
     req.db = db;
-    next(); 
-}, require('./api/user'));
+    req.isTesting = process.env.NODE_ENV === 'dev';
+    next();
+});
+
+app.use('/api/user', require('./api/user'));
 
 app.use('/api/movies', function(req, res, next) {
     if (req.isAuthenticated()) {
-        req.db = db;
         return next();
     }
     res.status(401).send("User is not authenticated");
 }, require('./api/movies'));
+
+app.use('/api/commands', require('./api/commands'));
 
 function checkAuth(req, res, next) {
     if (req.isAuthenticated()) return next();
@@ -128,5 +134,5 @@ function checkAuth(req, res, next) {
 
 // app.use(bodyParser.urlencoded({extended: true}));
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Example app listening on port ${port} and env is ${process.env.NODE_ENV}!`));
 

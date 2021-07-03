@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Typography from '@material-ui/core/Typography';
-import Box from '@material-ui/core/Box';
+
+import {
+    CircularProgress,
+    Typography,
+    Box
+} from '@material-ui/core';
+
+import DisplayTable from '../../shared/DisplayTable/DisplayTable.tsx';
 
 import fetch from 'node-fetch';
 
@@ -42,19 +47,87 @@ const Results = () => {
         }
     }, [movieStats]);
 
-    return (
-        <div>
-            {movieStats && (
-                Object.values(movieStats.movies).map((movie, i) => {
-                    const voteCount = Object.keys(movie.voted).length;
-                    const result = (voteCount / movieStats.totalMoviegoers) * 100;
+    let tableHeaders, tableCells;
+    if (movieStats !== null) {
+        const { totalMoviegoers: totalVoters } = movieStats;
+
+        tableHeaders = [
+            {
+                label: 'Poster',
+                size: 'small'
+            },
+            {
+                label: 'Movie Title',
+                align: 'left',
+                class: 'title-cell'
+            },
+            {
+                label: `Overall - ${totalVoters} total voters`,
+                size: 'small'
+            }
+        ];
+
+        tableCells = [
+            {
+                class: 'poster-cell',
+                size: 'small',
+                component: 'th',
+                scope: 'row',
+                valueGetter: (item) => {
+                    return <img title={item.title} src={item.poster} />
+                }
+            },
+            {
+                class: 'title-cell',
+                align: 'left',
+                field: 'title'
+            },
+            {
+                size: 'small',
+                class: 'overall-ratio',
+                valueGetter: (item) => {
+                    const votes = Object.keys(item.voted).length;
+
                     return (
-                        <div key={i} className="result-item">
-                            <CircularProgressWithLabel value={result} />
-                            <span>{movie.title}</span>
+                        <div className='ratio-inner'>
+                            <span>{votes}</span>
+                            <CircularProgressWithLabel value={(votes / totalVoters) * 100} />
                         </div>
                     );
-                })
+                }
+            }
+        ];
+    }
+
+    const filterResults = (searchText) => {
+        if (searchText && searchText.length >= 2) {
+            const _newViewing = {};
+            Object.keys(movieStats.movies).map(movieKey => {
+                if (movieKey.toLowerCase().includes(searchText.toLowerCase())) {
+                    _newViewing[movieKey] = movieStats.movies[movieKey];
+                }
+            });
+            setMovieStatsViewing(_newViewing);
+        } else {
+            setMovieStatsViewing(movieStats.movies);
+        }
+    }
+
+    return (
+        <div className="movie-results">
+            {movieStats !== null && tableHeaders !== null && tableCells !== null && (
+                <DisplayTable
+                    rowData={movieStats.movies}
+                    tableHeaders={tableHeaders}
+                    tableCells={tableCells}
+                    itemName="movies"
+                    tableId="results-table"
+                    searchLabel="Search for movie"
+                    filterResults={filterResults} 
+                    paginationProps={{ 
+                        count: Object.keys(movieStats.movies).length
+                    }}
+                />
             )}
         </div>
     );

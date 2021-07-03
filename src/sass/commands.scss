@@ -1,0 +1,29 @@
+@import './globals';
+
+.commands-content {
+    height: 100%;
+    width: 100%;
+
+    #commands-table {
+        .command-option {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            .option-details {
+                display: flex;
+                flex-direction: column;
+                padding: 10px;
+                border: 1px solid transparent;
+
+                &:hover {
+                    border: 1px solid black;
+                }
+            }
+
+            .na {
+                align-self: center;
+            }
+        }
+    }
+}
