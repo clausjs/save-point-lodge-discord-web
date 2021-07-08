@@ -1,9 +1,3 @@
-@font-face {
-    font-family: Pixelmania;
-    src: url('../../assets/fonts/Pixelmania.ttf');
-    font-weight: normal;
-}
-
 @function addOpacity($base, $alphaPercent) {
     @return rgba($base, $alphaPercent)
 }

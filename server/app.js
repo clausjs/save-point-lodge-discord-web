@@ -2,7 +2,6 @@
 const dotenv = require('dotenv').config();
 const express = require('express')
 const session  = require('cookie-session');
-const bodyParser = require('body-parser');
 const passport = require('passport');
 const history = require('connect-history-api-fallback');
 const cors = require('cors');
@@ -10,10 +9,30 @@ const Strategy = require('./auth/Strategy');
 const db = require('./data');
 
 const app = express();
-const port = process.env.NODE_ENV === 'production' ? 8080 : 3000;
+const devMode = process.env.NODE_ENV !== 'production' ? true : false;
+
+const port = devMode ? 3000 : 8080;
 
 db.authenticate();
 
+
+const CSPString = "default-src 'self'; " +
+"font-src 'self' https://fonts.gstatic.com http://fonts.cdnfonts.com; " +
+"img-src 'self'; " +
+"script-src 'self'; " +
+"style-src 'self' https://fonts.googleapis.com http://fonts.cdnfonts.com; " +
+"frame-src 'self' https://discord.com/; " +
+"connect-src 'self' ws://planetexpressmovie.redirectme.net;";
+
+// console.log("CSPString: ", CSPString);
+
+// app.use(function (req, res, next) {
+//     const header = devMode ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
+//     res.setHeader(header, CSPString);
+//     next();
+// });
+    
+    
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static("assets"));
@@ -48,9 +67,9 @@ var prompt = 'consent';
 
 passport.use(new Strategy({
     authorizationURL: 'https://discord.com/api/oauth2/authorize?client_id=447971052270780436&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flogin-redirect&response_type=code&scope=identify%20guilds',
-    clientID: '447971052270780436',
-    clientSecret: 'GJtMziXNeS4ueJe6bl7Jl_RNCPWQHI_f',
-    callbackURL: 'http://localhost:3000/login-redirect',
+    clientID: process.env.PASSPORT_CLIENT_ID,
+    clientSecret: process.env.PASSPORT_SECRET,
+    callbackURL: `http://${devMode ? 'localhost:3000' : process.env.AWS_ADDRESS}/login-redirect`,
     scope: scopes,
     prompt: prompt
 }, function(accessToken, refreshToken, profile, done) {
@@ -78,7 +97,7 @@ app.get('/logout', function(req, res) {
     res.redirect('/');
 });
 
-app.use(cors());
+// app.use(cors());
 
 // this middleware will be executed for every request to the app
 app.use("/js/*", function (req, res, next) {
@@ -131,8 +150,6 @@ function checkAuth(req, res, next) {
     if (req.isAuthenticated()) return next();
     res.redirect('/login');
 }
-
-// app.use(bodyParser.urlencoded({extended: true}));
 
 app.listen(port, () => console.log(`Example app listening on port ${port} and env is ${process.env.NODE_ENV}!`));
 
