@@ -70,7 +70,7 @@ passport.use(new Strategy({
     authorizationURL: 'https://discord.com/api/oauth2/authorize?client_id=447971052270780436&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flogin-redirect&response_type=code&scope=identify%20guilds',
     clientID: process.env.PASSPORT_CLIENT_ID,
     clientSecret: process.env.PASSPORT_SECRET,
-    callbackURL: `http://${devMode ? 'localhost:3000' : process.env.AWS_ADDRESS}/login-redirect`,
+    callbackURL: `http://${devMode ? 'localhost:3000' : 'savepointlodge.com'}/login-redirect`,
     scope: scopes,
     prompt: prompt
 }, function(accessToken, refreshToken, profile, done) {
