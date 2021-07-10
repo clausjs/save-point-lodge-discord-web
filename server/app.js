@@ -9,6 +9,13 @@ const cors = require('cors');
 const Strategy = require('./auth/Strategy');
 const db = require('./data');
 
+const BUILD_DIR = path.join(__dirname, '../build');
+const ASSET_DIR = path.join(__dirname, '../assets');
+
+console.info("Execution directory: ", __dirname);
+console.info("BUILD_DIR: ", BUILD_DIR);
+console.info("ASSET_DIR: ", ASSET_DIR);
+
 const app = express();
 const devMode = process.env.NODE_ENV !== 'production' ? true : false;
 
@@ -16,27 +23,19 @@ const port = devMode ? 3000 : 8080;
 
 db.authenticate();
 
+// const CSPString = "default-src 'self'; " +
+// "font-src 'self' https://fonts.gstatic.com http://fonts.cdnfonts.com; " +
+// "img-src 'self'; " +
+// "script-src 'self'; " +
+// "style-src 'self' https://fonts.googleapis.com http://fonts.cdnfonts.com; " +
+// "frame-src 'self' https://discord.com/; " +
+// "connect-src 'self' ws://planetexpressmovie.redirectme.net;";
 
-const CSPString = "default-src 'self'; " +
-"font-src 'self' https://fonts.gstatic.com http://fonts.cdnfonts.com; " +
-"img-src 'self'; " +
-"script-src 'self'; " +
-"style-src 'self' https://fonts.googleapis.com http://fonts.cdnfonts.com; " +
-"frame-src 'self' https://discord.com/; " +
-"connect-src 'self' ws://planetexpressmovie.redirectme.net;";
-
-// console.log("CSPString: ", CSPString);
-
-// app.use(function (req, res, next) {
-//     const header = devMode ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
-//     res.setHeader(header, CSPString);
-//     next();
-// });
     
     
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
-app.use(express.static("assets"));
+app.use(express.static(ASSET_DIR));
 app.use(history({
     rewrites: [
         {
@@ -60,23 +59,9 @@ app.use(history({
     ]
 }));
 
-const DIR = path.join(__dirname, '../build');
-console.info("Execution directory: ", DIR);
-
-app.use('/', express.static(DIR, {
+app.use('/', express.static(BUILD_DIR, {
     index: 'index.html'
 }));
-
-// if (process.env.NODE_ENV === 'production') {
-//     app.use(express.static(path.join(__dirname, 'build')));
-
-//     app.get('/', function(req,res) {
-//         express.static(path.join(__dirname, 'build', 'index.html'));
-//     });
-// } else {
-    
-// }
-
 
 var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
