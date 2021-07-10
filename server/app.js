@@ -1,5 +1,6 @@
 
 const dotenv = require('dotenv').config();
+const path = require('path');
 const express = require('express')
 const session  = require('cookie-session');
 const passport = require('passport');
@@ -58,9 +59,24 @@ app.use(history({
         }
     ]
 }));
-app.use("/", express.static('./build', {
-    index: "index.html"
+
+const DIR = path.join(__dirname, '../build');
+console.info("Execution directory: ", DIR);
+
+app.use('/', express.static(DIR, {
+    index: 'index.html'
 }));
+
+// if (process.env.NODE_ENV === 'production') {
+//     app.use(express.static(path.join(__dirname, 'build')));
+
+//     app.get('/', function(req,res) {
+//         express.static(path.join(__dirname, 'build', 'index.html'));
+//     });
+// } else {
+    
+// }
+
 
 var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
@@ -97,7 +113,7 @@ app.get('/logout', function(req, res) {
     res.redirect('/');
 });
 
-// app.use(cors());
+app.use(cors());
 
 // this middleware will be executed for every request to the app
 app.use("/js/*", function (req, res, next) {

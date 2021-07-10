@@ -1,7 +1,7 @@
 module.exports = {
     apps : [{
       name: 'Save Point Lodge Web',
-      script: './github/planet-express-discord-web/server/app.js',
+      script: './server/app.js',
   
       // Options reference: https://pm2.keymetrics.io/docs/usage/application-declaration/
       instances: 1,

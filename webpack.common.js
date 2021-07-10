@@ -12,6 +12,7 @@ module.exports = {
   output: {
     filename: 'main.bundle.js',
     path: path.resolve(__dirname, 'build'),
+    publicPath: '/',
     clean: true
   },
   module: {
@@ -35,14 +36,17 @@ module.exports = {
         exclude: /node_modules/
       },
       {
-        test: /\.(png|jpg)$/,
-        loader: 'url-loader',
+        test: /\.(png|jpg|jpeg|gif)$/,
+        loader: 'file-loader, url-loader',
         exclude: /node_modules/
       }
     ]
   },
   resolve: {
     extensions: ['.js', '.jsx', '.tsx', '.ts']
+  },
+  devServer: {
+    historyApiFallback: true,
   },
   plugins: [
     new HtmlWebpackPlugin({
