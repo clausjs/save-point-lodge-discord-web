@@ -21,7 +21,9 @@ const Home = (props) => {
             <div className="about-us">
                 <div className="banner">
                     <img src="/img/home_bg2.png" />
-                    <Button className="join-btn" variant='contained' href="https://discord.gg/kZZGSU3" color="primary">Join Now!</Button>
+                    <div className='join-btn'>
+                        <Button id='btn' variant='contained' href="https://discord.gg/kZZGSU3" color="primary">Join Now!</Button>
+                    </div>
                 </div>
                 <div className="info">
                     <Container className="text" maxWidth="md">

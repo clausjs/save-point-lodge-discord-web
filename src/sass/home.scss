@@ -89,16 +89,35 @@
         background: -ms-linear-gradient(bottom, rgba(0,0,0,0) 0%,rgba(250,250,250, 0.49) 90%, rgba(250, 250, 250, 1) 99%, rgba(0,0,0,0) 100%);
         background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(255,255,255, 0.49) 90%, rgba(255, 255, 255, 1) 100%);
 
+        @media screen and (max-width: 429px) {
+            .join-btn {
+                display: none !important;
+            }
+        }
+
         .join-btn {
             position: absolute;
             border-radius: 10px;
             top: 50%;
             left: 45%;
-            width: 15%;
+            width: 20%;
             height: 15%;
-            background-color: $color-pallette-dark-blue;
-            color: $color-pallette-orange;
-            font-size: 2vw;
+            background-color: $color-pallette-white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            
+            #btn {
+                height: 95%;
+                width: 95%;
+                background-color: $color-pallette-dark-blue;
+                color: $color-pallette-orange;
+                border-radius: 10px;
+                border: 2px solid $color-pallette-black;
+                font-size: 2vw;
+            }
+
         }
 
         img {
