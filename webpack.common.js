@@ -1,6 +1,8 @@
+const dotenv = require('dotenv').config();
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { EnvironmentPlugin } = require('webpack');
 // const CspHtmlWebpackPlugin = require('csp-html-webpack-plugin');
 
 const devMode = process.env.NODE_ENV !== 'production';
@@ -51,6 +53,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: 'src/index.html'
-    })
+    }),
+    new EnvironmentPlugin(["COMMANDS_IN_BETA"]),
   ].concat(devMode ? [] : [new MiniCssExtractPlugin()])
 };

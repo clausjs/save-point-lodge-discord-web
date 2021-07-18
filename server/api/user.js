@@ -4,7 +4,7 @@ router.get('/', function(req, res) {
     if (req.isAuthenticated()) {
         return res.status(200).json(req.user);
     }
-    res.status(500).send("Not authenticated");
+    res.status(401).send("Not authenticated");
 });
 
 router.get('/opts/descriptions', async function(req, res) {

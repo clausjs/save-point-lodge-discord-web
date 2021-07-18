@@ -24,11 +24,11 @@ const Commands: React.FC<CommandsProps> = (props) => {
     const [ commands, setCommands ] = useState<TabledCommands | {}>({});
 
     useEffect(() => {
-        if (!fetchedCommands) {
+        if (!fetchedCommands && !process.env.COMMANDS_IN_BETA) {
             setIsLoading(true);
             props.getCommands();
             setFetchedCommands(true);
-        }   
+        }
     });
 
     const generateTabledCommandsFromProps = () => {
@@ -128,20 +128,24 @@ const Commands: React.FC<CommandsProps> = (props) => {
     return (
         <div className="commands-content">
             <Container className='commands'>
-                <DisplayTable
-                    rowData={commands}
-                    tableHeaders={tableHeaders}
-                    tableCells={tableCells}
-                    itemName='commands'
-                    tableId='commands-table'
-                    searchLabel='Search for a command'
-                    filterResults={filterResults}
-                    isLoadingData={isLoading}
-                    paginationProps={{
-                        count: Object.keys(commands).length,
-                        initialPerPage: 10
-                    }}
-                />
+                {process.env.COMMANDS_IN_BETA ? 
+                    <h1>Please check back soon, this page is waiting for slash commands on Joe_Bot! Coming Soon!</h1>
+                :
+                    <DisplayTable
+                        rowData={commands}
+                        tableHeaders={tableHeaders}
+                        tableCells={tableCells}
+                        itemName='commands'
+                        tableId='commands-table'
+                        searchLabel='Search for a command'
+                        filterResults={filterResults}
+                        isLoadingData={isLoading}
+                        paginationProps={{
+                            count: Object.keys(commands).length,
+                            initialPerPage: 10
+                        }}
+                    />
+                }
             </Container>
         </div>
     );

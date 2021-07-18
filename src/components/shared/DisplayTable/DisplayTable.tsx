@@ -64,7 +64,7 @@ const DisplayTable: React.FC<DisplayTableProps> = (props) => {
                 _viewing[id] = item;
             }
     
-            console.log("SET _viewing: ", _viewing);
+            if (process.env.NODE_ENV === 'dev') console.info("SET _viewing: ", _viewing);
             setViewing(_viewing);
         } else {
             for (let i = perPage * page; i < itemKeys.length; i++) {
@@ -75,7 +75,7 @@ const DisplayTable: React.FC<DisplayTableProps> = (props) => {
                 _viewing[id] = item;
             }
     
-            console.log("SET _viewing: ", _viewing);
+            if (process.env.NODE_ENV === 'dev') console.info("SET _viewing: ", _viewing);
             setViewing(_viewing);
         }
 

@@ -1,19 +1,25 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react';
-import fetch from 'node-fetch';
-import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
 
-import TabPanel from './components/TabPanel.jsx';
-import Watch from './components/Watch.jsx';
-import Vote from './components/Vote.jsx';
-import Results from './components/Results.jsx';
-import AddNew from './components/AddNew.jsx';
+import { fetchUserAuthorization, fetchVotableMovies, fetchMovieStats, submitVote } from '../../actions';
+
+import {
+    Paper,
+    Grid,
+    AppBar,
+    Tabs,
+    Tab
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+
+import TabPanel from './components/TabPanel';
+import Watch from './components/Watch';
+import Vote from './components/Vote';
+import Results from './components/Results';
+import AddNew from './components/AddNew';
 
 import "../../sass/movies.scss";
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -28,22 +34,31 @@ function a11yProps(index) {
     };
 }
 
-const Movies = () => {
+const Movies = (props) => {
     const classes = useStyles();
 
-    const [ auth, setAuth ] = useState(null);
+    const [ fetchedMovies, setFetchedMovies ] = useState(false);
+    const [ fetchedMovieStats, setFetchedMovieStats ] = useState(false);
+    const [ isLoadingStats, setIsLoadingStats ] = useState(true);
     const [ value, setValue ] = useState(0);
 
-    useLayoutEffect(() => {
-        if (auth === null) {
-            fetch('/api/user').then(res => res.json()).then(data => {
-                setAuth(data);
-            }).catch(err => {
-                console.error(err);
-                setAuth(null);
-            });
+    const { user: auth, movies, stats } = props;
+
+    useEffect(() => {
+        if (!fetchedMovies) {
+            props.getMovies();
+            setFetchedMovies(true);
         }
-    }, [auth]);
+
+        if (value === 1 && !fetchedMovieStats) {
+            props.getMovieResults();
+            setFetchedMovieStats(true);
+        }
+    });
+
+    useEffect(() => {
+        if (fetchedMovieStats) setIsLoadingStats(false);
+    }, [stats])
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -65,10 +80,10 @@ const Movies = () => {
                             </Tabs>
                         </AppBar>
                         <TabPanel className={"interaction-panel"} value={value} index={0}>
-                            <Vote auth={auth} />
+                            <Vote movies={movies} submitVote={props.castVote} />
                         </TabPanel>
                         <TabPanel className={"interaction-panel"} value={value} index={1}>
-                            <Results />
+                            <Results stats={stats} isLoading={isLoadingStats} />
                         </TabPanel>
                         <TabPanel className={"interaction-panel"} value={value} index={2}>
                             <AddNew />
@@ -83,4 +98,16 @@ const Movies = () => {
     );
 }
 
-export default Movies;
+const mapStateToProps = (state) => {
+    const { user } = state.user;
+    const { votable, stats } = state.movies;
+    return { user, stats, movies: votable };
+}
+
+const mapDispatchToProps = (dispatch) => ({
+    getMovies: () => dispatch(fetchVotableMovies()),
+    getMovieResults: () => dispatch(fetchMovieStats()),
+    castVote: () => dispatch(submitVote())
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Movies);

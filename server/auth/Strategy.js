@@ -44,10 +44,9 @@ const db = require('../data');
 * @access public
 */
 function Strategy(options, verify) {
-   options = options || {};
-   options.authorizationURL = options.authorizationURL || 'https://discord.com/api/oauth2/authorize';
-   options.tokenURL = options.tokenURL || 'https://discord.com/api/oauth2/token';
-   options.scopeSeparator = options.scopeSeparator || ' ';
+   options.authorizationURL = options.authorizationURL;
+   options.tokenURL = options.tokenURL;
+   options.scopeSeparator = ' ';
 
    OAuth2Strategy.call(this, options, verify);
    this.name = 'discord';
@@ -105,6 +104,7 @@ Strategy.prototype.userProfile = function(accessToken, done) {
                else profile.isPlanetExpressMember = false;
                profile.isMoviegoer = isMoviegoer;
                profile.fetchedAt = new Date();
+            //    console.log('returning profile: ', profile)
                return done(null, profile)
            });
        });

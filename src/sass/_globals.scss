@@ -16,5 +16,36 @@ body {
 
 .spl-header {
     background-color: $color-pallette-orange !important;
-    color: $color-pallette-dark-blue !important;
+    color: $color-pallette-black !important;
+
+    .header-content {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+
+        .acct {
+            .acct-icon {
+                border-radius: 50%;
+            }
+        }
+
+        .nav-tabs {
+            .MuiTabs-indicator {
+                background-color: $color-pallette-dark-blue;
+            }
+
+            .tab-label {
+                display: flex;
+                flex-direction: column;
+
+                .super {
+                    font-size: 6px;
+                    padding: 5px;
+                }
+            }
+        }
+    }
 }

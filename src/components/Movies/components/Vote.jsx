@@ -1,50 +1,36 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import Checkbox from '@material-ui/core/Checkbox';
-import MovieOutlinedIcon from '@material-ui/icons/MovieOutlined';
-import MovieIcon from '@material-ui/icons/Movie';
-import SearchIcon from '@material-ui/icons/Search';
-import ClearIcon from '@material-ui/icons/Clear';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import TextField from '@material-ui/core/TextField';
+import React, { useState, useEffect } from 'react';
 
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+    Paper,
+    Checkbox,
+    InputAdornment,
+    TextField
+} from '@material-ui/core';
 
-import fetch from 'node-fetch';
-
-const useStyles = makeStyles((theme) => ({
-    table: {
-        minWidth: 650
-    }
-}));
+import {
+    MovieOutlined as MovieOutlinedIcon,
+    Movie as MovieIcon,
+    Search as SearchIcon,
+    Clear as ClearIcon
+} from '@material-ui/icons';
 
 import '../../../sass/movies.scss';
 
-const Vote = (auth = null) => {
-    const classes = useStyles();
+const Vote = (props) => {
 
-    const [ movies, setMovies ] = useState(null);
     const [ searchVal, setSearchVal ] = useState("");
     const [ viewing, setMoviesViewing ] = useState({});
     const [ perPage, setPerPage ] = useState(5);
     const [ page, setPage ] = useState(0);
 
-    useLayoutEffect(() => {
-        if (auth !== null && movies === null) {
-            fetch('/api/movies/vote').then(res => res.json()).then(data => {
-                setMovies(data);
-            }).catch(err => {
-                console.error(err);
-            });
-        }
-    }, [auth]);
+    const { movies } = props;
 
     const setViewingMovies = () => {
         const _viewing = {};
@@ -87,18 +73,7 @@ const Vote = (auth = null) => {
         const { name: movieId } = event.target;
 
         if (movieId) {
-            fetch('api/movies/vote', {
-                method: "POST",
-                body: JSON.stringify({ movieId: movieId }),
-                headers: { 'Content-Type': 'application/json' }
-            }).then(res => res.json()).then(data => {
-                const _viewing = viewing;
-                delete _viewing[movieId];
-                setMoviesViewing(_viewing);
-                setMovies(data);
-            }).catch(err => {
-                console.error(err);
-            });
+            props.castVote(movieId);
         }
     }
 

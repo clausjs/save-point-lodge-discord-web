@@ -34,18 +34,8 @@ function CircularProgressWithLabel(props) {
     );
 }
 
-const Results = () => {
-    const [ movieStats, setMovieStats ] = useState(null);
-
-    useEffect(() => {
-        if (movieStats === null) {
-            fetch('/api/movies/movie-stats').then(res => res.json()).then(data => {
-                setMovieStats(data);
-            }).catch(err => {
-                console.error(err);
-            });
-        }
-    }, [movieStats]);
+const Results = (props) => {
+    const { stats: movieStats, isLoading } = props;
 
     let tableHeaders, tableCells;
     if (movieStats !== null) {
@@ -115,7 +105,7 @@ const Results = () => {
 
     return (
         <div className="movie-results">
-            {movieStats !== null && tableHeaders !== null && tableCells !== null && (
+            {tableHeaders !== null && tableCells !== null && (
                 <DisplayTable
                     rowData={movieStats.movies}
                     tableHeaders={tableHeaders}
@@ -123,7 +113,8 @@ const Results = () => {
                     itemName="movies"
                     tableId="results-table"
                     searchLabel="Search for movie"
-                    filterResults={filterResults} 
+                    filterResults={filterResults}
+                    isLoadingData={isLoading || (!movieStats.movies)} 
                     paginationProps={{ 
                         count: Object.keys(movieStats.movies).length
                     }}

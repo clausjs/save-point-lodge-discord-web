@@ -1,14 +1,21 @@
-import { FETCH_VOTABLE_MOVIES } from '../redux-types/movieTypes';
+import { FETCH_MOVIE_STATS, FETCH_VOTABLE_MOVIES, SUBMIT_VOTE } from '../redux-types/movieTypes';
 
 const moviesState = {
     votable: {},
-    stats: {}
+    stats: {
+        movies: {},
+        totalMoviegoers: null
+    }
 };
 
 const moviesReducer = (state = moviesState, action) => {
     switch (action.type) {
         case FETCH_VOTABLE_MOVIES:
-            return Object.assign(state, { votable: action.payload });
+            return { ...state, votable: action.payload };
+        case FETCH_MOVIE_STATS:
+            return { ...state, stats: action.payload };
+        case SUBMIT_VOTE:
+            return { ...state, votable: action.payload };
         default:
             return state;
     }

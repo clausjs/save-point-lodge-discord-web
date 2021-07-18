@@ -1,8 +1,10 @@
 
 const dotenv = require('dotenv').config();
 const path = require('path');
-const express = require('express')
-const session  = require('cookie-session');
+const express = require('express');
+const favicon = require('serve-favicon');
+const session  = require('express-session');
+const redis = require('redis');
 const passport = require('passport');
 const history = require('connect-history-api-fallback');
 const cors = require('cors');
@@ -11,10 +13,10 @@ const db = require('./data');
 
 const BUILD_DIR = path.join(__dirname, '../build');
 const ASSET_DIR = path.join(__dirname, '../assets');
+const API_DIR = path.join(__dirname, 'api');
 
-console.info("Execution directory: ", __dirname);
-console.info("BUILD_DIR: ", BUILD_DIR);
-console.info("ASSET_DIR: ", ASSET_DIR);
+let RedisStore = require('connect-redis')(session);
+let redisClient = redis.createClient();
 
 const app = express();
 const devMode = process.env.NODE_ENV !== 'production' ? true : false;
@@ -36,6 +38,7 @@ db.authenticate();
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static(ASSET_DIR));
+app.use(favicon(path.join(ASSET_DIR, 'img', 'favicon.ico')));
 app.use(history({
     rewrites: [
         {
@@ -63,14 +66,24 @@ app.use('/', express.static(BUILD_DIR, {
     index: 'index.html'
 }));
 
+app.use(function(req, res, next) {
+    if (req.isAuthenticated()) {
+        res.cookie('user', req.user, { maxAge: 86400 });
+    }
+    next();
+});
+
 var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
 
+const callbackURL = `http://${devMode ? 'localhost:3000' : 'savepointlodge.com'}/login-redirect`;
+
 passport.use(new Strategy({
-    authorizationURL: 'https://discord.com/api/oauth2/authorize?client_id=447971052270780436&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flogin-redirect&response_type=code&scope=identify%20guilds',
+    authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
     clientID: process.env.PASSPORT_CLIENT_ID,
     clientSecret: process.env.PASSPORT_SECRET,
-    callbackURL: `http://${devMode ? 'localhost:3000' : 'savepointlodge.com'}/login-redirect`,
+    tokenURL: 'https://discord.com/api/oauth2/token',
+    callbackURL,
     scope: scopes,
     prompt: prompt
 }, function(accessToken, refreshToken, profile, done) {
@@ -79,21 +92,31 @@ passport.use(new Strategy({
     });
 }));
 
+const redisStore = devMode ? new RedisStore({ client: redisClient }) : new RedisStore({
+    host: 'localhost',
+    port: 6379,
+    client: redisClient,
+    ttl: 86400
+});
+
 app.use(session({
-    secret: 'save-point-lodge-discord-secret',
+    store: redisStore, 
+    saveUninitialized: false,
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
+    cookie: { secure: devMode ? false : true },
+    name: '_splUserSessions'
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
 app.get('/login-redirect',
-    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/members') } // auth success
+    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/') } // auth success
 );
 
 app.get('/logout', function(req, res) {
-    console.log("hit logout")
+    res.clearCookie('user');
     req.logout();
     res.redirect('/');
 });
@@ -131,25 +154,29 @@ passport.deserializeUser(function(obj, done) {
 });
 
 app.use('/api', function(req, res, next) {
+    const referer = req.get('Referer');
+    if (!devMode && !referer.includes('savepointlodge.com')) return res.status(401).send('Unauthorized');
     req.db = db;
     req.isTesting = process.env.NODE_ENV === 'dev';
     next();
 });
 
-app.use('/api/user', require('./api/user'));
+app.use('/api/user', require(`${API_DIR}/user`));
 
 app.use('/api/movies', function(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     }
     res.status(401).send("User is not authenticated");
-}, require('./api/movies'));
+}, require(`${API_DIR}/movies`));
 
-app.use('/api/commands', require('./api/commands'));
+app.use('/api/commands', require(`${API_DIR}/commands`));
 
-function checkAuth(req, res, next) {
-    if (req.isAuthenticated()) return next();
-    res.redirect('/login');
+if (process.env.NODE_ENV !== 'production') {
+    console.info("Execution directory: ", __dirname);
+    console.info("BUILD_DIR: ", BUILD_DIR);
+    console.info("ASSET_DIR: ", ASSET_DIR);
+    console.info("API_DIR: ", API_DIR);
 }
 
 app.listen(port, () => console.log(`Example app listening on port ${port} and env is ${process.env.NODE_ENV}!`));
