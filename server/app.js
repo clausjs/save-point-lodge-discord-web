@@ -116,7 +116,6 @@ app.get('/login-redirect',
 );
 
 app.get('/logout', function(req, res) {
-    res.clearCookie('user');
     req.logout();
     res.redirect('/');
 });
@@ -153,9 +152,23 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
+const checkHeaders = (referer) => {
+    const ACCEPTED_HEADERS = ['localhost:3000', 'savepointlodge.com', 'ec2-35-171-169-208.compute-1.amazonaws.com'];
+
+    let foundAcceptableHeader = false;
+
+    if (referer) {
+        ACCEPTED_HEADERS.map(header => {
+            if (referer.includes(header)) foundAcceptableHeader = true;
+        });
+    }
+
+    return foundAcceptableHeader;
+}
+
 app.use('/api', function(req, res, next) {
-    const referer = req.get('Referer');
-    if (!devMode && !referer.includes('savepointlodge.com')) return res.status(401).send('Unauthorized');
+    if (!checkHeaders(req.get('Referer'))) return res.status(401).send('Unauthorized');
+    if (req.isAuthenticated() && !db.userdata) return res.redirect('/login');
     req.db = db;
     req.isTesting = process.env.NODE_ENV === 'dev';
     next();
@@ -163,12 +176,7 @@ app.use('/api', function(req, res, next) {
 
 app.use('/api/user', require(`${API_DIR}/user`));
 
-app.use('/api/movies', function(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.status(401).send("User is not authenticated");
-}, require(`${API_DIR}/movies`));
+app.use('/api/movies', require(`${API_DIR}/movies`));
 
 app.use('/api/commands', require(`${API_DIR}/commands`));
 
