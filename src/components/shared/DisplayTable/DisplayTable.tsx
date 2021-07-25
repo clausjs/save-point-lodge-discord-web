@@ -36,15 +36,31 @@ const useStyles = makeStyles(() => ({
 
 const DisplayTable: React.FC<DisplayTableProps> = (props) => {
     const classes = useStyles();
+    const defaultProps = {
+        filterResults: () => {}
+    };
     const { tableHeaders, tableCells, rowData, filterResults, 
             itemName, tableId, searchLabel, paginationProps, isLoadingData = false } = props;
 
     const [ viewing, setViewing ] = useState({});
     const [ filteredData, setFiltering ] = useState({});
 
+    if (props.searchLabel !== false && !props.hasOwnProperty('filterResults')) {
+        console.warn("WARNING: Search is enabled, but a filter function was not supplied");
+    }
+
+    const generatePages = () => {
+        if (paginationProps) {
+            setPagination(0, paginationProps.initialPerPage || 5);
+            return;
+        }
+
+        setViewing(rowData);
+    }
+
     useEffect(() => {
         if (rowData !== null) {
-            setPagination(0, paginationProps.initialPerPage || 5);
+            generatePages();
         }
     }, [tableHeaders, tableCells]);
 
@@ -82,58 +98,93 @@ const DisplayTable: React.FC<DisplayTableProps> = (props) => {
     }
 
     const searchForResults = (searchText: string) => {
-        setFiltering(filterResults(searchText));
-        setPagination(0, paginationProps.initialPerPage || 5);
+        const filter = filterResults ? filterResults : defaultProps.filterResults;
+        //@ts-ignore
+        setFiltering(filter(searchText));
+        generatePages();
+    }
+
+    const getTableBody = () => {
+        if (isLoadingData) {
+            return (
+                <TableRow>
+                    <TableCell />
+                    <TableCell><div className="table-loading"><ScaleLoader /></div></TableCell>
+                    <TableCell />
+                </TableRow>
+            )
+        } else {
+            const rows = Object.keys(viewing).map((id, i) => {
+                const item = rowData[id];
+                let cells = [];
+
+                for (let cellIndex = 0; cellIndex < tableCells.length; cellIndex++) {
+                    const cell = tableCells[cellIndex];
+                    let content;
+
+                    if (cell.cellRenderer) {
+                        if (cell.valueGetter) {
+                            const cellContentGenerator = (item: any) => {
+                                const value = cell.valueGetter(item);
+                                cell.cellRenderer(value);
+                            };
+                            content = cellContentGenerator(item);
+                        } else {
+                            content = cell.cellRenderer(item);
+                        }
+                    } else {
+                        if (cell.valueGetter) {
+                            content = cell.valueGetter(item);
+                        } else {
+                            content = item[cell.field];
+                        }
+                    }
+
+
+                    cells.push(
+                        <TableCell
+                            key={`${i}-${cellIndex}`}
+                            className={cell.class}
+                            size={cell.size}
+                            component={cell.component}
+                            scope={cell.scope}
+                            align={cell.align}
+                            title={item.title}
+                            padding={cell.padding}
+                        >
+                            {content}
+                        </TableCell>
+                    );
+                }
+
+                return (
+                    <TableRow key={i}>
+                        {cells}
+                    </TableRow>
+                );
+            });
+            return rows;
+        }
     }
 
     if (rowData) {
         return (
             <div id={tableId} className="data-display-section">
-                <TableSearch disabled={!isLoadingData} searchLabel={searchLabel} searchForResults={searchForResults} />
+                {searchLabel !== false && <TableSearch disabled={!isLoadingData} searchLabel={searchLabel} searchForResults={searchForResults} />}
                 <TableContainer component={Paper} className={classes.table}>
                     <Table>
-                        {isLoadingData ? <div className="table-loading"><ScaleLoader /></div> : 
-                        <React.Fragment>    
-                            <TableHead>
-                                <TableRow>
-                                    {tableHeaders.map((header, i) => {
-                                        return (
-                                            <TableCell key={i} size={header.size} className={header.class}>{header.label}</TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {Object.keys(viewing).map((id, i) => {
-                                    const item = rowData[id];
-                                    let rows = [];
-
-                                    for (let cellIndex = 0; cellIndex < tableCells.length; cellIndex++) {
-                                        const cell = tableCells[cellIndex];
-                                        rows.push(
-                                            <TableCell
-                                                key={`${i}-${cellIndex}`}
-                                                className={cell.class}
-                                                size={cell.size}
-                                                component={cell.component}
-                                                scope={cell.scope}
-                                                align={cell.align}
-                                                title={item.title}
-                                                padding={cell.padding}
-                                            >
-                                                {cell.valueGetter ? cell.valueGetter(item) : item[cell.field]}
-                                            </TableCell>
-                                        );
-                                    }
-
+                        <TableHead>
+                            <TableRow>
+                                {tableHeaders.map((header, i) => {
                                     return (
-                                        <TableRow key={i}>
-                                            {rows}
-                                        </TableRow>
+                                        <TableCell key={i} size={header.size} className={header.class}>{header.label}</TableCell>
                                     );
                                 })}
-                            </TableBody>
-                        </React.Fragment>}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {getTableBody()}
+                        </TableBody>
                     </Table>
                 </TableContainer>
                 {paginationProps && <TabbedTablePagination {...paginationProps} changePage={setPagination} />}

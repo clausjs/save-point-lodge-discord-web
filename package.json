@@ -18,6 +18,7 @@
     "@material-ui/lab": "^4.0.0-alpha.58",
     "@types/react-router": "^5.1.16",
     "@types/react-router-dom": "^5.1.8",
+    "compression": "^1.7.4",
     "connect-history-api-fallback": "^1.6.0",
     "connect-redis": "^6.0.0",
     "cookie-session": "^1.4.0",

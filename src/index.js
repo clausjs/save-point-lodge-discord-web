@@ -8,30 +8,15 @@ import store from './store/configureStore';
 
 import Header from './components/shared/Header/Header';
 
-import { makeStyles } from '@material-ui/core/styles';
-
 import { SnackbarProvider } from 'notistack';
 
 import './sass/_globals.scss';
-
-const useStyles = makeStyles((theme) => ({
-    root: {
-      flexGrow: 0,
-    },
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
-    title: {
-      flexGrow: 1,
-      maxWidth: '33%'
-    }
-  }));
 
 //Views
 import Home from "./components/Home/Home.jsx";
 import Bots from './components/Bots/Bots';
 import Commands from './components/Bots/Commands';
-import Members from "./components/Members/Members.jsx";
+import Members from "./components/Members/Members";
 import Movies from './components/Movies/Movies.jsx';
 
 const App = () => {

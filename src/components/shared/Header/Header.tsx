@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { connect, useSelector } from 'react-redux';
 import { useLocation, Link, useHistory } from "react-router-dom";
 
@@ -15,6 +15,8 @@ import {
 import { AccountCircle } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
+import { MoonLoader } from 'react-spinners';
+
 import { fetchUserAuthorization } from '../../../actions';
 import { RootState } from '../../../reducers';
 import { UserState, User } from '../../../../types';
@@ -27,14 +29,14 @@ import {
 
 import '../../../sass/_globals.scss';
 
-const initialViews: PageViews = {
+const views: PageViews = {
     Home: {
         to: "/"
     },
     "Bots on SPL": {
         to: "/our-bots"
     },
-    "Commands": {
+    Commands: {
         to: "/commands",
         disabled: true,
         ancillary: {
@@ -42,7 +44,7 @@ const initialViews: PageViews = {
             content: "Coming Soon!!"
         }
     },
-    "Movies": {
+    Movies: {
         to: "/movies",
         requiresAuth: true
     }
@@ -63,46 +65,33 @@ const useStyles = makeStyles((theme) => ({
 
 const Header: React.FC<HeaderProps> = (props) => {
     const classes = useStyles();
-    const [ fetchedAuth, setFetchedAuth ] = useState<boolean>(false);
-    const [ views, setViews ] = useState<PageViews>(initialViews);
-    const [ view, setView ] = useState<number>(0);
-    const [ authAnchorEl, setAuthAnchorEl ] = useState(null);
-    const user = useSelector((state: RootState) => state.user.user);
+    const [ view, setView ] = useState<number | false>(0);
+    const [ tabs, setTabs ] = useState(null);
+    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | ((element: Element) => Element) | null>(null);
+    const userState: UserState = useSelector((state: RootState) => state.user);
     const history = useHistory();
-    const authMenuOpen = Boolean(authAnchorEl);
-    const currentLoc = useLocation().pathname;
+    const authMenuOpen: boolean = Boolean(authAnchorEl);
+    const currentLoc: string = useLocation().pathname;
 
-    useEffect(() => {
-        if (user === null) {
-            if (fetchedAuth) {
-                setViews(initialViews);
-            } else {
-                props.getAuth();
-                setFetchedAuth(true);
-            }
+    const { user }: { user: User } = userState;
+
+    useLayoutEffect(() => {
+        if (userState.status === 'idle') {
+            props.getAuth();
         }
     });
-        
-    // useEffect(() => {      
-    //     console.log("USER HAS CHANGED, RERENDERING: ", user, views);  
-    //     if (user !== null && !views.hasOwnProperty('Movies')) {
-    //         const newViews = initialViews;
-    //         newViews["Movies"] = {
-    //             to: "/movies"
-    //         };
-    //         setViews(newViews);
-    //     }
-    // }, [user])
     
     useEffect(() => {
         const actualView = Object.values(views).findIndex(view => view.to === currentLoc);
-        if (actualView !== view) {
+        if (actualView === -1) {
+            handleNavigation(null, false);
+        } else if (actualView !== view) {
             handleNavigation(null, actualView);
         }
-    }, [view])
+    }, [view]);
 
-    const generateTabs = () => {
-        const tabs = [];
+    useEffect(() => {
+        const _tabs = [];
         for (let i = 0; i < Object.keys(views).length; i++) {
             const viewName = Object.keys(views)[i];
             const page: View = views[viewName];
@@ -128,10 +117,10 @@ const Header: React.FC<HeaderProps> = (props) => {
             }
 
 
-            tabs.push(<LinkTab key={i} label={label} href={page.to} disabled={page.disabled} />);
+            _tabs.push(<LinkTab key={i} label={label} href={page.to} disabled={page.disabled} />);
         }
-        return tabs;
-    }
+        setTabs(_tabs);
+    }, [user]);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);
@@ -141,9 +130,9 @@ const Header: React.FC<HeaderProps> = (props) => {
         setAuthAnchorEl(null)
     }
 
-    const handleNavigation = (event: any, newView: number) => {
+    const handleNavigation = (event: any, newView: number | false) => {
         setView(newView);
-        history.push(Object.values(views)[newView].to);
+        if (newView !== false) history.push(Object.values(views)[newView].to);
     }
 
     return (
@@ -158,7 +147,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                 onChange={handleNavigation}
                                 aria-label='nav tabs'
                             >
-                                {generateTabs()}
+                                {tabs}
                             </Tabs>
                         </div>
                         {user !== null && (
@@ -168,8 +157,10 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     aria-controls="menu-appbar"
                                     aria-haspopup="true"
                                     color="inherit"
+                                    onClick={handleAuthMenu}
                                 >
-                                    <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${user.avatar.includes('a_') ? 'gif' : 'png'}?size=32`} onClick={handleAuthMenu} />
+                                    {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
+                                    {userState.status === 'succeeded' && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
                                 </IconButton>
                                 <Menu
                                     id="account-menu"

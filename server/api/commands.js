@@ -17,7 +17,6 @@ router.get('/', async function(req, res) {
         const commands = await req.db.serverdata.getCommands();
         return res.status(200).send(commands);
     } catch (e) {
-        console.error(e);
         res.status(500).send(e);
     }
 });

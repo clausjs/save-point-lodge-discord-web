@@ -12,7 +12,6 @@ router.get('/vote', async function(req, res) {
         const movies = await req.db.userdata.getUnvotedMovies();
         res.status(200).send(movies);
     } catch(err) {
-        console.error(err);
         res.status(500).send(err);
     }
 });
@@ -22,7 +21,6 @@ router.post('/vote', async function(req, res) {
         const newMovies = await req.db.userdata.addVote(req.body.movieId);
         res.status(200).send(newMovies);
     } catch (err) {
-        console.error(err);
         res.status(500).send(err);
     }
 });
@@ -37,7 +35,6 @@ router.get('/movie-stats', async function(req, res) {
         const movieStats = await req.db.userdata.getVotedMovieStatistics();
         res.status(200).send(movieStats);
     } catch (err) {
-        console.error(err);
         res.status(500).send(err);
     }
 });

@@ -3,4 +3,13 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 25px;
+
+    .description-cell {
+        img {
+            max-width: 35px;
+            max-height: 35px;
+            padding: 0 10px;
+        }
+    }
 }

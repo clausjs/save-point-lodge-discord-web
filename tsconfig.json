@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+      "sourceMap": true,
       "outDir": "./dist/",
       "noImplicitAny": true,
       "module": "es6",
@@ -8,5 +9,11 @@
       "allowJs": true,
       "moduleResolution": "node",
       "allowSyntheticDefaultImports": true
-    }
+    },
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
   }

@@ -16,7 +16,6 @@ class ServerData {
             const moviegoers = response.data();
             return moviegoers.users;
         } catch(err) {
-            console.error(err);
             return [];
         }
     }
@@ -43,7 +42,6 @@ class ServerData {
             });
             return movies;
         } catch(err) {
-            console.error(err);
             return [];
         }
     }
@@ -62,7 +60,6 @@ class ServerData {
             });
             return movies;
         } catch (err) {
-            console.error(err);
             return [];
         }
     }

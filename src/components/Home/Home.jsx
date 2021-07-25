@@ -20,7 +20,7 @@ const Home = (props) => {
             </div>
             <div className="about-us">
                 <div className="banner">
-                    <img src="/img/home_bg2.png" />
+                    <img src={"/img/home_bg2.png"} />
                     <div className='join-btn'>
                         <Button id='btn' variant='contained' href="https://discord.gg/kZZGSU3" color="primary">Join Now!</Button>
                     </div>

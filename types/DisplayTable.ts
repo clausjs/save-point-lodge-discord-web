@@ -8,7 +8,9 @@ export type TableHeader = {
 export type TableCell = {
     field?: string;
     class?: string;
+    name?: string;
     valueGetter?: (item: any) => JSX.Element | null;
+    cellRenderer?: (item: any) => JSX.Element | null;
 } & TableCellProps;
 
 type rowItems = {
@@ -36,10 +38,10 @@ export interface DisplayTableProps {
     rowData: rowItems;
     tableHeaders: TableHeader[];
     tableCells: TableCell[];
-    filterResults: (searchText: string) => {};
+    filterResults?: (searchText: string) => {};
     tableId?: string;
     itemName?: string;
-    searchLabel?: string;
+    searchLabel?: string | false;
     isLoadingData?: boolean;
     paginationProps?: DisplayTablePaginationProps;
 }

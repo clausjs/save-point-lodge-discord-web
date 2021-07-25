@@ -17,6 +17,7 @@ module.exports = {
     publicPath: '/',
     clean: true
   },
+  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -45,7 +46,7 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['.js', '.jsx', '.tsx', '.ts']
+    extensions: ['.js', '.jsx', '.tsx', '.d.ts', '.ts']
   },
   devServer: {
     historyApiFallback: true,

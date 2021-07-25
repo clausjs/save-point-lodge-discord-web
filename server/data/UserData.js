@@ -18,7 +18,6 @@ class UserData {
             const descriptions = descriptionsResponse.data();
             return descriptions;
         } catch (err) {
-            console.error(err);
             return null;
         }
     }
@@ -30,17 +29,16 @@ class UserData {
             const userOpts = optsResponse.data();
             return userOpts;
         } catch (err) {
-            console.error(err);
             return {};
         }
     }
-    setUserOptions = async (options) => {
+    setUserOption = async (option) => {
         const { db } = this;
 
         try {
-            await db.collection(USER_OPTS_COLLECTION).doc(this.userId).update(options);
+            await db.collection(USER_OPTS_COLLECTION).doc(this.userId).update(option);
         } catch (err) {
-            console.error(err);
+
         } finally {
             return options;
         }
@@ -52,7 +50,6 @@ class UserData {
             const movies = await serverdata.getUnvotedMovies(this.userId);
             return movies;
         } catch (err) {
-            console.error(err);
             return [];
         }
     }
@@ -67,7 +64,6 @@ class UserData {
                 totalMoviegoers
             }
         } catch (err) {
-            console.error(err);
             return [];
         }
     }
@@ -79,7 +75,6 @@ class UserData {
             const movies = await serverdata.getUnvotedMovies(userId);
             return movies;
         } catch (err) {
-            console.error(err);
             return [];
         }
     }
