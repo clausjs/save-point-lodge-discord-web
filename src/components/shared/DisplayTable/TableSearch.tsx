@@ -8,7 +8,7 @@ import {
 import SearchIcon from '@material-ui/icons/Search';
 import ClearIcon from '@material-ui/icons/Clear';
 
-import { TableSearchProps } from '../../../../types';
+import { TableSearchProps } from '../../../types';
 
 const TableSearch = (props: TableSearchProps) => {
     const { searchForResults, searchLabel, disabled } = props;

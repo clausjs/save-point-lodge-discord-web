@@ -15,17 +15,16 @@ import {
 import { AccountCircle } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { MoonLoader } from 'react-spinners';
-
 import { fetchUserAuthorization } from '../../../actions';
+
 import { RootState } from '../../../reducers';
-import { UserState, User } from '../../../../types';
+import { UserState, User } from '../../../types';
 
 import {
     PageViews,
     View,
     HeaderProps
-} from '../../../../types';
+} from '../../../types';
 
 import '../../../sass/_globals.scss';
 
@@ -205,7 +204,7 @@ const LinkTab = (props: any) => {
     return (
         <Tab
             component="a"
-            onClick={(e) => { e.preventDefault(); }}
+            onClick={(e: any) => { e.preventDefault(); }}
             {...props}
         />
     )

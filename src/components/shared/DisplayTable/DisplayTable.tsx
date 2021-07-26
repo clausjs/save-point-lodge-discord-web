@@ -22,7 +22,7 @@ import '../../../sass/displayTable.scss';
 
 import TableSearch from './TableSearch';
 import TabbedTablePagination from './DisplayTablePagination';
-import { DisplayTableProps } from '../../../../types';
+import { DisplayTableProps } from '../../../types';
 
 const useStyles = makeStyles(() => ({
     table: {

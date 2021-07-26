@@ -8,7 +8,7 @@ import {
 import {
     UserState,
     Action
-} from '../../types';
+} from '../types';
 
 const userState: UserState = {
     status: 'idle',

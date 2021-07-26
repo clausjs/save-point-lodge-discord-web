@@ -6,7 +6,7 @@ import {
 } from '@material-ui/core';
 
 import DisplayTable from '../shared/DisplayTable/DisplayTable';
-import { Command, TabledCommands, TableHeader, TableCell } from "../../../types";
+import { Command, TabledCommands, TableHeader, TableCell } from "../../types";
 import { fetchCommands } from "../../actions/botsActions";
 
 import '../../sass/commands.scss';

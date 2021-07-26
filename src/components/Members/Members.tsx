@@ -24,6 +24,7 @@ import { RootState } from '../../reducers';
 import { fetchUserOpts, setUserOption } from '../../actions';
 
 import '../../sass/members.scss';
+import { UserOption, UserOptions } from '../../types';
 
 interface MemberOptionsProps {
     fetchOpts: Function;
@@ -83,14 +84,13 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
 
     const toggleOption = (event: any) => {
         const { value: label } = event.target.attributes["aria-label"];
-        const newOpt = {};
+        const newOpt: UserOption = {};
         //@ts-ignore
         newOpt[label] = !opts[label];
-        const fullOptions = userOpts;
+        const fullOptions: DisplayTableUserOpts = userOpts;
         //@ts-ignore
         if (fullOptions.hasOwnProperty(label)) fullOptions[label].isLoading = true;
         props.setOpt(newOpt);
-        setUserOption(fullOptions);
     }
 
     const getContainerContent = () => {

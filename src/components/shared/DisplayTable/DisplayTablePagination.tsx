@@ -4,7 +4,7 @@ import {
     TablePagination
 } from '@material-ui/core';
 
-import { ControlledDisplayTablePaginationProps } from '../../../../types';
+import { ControlledDisplayTablePaginationProps } from '../../../types';
 
 const DisplayTablePagination = (props: ControlledDisplayTablePaginationProps) => {
 

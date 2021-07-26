@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { CenteredTabsProps } from '../../../../types';
+import { CenteredTabsProps } from '../../../types';
 
 import {
     Paper,
