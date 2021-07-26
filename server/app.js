@@ -25,16 +25,6 @@ const devMode = process.env.NODE_ENV !== 'production' ? true : false;
 const port = devMode ? 3000 : 8080;
 
 db.authenticate();
-
-// const CSPString = "default-src 'self'; " +
-// "font-src 'self' https://fonts.gstatic.com http://fonts.cdnfonts.com; " +
-// "img-src 'self'; " +
-// "script-src 'self'; " +
-// "style-src 'self' https://fonts.googleapis.com http://fonts.cdnfonts.com; " +
-// "frame-src 'self' https://discord.com/; " +
-// "connect-src 'self' ws://planetexpressmovie.redirectme.net;";
-
-    
 app.use(compression());
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
@@ -78,7 +68,8 @@ app.use(function(req, res, next) {
 var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
 
-const callbackURL = `http://${devMode ? 'localhost:3000' : 'savepointlodge.com'}/login-redirect`;
+const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com": "savepointlodge.com";
+const callbackURL = `http://${devMode ? 'localhost:3000' : `${productionDomain}`}/login-redirect`;
 
 passport.use(new Strategy({
     authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
@@ -95,8 +86,8 @@ passport.use(new Strategy({
 }));
 
 const redisStore = devMode ? new RedisStore({ client: redisClient }) : new RedisStore({
-    host: 'localhost',
-    port: 6379,
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
     client: redisClient,
     ttl: 86400
 });
@@ -106,7 +97,7 @@ app.use(session({
     saveUninitialized: false,
     secret: process.env.SESSION_SECRET,
     resave: false,
-    cookie: { secure: devMode ? false : true },
+    cookie: false,
     name: '_splUserSessions'
 }));
 app.use(passport.initialize());
@@ -153,7 +144,7 @@ passport.deserializeUser(function(obj, done) {
 });
 
 const checkHeaders = (referer) => {
-    const ACCEPTED_HEADERS = ['localhost:3000', 'savepointlodge.com', 'ec2-35-171-169-208.compute-1.amazonaws.com'];
+    const ACCEPTED_HEADERS = ['localhost:3000', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
 
     let foundAcceptableHeader = false;
 
