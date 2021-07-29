@@ -103,7 +103,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
+// app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
 app.get('/login-redirect',
     passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/') } // auth success
 );

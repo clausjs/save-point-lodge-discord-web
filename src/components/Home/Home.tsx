@@ -62,7 +62,7 @@ const Home: React.FC = () => {
                             </div>
                             <iframe src="https://discord.com/widget?id=184535415363993600&theme=dark" width="350" height="500" frameBorder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
                         </div>
-                        <p className="signin">Or&nbsp;<a href="/login">sign in</a>&nbsp;if you're already a member.</p>
+                        {/* <p className="signin">Or&nbsp;<a href="/login">sign in</a>&nbsp;if you're already a member.</p> */}
                     </Container>
                 </div>
             </div>
