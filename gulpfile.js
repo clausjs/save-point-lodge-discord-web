@@ -4,7 +4,11 @@ const webpack = require('webpack');
 const ts = require('gulp-typescript');
 const tsProject = ts.createProject('tsconfig.json');
 
-const webpackConfig = require('./webpack.common.js');
+const DEV = "dev", PROD = "prod";
+
+const webpackConfigCommon = require('./webpack.common.js');
+const webpackConfigDev = require('./webpack.dev.js');
+const webpackConfigProd = require('./webpack.prod.js');
 
 // The `clean` function is not exported so it can be considered a private task.
 // It can still be used within the `series()` composition.
@@ -32,9 +36,23 @@ function copySassToBuild() {
             .pipe(gulp.dest(path.resolve(__dirname, './build/sass/')));
 }
 
-function runWebpack() {
+function runWebpack(env) {
     return new Promise((resolve, reject) => {
-        webpack(webpackConfig, (err, status) => {
+        let config;
+
+        switch (env) {
+            case DEV:
+                config = webpackConfigDev;
+                break;
+            case PROD:
+                config = webpackConfigProd;
+                break;
+            default:
+                config = webpackConfigCommon;
+                break;
+        }
+
+        webpack(config, (err, status) => {
             if (err) {
                 return reject(err);
             }
@@ -48,8 +66,19 @@ function runWebpack() {
     });
 }
 
+function runWebpackDev() {
+    return runWebpack(DEV);
+}
+
+function runWebpackProd() {
+    return runWebpack(PROD);
+}
+
+
 exports.typescript = buildTypescript;
 exports.sass = copySassToBuild;
 exports.webpack = runWebpack;
+exports.dev = gulp.series(buildTypescript, copySassToBuild, runWebpackDev);
+exports.prod = gulp.series(buildTypescript, copySassToBuild, runWebpackProd);
 exports.default = gulp.series(buildTypescript, copySassToBuild, runWebpack);
 

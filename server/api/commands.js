@@ -14,7 +14,7 @@ router.get('/', async function(req, res) {
         }
 
         console.log('making network request for commands');
-        const commands = await req.db.serverdata.getCommands();
+        const commands = await req.db.firebase.getCommands();
         return res.status(200).send(commands);
     } catch (e) {
         res.status(500).send(e);

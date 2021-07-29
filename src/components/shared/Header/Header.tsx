@@ -184,7 +184,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                 </Menu>
                             </div>
                         )}
-                        {user === null && (
+                        {/* {user === null && (
                             <div className='acct'>
                                 <Button
                                     variant="contained"
@@ -192,7 +192,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     startIcon={<AccountCircle />}
                                 >Login</Button>
                             </div>
-                        )}
+                        )} */}
                     </div>
                 </Toolbar>
             </AppBar>

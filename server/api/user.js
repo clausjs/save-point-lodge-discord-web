@@ -27,18 +27,9 @@ router.get('/', function(req, res) {
     res.status(200).json(null);
 });
 
-router.get('/opts/descriptions', async function(req, res) {
-    try {
-        const descriptions = await req.db.userdata.getOptionsDescriptions();
-        res.status(200).send(descriptions);
-    } catch (err) {
-        res.status(500).send(err);
-    }
-});
-
 router.get('/opts', async function(req, res) {
     try {
-        const userOpts = await req.db.userdata.getUserOptions(req.user.id);
+        const userOpts = await req.db.firebase.getUserOptions(req.user.id);
         res.status(200).send(userOpts);
     } catch (err) {
         res.status(500).send(err);
@@ -47,7 +38,7 @@ router.get('/opts', async function(req, res) {
 
 router.post('/opts', async function(req, res) {
     try {
-        await req.db.userdata.setUserOptions(req.body);
+        await req.db.firebase.setUserOptions(req.body);
         res.status(200).send(req.body);
     } catch (err) {
         res.status(500).send(err);

@@ -3,8 +3,7 @@ import fetch from 'node-fetch';
 import { 
     FETCH_AUTHORIZATION,
     INITIATE_AUTH_FETCH,
-    FETCH_MEMBER_OPTS,
-    FETCH_OPTS_DESCRIPTIONS
+    FETCH_MEMBER_OPTS
 } from '../redux-types/userTypes';
 
 import {
@@ -17,10 +16,6 @@ function fetchAuthorization() {
 
 function fetchMemberOptions() {
     return fetch('/api/user/opts').then(res => res.json());
-}
-
-function fetchOptionDescriptions() {
-    return fetch('/api/user/opts/descriptions').then(res => res.json());
 }
 
 function setOption(option: UserOption) {
@@ -46,9 +41,6 @@ export function fetchUserOpts() {
     return (dispatch: any) => {
         fetchMemberOptions().then(opts => {
             dispatch({ type: FETCH_MEMBER_OPTS, payload: opts });
-            fetchOptionDescriptions().then(desc => {
-                return dispatch({ type: FETCH_OPTS_DESCRIPTIONS, payload: desc });
-            });
         });
     }
 }

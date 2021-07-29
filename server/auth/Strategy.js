@@ -1,7 +1,6 @@
 /**
  * Dependencies
  */
- const { ContactlessOutlined } = require('@material-ui/icons');
 var OAuth2Strategy      = require('passport-oauth2')
  , InternalOAuthError  = require('passport-oauth2').InternalOAuthError
  , util                = require('util');
@@ -97,8 +96,7 @@ Strategy.prototype.userProfile = function(accessToken, done) {
            self.checkScope('guilds', accessToken, async function(erry, guilds) {
                if (erry) done(erry);
                if (guilds) profile.guilds = guilds;
-               db.userdata = db.initializeUserData(profile.id);
-               const isMoviegoer = await db.userdata.isUserMoviegoer();
+               const isMoviegoer = await db.firebase.isMoviegoer(profile.id);
                const PEGuild = profile.guilds.find(guild => guild.id === "184535415363993600");
                if (PEGuild) profile.isPlanetExpressMember = true;
                else profile.isPlanetExpressMember = false;

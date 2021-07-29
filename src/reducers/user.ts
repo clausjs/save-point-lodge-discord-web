@@ -1,8 +1,7 @@
 import { 
     FETCH_AUTHORIZATION,
     INITIATE_AUTH_FETCH,
-    FETCH_MEMBER_OPTS, 
-    FETCH_OPTS_DESCRIPTIONS
+    FETCH_MEMBER_OPTS
 } from "../redux-types/userTypes";
 
 import {
@@ -14,8 +13,7 @@ const userState: UserState = {
     status: 'idle',
     error: null,
     user: null,
-    opts: {},
-    descriptions: {}
+    opts: {}
 }
 
 const userReducer = (state: UserState = userState, action: Action): UserState => {
@@ -26,8 +24,6 @@ const userReducer = (state: UserState = userState, action: Action): UserState =>
             return {...state, user: action.payload, status: 'succeeded' };
         case FETCH_MEMBER_OPTS:
             return {...state, opts: action.payload };
-        case FETCH_OPTS_DESCRIPTIONS:
-            return {...state, descriptions: action.payload };
         default:
             return state;
     }

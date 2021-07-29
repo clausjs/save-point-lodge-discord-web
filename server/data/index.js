@@ -12,18 +12,8 @@ const app = firebase.initializeApp({
 let db = app.firestore();
 db.settings({ timestampsInSnapshots: true });
 
-const ServerData = require('./ServerData');
-const UserData = require('./UserData');
-const serverdata = ServerData(db);
-let userdata = null;
-const initializeUserData = (userId) => {
-    userdata = UserData({
-        store: db,
-        userId,
-        serverdata
-    });
-    return userdata;
-};
+const Firebase = require('./FirebaseData');
+const firebaseData = Firebase(db);
 
 async function authenticate() {
     const { DB_EMAIL: email, DB_PASSWORD: pass } = process.env;
@@ -36,8 +26,7 @@ async function shutdown() {
 }
 
 module.exports = {
-    initializeUserData,
-    serverdata,
+    firebase: firebaseData,
     authenticate,
     shutdown
 }

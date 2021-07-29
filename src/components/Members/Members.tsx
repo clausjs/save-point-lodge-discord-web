@@ -35,7 +35,7 @@ interface MemberOptionsProps {
 interface TableOpt {
     value: boolean;
     description: any;
-    isLoading: boolean;
+    isLoading?: boolean;
 }
 
 interface DisplayTableUserOpts {
@@ -44,11 +44,9 @@ interface DisplayTableUserOpts {
 
 const Members: React.FC<MemberOptionsProps> = (props) => {
 
-    const [ userOpts, setUserOpts ] = useState<DisplayTableUserOpts | {}>({});
     const [ fetchUserOpts, setFetchedUserOpts ] = useState<boolean>(false);
     const user = useSelector((state: RootState) => state.user.user);
     const opts = useSelector((state: RootState) => state.user.opts);
-    const descriptions = useSelector((state: RootState) => state.user.descriptions);
 
     useEffect(() => {
         if (user !== null && !fetchUserOpts) {
@@ -57,40 +55,40 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
         }
     }, [user]);
 
-    useEffect(() => {
-        if (process.env.NODE_ENV !== 'production') console.info("Opts/Descriptions have changed");
-        const userOptions: DisplayTableUserOpts | {} = {};
-        if (Object.keys(opts).length > 0 === Object.keys(descriptions).length > 0) {
-            for (const optKey of Object.keys(opts)) {
-                if (!userOptions.hasOwnProperty(optKey) && descriptions.hasOwnProperty(optKey)) {
-                    //@ts-ignore
-                    const description = descriptions[optKey];
+    // useEffect(() => {
+    //     if (process.env.NODE_ENV !== 'production') console.info("Opts/Descriptions have changed");
+    //     const userOptions: DisplayTableUserOpts | {} = {};
+    //     if (Object.keys(opts).length > 0) {
+    //         for (const optKey of Object.keys(opts)) {
+    //             if (!userOptions.hasOwnProperty(optKey)) {
+    //                 //@ts-ignore
+    //                 const description = descriptions[optKey];
     
-                    const newKey: TableOpt = {
-                        //@ts-ignore        
-                        value: opts[optKey],
-                        description,
-                        isLoading: false
-                    };
+    //                 const newKey: TableOpt = {
+    //                     //@ts-ignore        
+    //                     value: opts[optKey],
+    //                     description,
+    //                     isLoading: false
+    //                 };
     
-                    //@ts-ignore
-                    userOptions[optKey] = newKey;
-                }
-            }
-        }
+    //                 //@ts-ignore
+    //                 userOptions[optKey] = newKey;
+    //             }
+    //         }
+    //     }
 
-        setUserOpts(userOptions);
-    }, [opts, descriptions]);
+    //     setUserOpts(userOptions);
+    // }, [opts]);
 
     const toggleOption = (event: any) => {
-        const { value: label } = event.target.attributes["aria-label"];
-        const newOpt: UserOption = {};
-        //@ts-ignore
-        newOpt[label] = !opts[label];
-        const fullOptions: DisplayTableUserOpts = userOpts;
-        //@ts-ignore
-        if (fullOptions.hasOwnProperty(label)) fullOptions[label].isLoading = true;
-        props.setOpt(newOpt);
+        // const { value: label } = event.target.attributes["aria-label"];
+        // const newOpt: UserOption = {};
+        // //@ts-ignore
+        // newOpt[label] = !opts[label];
+        // const fullOptions: DisplayTableUserOpts = userOpts;
+        // //@ts-ignore
+        // if (fullOptions.hasOwnProperty(label)) fullOptions[label].isLoading = true;
+        // props.setOpt(newOpt);
     }
 
     const getContainerContent = () => {
@@ -102,7 +100,7 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
             <>
                 <h2>{`${user.username}'s user options on Save Point Lodge`}</h2>
                 <DisplayTable
-                    rowData={userOpts}
+                    rowData={opts}
                     tableHeaders={[
                         {
                             label: 'Option',
@@ -122,9 +120,9 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
                             component: 'th',
                             scope: 'row',
                             valueGetter: (item: any) => {
-                                const index = Object.values(userOpts).findIndex(opt => opt.description.text === item.description.text);
+                                const index = Object.values(opts).findIndex(opt => opt.description.text === item.description.text);
                                 if (index !== -1) {
-                                    return <span>{Object.keys(userOpts)[index]}</span>
+                                    return <span>{Object.keys(opts)[index]}</span>
                                 }
                             }
                         },
@@ -143,27 +141,22 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
                         {
                             align: 'center',
                             valueGetter: (item: any) => {
-                                const index: number = Object.values(userOpts).findIndex(opt => opt.description.text === item.description.text);
+                                const index: number = Object.values(opts).findIndex(opt => opt.description.text === item.description.text);
 
                                 let key: string;
                                 if (index !== -1) {
-                                    key = Object.keys(userOpts)[index];
+                                    key = Object.keys(opts)[index];
                                 }
 
                                 //@ts-ignore
-                                if (userOpts[key].isLoading) {
-                                    return <BounceLoader size={12} />;
-                                }
-
-                                //@ts-ignore
-                                return <Switch inputProps={{ 'aria-label': key }} checked={userOpts[key].value} onChange={toggleOption} />
+                                return <Switch inputProps={{ 'aria-label': key }} checked={opts[key].value} onChange={toggleOption} />
                             }
                         }
                     ]}
                     searchLabel={false}
                     itemName="user option"
                     tableId='member options table'
-                    isLoadingData={Object.keys(userOpts).length === 0}
+                    isLoadingData={!fetchUserOpts}
                 />
             </>
         );

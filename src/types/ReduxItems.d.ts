@@ -28,7 +28,8 @@ export interface User {
 }
 
 interface UserOption {
-    [id: string]: boolean;
+    value: boolean,
+    description: UserOptDescription;
 }
 interface UserOptions {
     [id: string]: UserOption
@@ -40,16 +41,11 @@ interface UserOptDescription {
     alt: string;
 }
 
-interface UserOptionsDescriptions {
-    [id: string]: UserOptDescription;
-}
-
 export interface UserState {
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
     user: User | null;
     opts: UserOptions | {};
-    descriptions: UserOptionsDescriptions | {};
 }
 
 export interface VotableMovie {
