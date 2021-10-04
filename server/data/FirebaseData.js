@@ -1,6 +1,7 @@
 const WEB_COLLECTION_NAME = "WEB";
 const MOVIES_COLLECTION_NAME = "movies";
 const USER_OPTS_COLLECTION = "user_options";
+const COMMANDS_COLLECTION = "commands";
 
 
 const MOVIEGOERS = "moviegoers";
@@ -106,7 +107,7 @@ class FirebaseData {
     }
     getCommands = async () => {
         const { db } = this;
-        const collection = db.collection(MOVIES_COLLECTION_NAME);
+        const collection = db.collection(COMMANDS_COLLECTION);
         const getCommandsResponse = await collection.get();
 
         const commands = [];
