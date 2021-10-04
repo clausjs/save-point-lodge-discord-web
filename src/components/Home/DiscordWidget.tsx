@@ -21,7 +21,8 @@ const DiscordWidget: React.FC = () => {
         if (!fetchedUserList) {
             console.log("fetching userlist");
             setFetchedUserList(true);
-            fetch(process.env.DISCORD_API).then(res => res.json()).then(data => {
+            const url = new URL(process.env.DISCORD_API);
+            fetch(url).then(res => res.json()).then(data => {
                 const list = data.members.filter((user: User) => user.username !== 'BoobBot™');
                 setUserlist(list);
             }).catch(err => {
