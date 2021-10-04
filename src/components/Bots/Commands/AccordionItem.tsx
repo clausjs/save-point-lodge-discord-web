@@ -38,10 +38,10 @@ const AccordionItem: React.FC<AccordionItemProps> = (props: AccordionItemProps) 
                 <Typography style={{ color: 'text.secondary' }}>{props.command.description}</Typography>
             </AccordionSummary>
             {props.open && <hr />}
-            <AccordionDetails className='command-details'>
+            {props.command.options && <AccordionDetails className='command-details'>
                 <Typography style={{ width: '25%', flexShrink: 0 }}>Command Parameters:</Typography>
                 <div className='parameters-border'></div>
-                {props.command.options && <div className='params-list'>
+                <div className='params-list'>
                     {props.command.options.map((param: any, i: number) => {
                         return (
                             <div key={i} className='param'>
@@ -52,8 +52,8 @@ const AccordionItem: React.FC<AccordionItemProps> = (props: AccordionItemProps) 
                             </div>
                         );
                     })}
-                </div>}
-            </AccordionDetails>
+                </div>
+            </AccordionDetails>}
         </Accordion>
     );
 }
