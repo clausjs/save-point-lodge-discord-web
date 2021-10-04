@@ -120,5 +120,9 @@
     ],
     "name": "youtube",
     "description": "Searches YouTube and returns the top result in chat"
+  },
+  {
+    "name": "lfg",
+    "description": "Adds/removes user from the LFG group"
   }
 ]
