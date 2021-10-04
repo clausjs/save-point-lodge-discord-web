@@ -52,6 +52,6 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: 'src/index.html'
     }),
-    new EnvironmentPlugin(["COMMANDS_IN_BETA"]),
+    new EnvironmentPlugin(["DISCORD_API"]),
   ].concat(devMode ? [] : [new MiniCssExtractPlugin()])
 };

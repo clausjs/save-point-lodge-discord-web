@@ -37,11 +37,7 @@ const views: PageViews = {
     },
     Commands: {
         to: "/commands",
-        disabled: true,
-        ancillary: {
-            class: 'super',
-            content: "Coming Soon!!"
-        }
+        disabled: false
     },
     Movies: {
         to: "/movies",

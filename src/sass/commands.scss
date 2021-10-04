@@ -3,27 +3,42 @@
 .commands-content {
     height: 100%;
     width: 100%;
+    padding: 20px;
 
-    #commands-table {
-        .command-option {
+    .command-item {
+        padding: 10px 0;
+
+        hr {
+            width: 98%;
+            opacity: .25;
+        }
+
+        .command-details {
             display: flex;
             flex-direction: column;
-            justify-content: center;
 
-            .option-details {
+            .parameters-border {
+                height: 2px;
+                width: 100%;
+                background-color: $discord-dark-blue;
+            }
+
+            .params-list {
                 display: flex;
                 flex-direction: column;
-                padding: 10px;
-                border: 1px solid transparent;
-
-                &:hover {
-                    border: 1px solid black;
+    
+                .param {
+                    display: flex;
+                    flex-direction: column;
+    
+                    hr {
+                        width: 25%;
+                        margin-left: -5px;
+                        border-top: 2px dotted $color-pallette-dark-blue;
+                    }
                 }
             }
-
-            .na {
-                align-self: center;
-            }
         }
+
     }
 }

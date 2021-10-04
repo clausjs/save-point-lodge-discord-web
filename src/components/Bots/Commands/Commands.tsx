@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { connect } from 'react-redux';
 
 import {
+    Accordion,
     Container
 } from '@material-ui/core';
 
-import DisplayTable from '../shared/DisplayTable/DisplayTable';
-import { Command, TabledCommands, TableHeader, TableCell } from "../../types";
-import { fetchCommands } from "../../actions/botsActions";
+import DisplayTable from '../../shared/DisplayTable/DisplayTable';
+import AccordionItem from "./AccordionItem";
+import { Command, TabledCommands, TableHeader, TableCell } from "../../../types";
+import { fetchCommands } from "../../../actions/botsActions";
 
-import '../../sass/commands.scss';
+import '../../../sass/commands.scss';
 
 interface CommandsProps {
     commands: Command[];
@@ -22,9 +24,10 @@ const Commands: React.FC<CommandsProps> = (props) => {
     const [ fetchedCommands, setFetchedCommands ] = useState<boolean>(false);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ commands, setCommands ] = useState<TabledCommands | {}>({});
+    const [ expanded, setExpanded ] = useState<number>(-1);
 
     useEffect(() => {
-        if (!fetchedCommands && !process.env.COMMANDS_IN_BETA) {
+        if (!fetchedCommands) {
             setIsLoading(true);
             props.getCommands();
             setFetchedCommands(true);
@@ -51,49 +54,47 @@ const Commands: React.FC<CommandsProps> = (props) => {
     }, [props.commands]);
 
     let tableHeaders: TableHeader[], tableCells: TableCell[];
-    if (props.commands.length > 0) {
-        tableHeaders = [
-            {
-                label: 'Command Name'
-            },
-            {
-                label: 'Description'
-            },
-            {
-                label: 'Options'
-            }
-        ];
+    tableHeaders = [
+        {
+            label: 'Command Name'
+        },
+        {
+            label: 'Description'
+        },
+        {
+            label: 'Options'
+        }
+    ];
 
-        tableCells = [
-            {
-                field: 'name'
-            },
-            {
-                field: 'description'
-            },
-            {
-                valueGetter: (item: any) => {
-                    return (
-                        <div className='command-option'>
-                            {item.options !== undefined && item.options.length > 0 ? 
-                                item.options.map((option: any, i: number) => {
-                                    return (
-                                        <div key={i} className="option-details">
-                                            <span><b>Name: </b> {option.name}</span>
-                                            <span><b>Is Required?:</b> {option.required ? '✔️' : '❌'}</span>
-                                            <span><b>Description:</b> {option.description}</span>
-                                        </div>
-                                    )
-                                })
-                            :
-                                <span className='na'>N/A</span>
-                            }
-                        </div>
-                    )
-                }
+    tableCells = [
+        {
+            field: 'name'
+        },
+        {
+            field: 'description'
+        },
+        {
+            valueGetter: (item: any) => {
+                return (
+                    <div className='command-option'>
+                        {item.options !== undefined && item.options.length > 0 ? 
+                            item.options.map((option: any, i: number) => {
+                                return (
+                                    <div key={i} className="option-details">
+                                        <span><b>Name: </b> {option.name}</span>
+                                        <span><b>Is Required?:</b> {option.required ? '✔️' : '❌'}</span>
+                                        <span><b>Description:</b> {option.description}</span>
+                                    </div>
+                                )
+                            })
+                        :
+                            <span className='na'>N/A</span>
+                        }
+                    </div>
+                )
             }
-        ];
-    }
+        }
+    ];
 
     const filterResults = (searchText: string) => {
         const newCommands = {};
@@ -125,27 +126,30 @@ const Commands: React.FC<CommandsProps> = (props) => {
         return newCommands;
     }
 
+    const onAccordionChange = (index: number, open: boolean) => {
+        if (open) {
+            setExpanded(index);
+        } else {
+            if (index === expanded) {
+                setExpanded(-1);
+            }
+        }
+    }
+
     return (
         <div className="commands-content">
-            <Container className='commands'>
-                {process.env.COMMANDS_IN_BETA ? 
-                    <h1>Please check back soon, this page is waiting for slash commands on Joe_Bot! Coming Soon!</h1>
-                :
-                    <DisplayTable
-                        rowData={commands}
-                        tableHeaders={tableHeaders}
-                        tableCells={tableCells}
-                        itemName='commands'
-                        tableId='commands-table'
-                        searchLabel='Search for a command'
-                        filterResults={filterResults}
-                        isLoadingData={isLoading}
-                        paginationProps={{
-                            count: Object.keys(commands).length,
-                            initialPerPage: 10
-                        }}
-                    />
-                }
+            <Container className='commands' maxWidth='xl'>
+                {props.commands.map((command: Command, index: number) => {
+                    return (
+                        <AccordionItem
+                            key={index} 
+                            open={expanded === index} 
+                            select={onAccordionChange} 
+                            index={index} 
+                            command={command}
+                        />
+                    )
+                })}
             </Container>
         </div>
     );

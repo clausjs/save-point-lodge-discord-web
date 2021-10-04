@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 
 import {
     Button,
     Container,
 } from '@material-ui/core';
+
+import DiscordWidget from './DiscordWidget';
 
 import '../../sass/home.scss';
 
@@ -56,13 +58,14 @@ const Home: React.FC = () => {
                     <Container className="invite" maxWidth="sm">
                         <h2>See below to join!</h2>
                         <div className="widget-container">
+                            <div className='widget'>
+                                <DiscordWidget />
+                            </div>
                             <div className="flair">
                                 <div className="top"></div>
                                 <div className="bottom"></div>
                             </div>
-                            <iframe src="https://discord.com/widget?id=184535415363993600&theme=dark" width="350" height="500" frameBorder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
                         </div>
-                        {/* <p className="signin">Or&nbsp;<a href="/login">sign in</a>&nbsp;if you're already a member.</p> */}
                     </Container>
                 </div>
             </div>
