@@ -5,6 +5,7 @@ import { User } from './ReduxItems';
 export interface View {
     to: string,
     requiresAuth?: boolean,
+    requiresMoviegoer?: boolean,
     disabled?: boolean,
     class?: string,
     ancillary?: {

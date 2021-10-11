@@ -44,51 +44,27 @@ interface DisplayTableUserOpts {
 
 const Members: React.FC<MemberOptionsProps> = (props) => {
 
-    const [ fetchUserOpts, setFetchedUserOpts ] = useState<boolean>(false);
+    const [ fetchedUserOpts, setFetchedUserOpts ] = useState<boolean>(false);
     const user = useSelector((state: RootState) => state.user.user);
     const opts = useSelector((state: RootState) => state.user.opts);
 
     useEffect(() => {
-        if (user !== null && !fetchUserOpts) {
+        if (user !== null && !fetchedUserOpts) {
             props.fetchOpts();
             setFetchedUserOpts(true);
         }
     }, [user]);
 
-    // useEffect(() => {
-    //     if (process.env.NODE_ENV !== 'production') console.info("Opts/Descriptions have changed");
-    //     const userOptions: DisplayTableUserOpts | {} = {};
-    //     if (Object.keys(opts).length > 0) {
-    //         for (const optKey of Object.keys(opts)) {
-    //             if (!userOptions.hasOwnProperty(optKey)) {
-    //                 //@ts-ignore
-    //                 const description = descriptions[optKey];
-    
-    //                 const newKey: TableOpt = {
-    //                     //@ts-ignore        
-    //                     value: opts[optKey],
-    //                     description,
-    //                     isLoading: false
-    //                 };
-    
-    //                 //@ts-ignore
-    //                 userOptions[optKey] = newKey;
-    //             }
-    //         }
-    //     }
-
-    //     setUserOpts(userOptions);
-    // }, [opts]);
-
     const toggleOption = (event: any) => {
-        // const { value: label } = event.target.attributes["aria-label"];
-        // const newOpt: UserOption = {};
-        // //@ts-ignore
-        // newOpt[label] = !opts[label];
-        // const fullOptions: DisplayTableUserOpts = userOpts;
-        // //@ts-ignore
-        // if (fullOptions.hasOwnProperty(label)) fullOptions[label].isLoading = true;
-        // props.setOpt(newOpt);
+        const { value: label } = event.target.attributes["aria-label"];
+        //@ts-ignore
+        const newOpt: UserOption = {};
+        //@ts-ignore
+        newOpt[label] = !opts[label];
+        const fullOptions: DisplayTableUserOpts = opts;
+        //@ts-ignore
+        if (fullOptions.hasOwnProperty(label)) fullOptions[label].isLoading = true;
+        props.setOpt(newOpt);
     }
 
     const getContainerContent = () => {

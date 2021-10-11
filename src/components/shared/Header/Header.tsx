@@ -41,7 +41,8 @@ const views: PageViews = {
     },
     Movies: {
         to: "/movies",
-        requiresAuth: true
+        requiresAuth: true,
+        requiresMoviegoer: true
     }
 }
 
@@ -93,6 +94,8 @@ const Header: React.FC<HeaderProps> = (props) => {
             if (page.requiresAuth && user === null) {
                 continue;
             }
+
+            if (page.requiresMoviegoer && !user.isMoviegoer) continue;
 
             let label: React.ReactNode | string;
 
@@ -155,7 +158,8 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     onClick={handleAuthMenu}
                                 >
                                     {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
-                                    {userState.status === 'succeeded' && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                    {userState.status === 'succeeded' && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                    {userState.status === 'succeeded' && user.avatar === null && <AccountCircle />}
                                 </IconButton>
                                 <Menu
                                     id="account-menu"
@@ -180,7 +184,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                 </Menu>
                             </div>
                         )}
-                        {/* {user === null && (
+                        {user === null && (
                             <div className='acct'>
                                 <Button
                                     variant="contained"
@@ -188,7 +192,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     startIcon={<AccountCircle />}
                                 >Login</Button>
                             </div>
-                        )} */}
+                        )}
                     </div>
                 </Toolbar>
             </AppBar>
