@@ -45,4 +45,20 @@ router.post('/opts', async function(req, res) {
     }
 });
 
+router.get('/moviegoer', function(req, res) {
+    if (req.isAuthenticated() && req.user) {
+        return res.status(200).send(req.user.isMoviegoer);
+    }
+
+    res.status(200).send(false);
+});
+
+router.get('/lodgeguest', function(req, res) {
+    if (req.isAuthenticated() && req.user) {
+        return res.status(200).send(req.user.isPlanetExpressMember);
+    }
+
+    res.status(200).send(false);
+});
+
 module.exports = router;
