@@ -1,7 +1,9 @@
 import { 
     FETCH_AUTHORIZATION,
     INITIATE_AUTH_FETCH,
-    FETCH_MEMBER_OPTS
+    FETCH_MEMBER_OPTS,
+    FETCH_MOVIEGOER_STATUS,
+    FETCH_GUEST_STATUS
 } from "../redux-types/userTypes";
 
 import {
@@ -13,7 +15,9 @@ const userState: UserState = {
     status: 'idle',
     error: null,
     user: null,
-    opts: {}
+    opts: {},
+    isMoviegoer: false,
+    isLodgeGuest: false
 }
 
 const userReducer = (state: UserState = userState, action: Action): UserState => {
@@ -24,6 +28,10 @@ const userReducer = (state: UserState = userState, action: Action): UserState =>
             return {...state, user: action.payload, status: 'succeeded' };
         case FETCH_MEMBER_OPTS:
             return {...state, opts: action.payload };
+        case FETCH_MOVIEGOER_STATUS:
+            return {...state, isMoviegoer: action.payload };
+        case FETCH_GUEST_STATUS:
+            return {...state, isLodgeGuest: action.payload };
         default:
             return state;
     }

@@ -46,6 +46,8 @@ export interface UserState {
     error: string | null;
     user: User | null;
     opts: UserOptions | {};
+    isMoviegoer: boolean;
+    isLodgeGuest: boolean;
 }
 
 export interface VotableMovie {

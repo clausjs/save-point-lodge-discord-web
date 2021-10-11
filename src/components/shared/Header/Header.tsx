@@ -15,7 +15,7 @@ import {
 import { AccountCircle } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { fetchUserAuthorization } from '../../../actions';
+import { fetchUserAuthorization, isMoviegoer, isSPLMember } from '../../../actions';
 
 import { RootState } from '../../../reducers';
 import { UserState, User } from '../../../types';
@@ -69,11 +69,13 @@ const Header: React.FC<HeaderProps> = (props) => {
     const authMenuOpen: boolean = Boolean(authAnchorEl);
     const currentLoc: string = useLocation().pathname;
 
-    const { user }: { user: User } = userState;
+    const { user, isMoviegoer, isLodgeGuest }: { user: User, isMoviegoer: boolean, isLodgeGuest: boolean } = userState;
 
     useLayoutEffect(() => {
         if (userState.status === 'idle') {
             props.getAuth();
+            props.getMoviegoerStatus();
+            props.getGuestStatus();
         }
     });
     
@@ -95,7 +97,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                 continue;
             }
 
-            if (page.requiresMoviegoer && !user.isMoviegoer) continue;
+            if (page.requiresMoviegoer && !isMoviegoer) continue;
 
             let label: React.ReactNode | string;
 
@@ -177,7 +179,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     open={authMenuOpen}
                                     onClose={handleAuthMenuClose}
                                 >
-                                    {user && user.isPlanetExpressMember && (
+                                    {user && isLodgeGuest === true && (
                                         <MenuItem onClick={handleAuthMenuClose}><Link to="/members">Discord Options</Link></MenuItem>
                                     )}
                                     <MenuItem onClick={handleAuthMenuClose}><a href="/logout">Logout</a></MenuItem>
@@ -216,7 +218,9 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: any) => ({
-    getAuth: () => dispatch(fetchUserAuthorization())
+    getAuth: () => dispatch(fetchUserAuthorization()),
+    getMoviegoerStatus: () => dispatch(isMoviegoer()),
+    getGuestStatus: () => dispatch(isSPLMember())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Header);

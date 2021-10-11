@@ -26,5 +26,7 @@ export interface HeaderProps {
         }
     };
     getAuth?: Function;
+    getMoviegoerStatus?: Function;
+    getGuestStatus?: Function;
     children?: React.ReactNode;
 }

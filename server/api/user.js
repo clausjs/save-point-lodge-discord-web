@@ -18,9 +18,7 @@ router.get('/', function(req, res) {
         const simplifiedUser = {
             id: req.user.id,
             username: req.user.username,
-            avatar: req.user.avatar,
-            isPlanetExpressMember: req.user.isPlanetExpressMember,
-            isMoviegoer: req.user.isMoviegoer
+            avatar: req.user.avatar
         }
         return res.status(200).json(simplifiedUser);
     }
