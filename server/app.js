@@ -88,8 +88,7 @@ passport.use(new Strategy({
 const redisStore = devMode ? new RedisStore({ client: redisClient }) : new RedisStore({
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
-    client: redisClient,
-    ttl: 86400
+    client: redisClient
 });
 
 app.use(session({
@@ -97,13 +96,16 @@ app.use(session({
     saveUninitialized: false,
     secret: process.env.SESSION_SECRET,
     resave: false,
-    cookie: false,
-    name: '_splUserSessions'
+    secure: true,
+    cookie: { maxAge: 10800000 },
+    sameSite: true,
+    name: '_savepointlodgesession',
+    ttl: 10800
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
+app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
 app.get('/login-redirect',
     passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/') } // auth success
 );
