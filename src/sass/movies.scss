@@ -52,4 +52,9 @@ $max-movie-height: 1000px;
     height: 100%;
     width: 100%;
     padding: 20px;
+
+    .hsljs-video-tag {
+        width: inherit;
+        height: inherit;
+    }
 }
