@@ -43,7 +43,8 @@ function a11yProps(index: number) {
 }
 
 type MoviesProps = {
-    user: User | null; 
+    user: User | null;
+    isMoviegoer: boolean; 
     movies: VotableMovies; 
     stats: MovieStats; 
     getMovies: Function; 
@@ -59,7 +60,7 @@ const Movies: React.FC<MoviesProps> = (props) => {
     const [ isLoadingStats, setIsLoadingStats ] = useState<boolean>(true);
     const [ value, setValue ] = useState(0);
 
-    const { user: auth, movies, stats } = props;
+    const { user: auth, isMoviegoer, movies, stats } = props;
 
     useEffect(() => {
         if (!fetchedMovies) {
@@ -83,16 +84,16 @@ const Movies: React.FC<MoviesProps> = (props) => {
 
     return (
         <div className={`${classes.root} movie-content`}>
-            {(!auth || !auth.isMoviegoer) && (
+            {(!auth || !isMoviegoer) && (
                 <h4 className="not_authorized">Sorry, you must be a member of planet express and in the appropriate group to use this page.</h4>
             )}
-            {auth && auth.isMoviegoer && (
+            {auth && isMoviegoer && (
                 <Grid container className='movie-grid'>
                     <Grid item xs={3}>
                         <AppBar color='transparent' position="static">
                             <Tabs value={value} onChange={handleChange} aria-label="movie database viewer tabs">
                                 <Tab label="Vote" {...a11yProps(0)} />
-                                <Tab label="Results" {...a11yProps(1)} />
+                                <Tab label="Statistics" {...a11yProps(1)} />
                                 <Tab label="Request New" {...a11yProps(2)} />
                             </Tabs>
                         </AppBar>
@@ -115,10 +116,10 @@ const Movies: React.FC<MoviesProps> = (props) => {
     );
 }
 
-const mapStateToProps = (state: RootState): { user: User; stats: MovieStats; movies: VotableMovies } => {
-    const { user }: { user: User } = state.user;
+const mapStateToProps = (state: RootState): { user: User; isMoviegoer: boolean; stats: MovieStats; movies: VotableMovies } => {
+    const { user, isMoviegoer  }: { user: User, isMoviegoer: boolean } = state.user;
     const { votable, stats }: { votable: VotableMovies; stats: MovieStats } = state.movies;
-    return { user, stats, movies: votable };
+    return { user, isMoviegoer, stats, movies: votable };
 }
 
 const mapDispatchToProps = (dispatch: any): object => ({

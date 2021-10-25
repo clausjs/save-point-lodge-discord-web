@@ -20,7 +20,7 @@ let RedisStore = require('connect-redis')(session);
 let redisClient = redis.createClient();
 
 const app = express();
-const devMode = process.env.NODE_ENV !== 'production' ? true : false;
+const devMode = process.env.NODE_ENV === 'dev' ? true : false;
 
 const port = devMode ? 3000 : 8080;
 
@@ -69,7 +69,8 @@ var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
 
 const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com": "savepointlodge.com";
-const callbackURL = `http://${devMode ? 'localhost:3000' : `${productionDomain}`}/login-redirect`;
+const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
+const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 
 passport.use(new Strategy({
     authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
@@ -172,7 +173,7 @@ app.use('/api/movies', require(`${API_DIR}/movies`));
 
 app.use('/api/commands', require(`${API_DIR}/commands`));
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'dev') {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);
     console.info("ASSET_DIR: ", ASSET_DIR);

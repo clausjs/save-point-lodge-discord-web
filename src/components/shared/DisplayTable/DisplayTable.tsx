@@ -37,12 +37,13 @@ const useStyles = makeStyles(() => ({
 const DisplayTable: React.FC<DisplayTableProps> = (props) => {
     const classes = useStyles();
     const defaultProps = {
-        filterResults: () => {}
+        filterResults: (searchText: string) => (new Promise((resolve, reject) => resolve({})))
     };
     const { tableHeaders, tableCells, rowData, filterResults, 
             itemName, tableId, searchLabel, paginationProps, isLoadingData = false } = props;
 
     const [ viewing, setViewing ] = useState({});
+    const [ search, setSearch ] = useState<string>("");
     const [ filteredData, setFiltering ] = useState({});
 
     if (props.searchLabel !== false && !props.hasOwnProperty('filterResults')) {
@@ -64,6 +65,17 @@ const DisplayTable: React.FC<DisplayTableProps> = (props) => {
         }
     }, [tableHeaders, tableCells]);
 
+    useEffect(() => {
+        if (tableHeaders.length > 0 && tableCells.length > 0 && Object.keys(rowData).length > 0) {
+            setFiltering({});
+        }
+    }, [rowData]);
+
+    useEffect(() => {
+        setSearch("");
+        setFiltering({});
+    }, [isLoadingData]);
+
     const setPagination = (page: number, perPage: number) => {
 
         const _viewing: any = {};
@@ -77,6 +89,7 @@ const DisplayTable: React.FC<DisplayTableProps> = (props) => {
                 const item = rowData[id];
     
                 if (Object.keys(_viewing).length === perPage) break;
+                if (!item) console.warn("Table updating with an empty item"); 
                 _viewing[id] = item;
             }
     
@@ -97,11 +110,31 @@ const DisplayTable: React.FC<DisplayTableProps> = (props) => {
 
     }
 
-    const searchForResults = (searchText: string) => {
-        const filter = filterResults ? filterResults : defaultProps.filterResults;
-        //@ts-ignore
-        setFiltering(filter(searchText));
+    useEffect(() => {
         generatePages();
+    }, [filteredData])
+
+    const searchForResults = async (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+        const { value } = e.target;
+
+        setSearch(value);
+
+        if (value.length >= 3) {
+            const filter = filterResults ? filterResults : defaultProps.filterResults;
+
+            try {
+                const filters = await filter(search);
+                setFiltering(filters);
+            } catch (err) {
+                console.error("Error filtering results: ", err);
+                setFiltering({});
+            }
+        }
+    }
+
+    const _clearSearch = () => {
+        setSearch("");
+        setFiltering({});
     }
 
     const getTableBody = () => {
@@ -170,7 +203,7 @@ const DisplayTable: React.FC<DisplayTableProps> = (props) => {
     if (rowData) {
         return (
             <div id={tableId} className="data-display-section">
-                {searchLabel !== false && <TableSearch disabled={!isLoadingData} searchLabel={searchLabel} searchForResults={searchForResults} />}
+                {searchLabel !== false && <TableSearch disabled={isLoadingData} searchLabel={searchLabel} searchText={search} clearSearch={_clearSearch} searchForResults={searchForResults} />}
                 <TableContainer component={Paper} className={classes.table}>
                     <Table>
                         <TableHead>

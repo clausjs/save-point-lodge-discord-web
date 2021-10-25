@@ -31,11 +31,11 @@ function setOption(option: UserOption) {
 }
 
 function getMoviegoerStatus() {
-    return fetch('/api/user/moviegoer').then(res => res.text());
+    return fetch('/api/user/moviegoer').then(res => res.json());
 }
 
 function getGuestStatus() {
-    return fetch('/api/user/lodgeguest').then(res => res.text());
+    return fetch('/api/user/lodgeguest').then(res => res.json());
 }
 
 export function fetchUserAuthorization() {

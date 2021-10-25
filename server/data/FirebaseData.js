@@ -1,6 +1,7 @@
 const WEB_COLLECTION_NAME = "WEB";
 const MOVIES_COLLECTION_NAME = "movies";
 const USER_OPTS_COLLECTION = "user_options";
+const USER_OPTS_COLLECTION_DESCRIPTIONS = "descriptions";
 const COMMANDS_COLLECTION = "commands";
 
 
@@ -51,6 +52,20 @@ class FirebaseData {
         const userList = await this.#getMoviegoers();
         return userList.length;
     }
+    #buildOptsWithDescriptions = (options, descriptions) => {
+        const opts = {};
+
+        Object.keys(options).map(key => {
+            if (options.hasOwnProperty(key)) {
+                opts[key] = {
+                    value: options[key],
+                    description: descriptions[key] || null
+                };
+            }
+        });
+
+        return opts;
+    }
     getVotedMovies = async (userId) => {
         if (!userId) return this.#logErr(new Error("No userId supplied to 'getVotedMovies'"));
 
@@ -85,7 +100,7 @@ class FirebaseData {
     getVotedMovieStatistics = async (userId) => {
         if (!userId) return this.#logErr(new Error('No userId supplied to getVotedMovieStatistics'));
         try {
-            const movies = await this.getVotedMovies();
+            const movies = await this.getVotedMovies(userId);
             const total = await this.#getMoviegoerCount();
             return {
                 movies,
@@ -127,20 +142,11 @@ class FirebaseData {
 
         try {
             const optsResponse = await db.collection(USER_OPTS_COLLECTION).doc(userId).get();
-            const descriptionsResponse = await db.collection(USER_OPTS_COLLECTION).doc('descriptions').get();
+            const descriptionsResponse = await db.collection(USER_OPTS_COLLECTION).doc(USER_OPTS_COLLECTION_DESCRIPTIONS).get();
             const descriptions = descriptionsResponse.data();
     
             const options = optsResponse.data();
-            const opts = {};
-
-            Object.keys(options).map(key => {
-                opts[key] = {
-                    value: options[key] || true,
-                    description: descriptions[key] || null
-                };
-            });
-    
-            return opts;
+            return this.#buildOptsWithDescriptions(options, descriptions);
         } catch (err) {
             this.#logErr(err);
             return {};
@@ -152,8 +158,13 @@ class FirebaseData {
 
         const { db } = this;
 
+        console.log('option: ', option);
+
         try {
             await db.collection(USER_OPTS_COLLECTION).doc(userId).update(option);
+            const optsResponse = await db.collection(USER_OPTS_COLLECTION).doc(userId).get();
+            const descriptionsResponse = await db.collection(USER_OPTS_COLLECTION).doc(USER_OPTS_COLLECTION_DESCRIPTIONS).get();
+            return this.#buildOptsWithDescriptions(optsResponse.data(), descriptionsResponse.data());
         } catch (err) {
             this.#logErr(err);
         }

@@ -120,7 +120,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             _tabs.push(<LinkTab key={i} label={label} href={page.to} disabled={page.disabled} />);
         }
         setTabs(_tabs);
-    }, [user]);
+    }, [user, isLodgeGuest, isMoviegoer]);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);

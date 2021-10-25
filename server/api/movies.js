@@ -9,7 +9,7 @@ router.get('/vote', async function(req, res) {
             return res.status(200).send(votes);
         }
 
-        const movies = await req.db.firebase.getUnvotedMovies();
+        const movies = await req.db.firebase.getUnvotedMovies(req.user.id);
         res.status(200).send(movies);
     } catch(err) {
         res.status(500).send(err);
@@ -18,7 +18,8 @@ router.get('/vote', async function(req, res) {
 
 router.post('/vote', async function(req, res) {
     try {
-        const newMovies = await req.db.firebase.addVote(req.body.movieId);
+        await req.db.firebase.addVote(req.user.id, req.body.movieId);
+        const newMovies = await req.db.firebase.getUnvotedMovies(req.user.id);
         res.status(200).send(newMovies);
     } catch (err) {
         res.status(500).send(err);
@@ -32,7 +33,7 @@ router.get('/movie-stats', async function(req, res) {
             return res.status(200).send(stats);
         }
 
-        const movieStats = await req.db.firebase.getVotedMovieStatistics();
+        const movieStats = await req.db.firebase.getVotedMovieStatistics(req.user.id);
         res.status(200).send(movieStats);
     } catch (err) {
         res.status(500).send(err);

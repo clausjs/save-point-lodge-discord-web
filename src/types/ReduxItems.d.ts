@@ -51,9 +51,15 @@ export interface UserState {
 }
 
 export interface VotableMovie {
-    [id: string]: {
-
-    }
+    author: string;
+    plus: number;
+    posted: Date;
+    poster: string;
+    title: string;
+    voted: {
+        [id: string]: boolean;
+    };
+    watched: boolean;
 }
 
 export interface MovieResult {

@@ -24,7 +24,7 @@ import { RootState } from '../../reducers';
 import { fetchUserOpts, setUserOption } from '../../actions';
 
 import '../../sass/members.scss';
-import { UserOption, UserOptions } from '../../types';
+import { User, UserOption, UserOptions } from '../../types';
 
 interface MemberOptionsProps {
     fetchOpts: Function;
@@ -45,8 +45,9 @@ interface DisplayTableUserOpts {
 const Members: React.FC<MemberOptionsProps> = (props) => {
 
     const [ fetchedUserOpts, setFetchedUserOpts ] = useState<boolean>(false);
-    const user = useSelector((state: RootState) => state.user.user);
-    const opts = useSelector((state: RootState) => state.user.opts);
+    const user: User = useSelector((state: RootState) => state.user.user);
+    const isLodgeGuest: boolean = useSelector((state: RootState) => state.user.isLodgeGuest);
+    const opts: UserOptions = useSelector((state: RootState) => state.user.opts);
 
     useEffect(() => {
         if (user !== null && !fetchedUserOpts) {
@@ -56,20 +57,20 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
     }, [user]);
 
     const toggleOption = (event: any) => {
-        const { value: label } = event.target.attributes["aria-label"];
-        //@ts-ignore
-        const newOpt: UserOption = {};
-        //@ts-ignore
-        newOpt[label] = !opts[label];
-        const fullOptions: DisplayTableUserOpts = opts;
-        //@ts-ignore
-        if (fullOptions.hasOwnProperty(label)) fullOptions[label].isLoading = true;
+        const { name: label } = event.target;
+        const newOpt: { [id: string]: boolean } = {};
+        newOpt[label] = !opts[label].value;
+
         props.setOpt(newOpt);
     }
 
     const getContainerContent = () => {
-        if (user === null) {
-            return (<h3>You must login with discord to continue. <a href="/login">Click here</a></h3>);
+        let errorMessage: string | false = false;
+        if (user === null) errorMessage = "You must login with Discord to continue.";
+        else if (!isLodgeGuest) errorMessage = "To access these options, come join us on Discord!";
+
+        if (errorMessage) {
+            return (<h3>{errorMessage} <a href={`${isLodgeGuest ? "/login" : "https://discord.gg/spl"}`}>Click here</a></h3>)
         }
 
         return (
@@ -117,6 +118,7 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
                         {
                             align: 'center',
                             valueGetter: (item: any) => {
+                                console.log('item: ', item);
                                 const index: number = Object.values(opts).findIndex(opt => opt.description.text === item.description.text);
 
                                 let key: string;
@@ -125,7 +127,7 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
                                 }
 
                                 //@ts-ignore
-                                return <Switch inputProps={{ 'aria-label': key }} checked={opts[key].value} onChange={toggleOption} />
+                                return <Switch inputProps={{ 'aria-label': key }} name={key} checked={opts[key].value} onChange={toggleOption} />
                             }
                         }
                     ]}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
     Table,
@@ -37,20 +37,55 @@ type VoteProps = {
 }
 
 const Vote: React.FC<VoteProps> = (props) => {
+    const [ isLoadingMovies, setIsLoadingMovies ] = useState<boolean>(false);
+
     const { movies } = props;
 
-    const addVote = (event: any) => {
-        const { name: movieId }: { name: string } = event.target;
+    useEffect(() => {
+        setIsLoadingMovies(false);
+    }, [props.movies]);
 
-        if (movieId) {
-            props.submitVote(movieId);
+    const addVote = (event: any) => {
+        const { name: title }: { name: string } = event.target;
+        if (title) {
+            let movieId: string = "";
+
+            for (let i = 0; i < Object.keys(movies).length; i++) {
+                const id = Object.keys(movies)[i];
+                const movie = movies[id];
+
+                if (movie.title === title) {
+                    movieId = id;
+                    break;
+                }
+            }
+
+            if (movieId !== "") {
+                setIsLoadingMovies(true);
+                props.submitVote(movieId);
+            }
         }
+    }
+
+    const _filterMovies = async (searchText: string) => {
+        const newMovies: VotableMovies = {};
+        
+        Object.keys(movies).forEach(movieKey => {
+            const movie = movies[movieKey];
+
+            if (movie.title.trim().toLowerCase().indexOf(searchText.trim().toLowerCase()) > -1) {
+                newMovies[movieKey] = movie;
+            }
+        });
+        
+        return newMovies;
     }
 
     if (movies) {
         return (
             <DisplayTable
                 rowData={movies}
+                isLoadingData={isLoadingMovies}
                 tableHeaders={[
                     {
                         size: 'small',
@@ -94,15 +129,14 @@ const Vote: React.FC<VoteProps> = (props) => {
                     {
                         padding: 'checkbox',
                         cellRenderer: (item: any) => {
-                            return <Checkbox icon={<MovieOutlinedIcon />} checkedIcon={<MovieIcon />} name={item.id} title={item.title} onClick={addVote} />
+                            return <Checkbox icon={<MovieOutlinedIcon />} checkedIcon={<MovieIcon />} name={item.title} title={item.title} onClick={addVote} />
                         }
                     }
                 ]}
                 itemName="movie"
                 tableId="votable movies"
                 searchLabel="Search for a movie"
-                filterResults={() => ([])}
-                isLoadingData={false}
+                filterResults={_filterMovies}
                 paginationProps={{
                     count: Object.keys(movies).length
                 }}
