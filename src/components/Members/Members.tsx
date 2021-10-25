@@ -118,7 +118,6 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
                         {
                             align: 'center',
                             valueGetter: (item: any) => {
-                                console.log('item: ', item);
                                 const index: number = Object.values(opts).findIndex(opt => opt.description.text === item.description.text);
 
                                 let key: string;
