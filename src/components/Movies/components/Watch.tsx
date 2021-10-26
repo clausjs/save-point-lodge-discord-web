@@ -14,7 +14,7 @@ const Watch: React.FC<{ auth: User | null }> = (auth = null) => {
             //@ts-ignore
             const sldpPlayer = SLDP.init({
                 container:           'player',
-                stream_url:          "wss://planetexpressmovie.ddns.net:8081/live/spl-movies",
+                stream_url:          "wss://planetexpressmovie.ddns.net/live/spl-movies",
                 splash_screen:       `img/splash_screen.png`,
                 buffering:           1000,
                 sync_buffer:         4000,
