@@ -147,7 +147,7 @@ class FirebaseData {
             const descriptions = descriptionsResponse.data();
     
             const options = optsResponse.data();
-            return this.#buildOptsWithDescriptions(options, descriptions);
+            return this.#buildOptsWithDescriptions(options || {}, descriptions);
         } catch (err) {
             this.#logErr(err);
             return {};
@@ -162,10 +162,26 @@ class FirebaseData {
         console.log('option: ', option);
 
         try {
-            await db.collection(USER_OPTS_COLLECTION).doc(userId).update(option);
-            const optsResponse = await db.collection(USER_OPTS_COLLECTION).doc(userId).get();
+            let optsResponse = await db.collection(USER_OPTS_COLLECTION).doc(userId).get();
             const descriptionsResponse = await db.collection(USER_OPTS_COLLECTION).doc(USER_OPTS_COLLECTION_DESCRIPTIONS).get();
-            return this.#buildOptsWithDescriptions(optsResponse.data(), descriptionsResponse.data());
+            const descriptions = descriptionsResponse.data();
+            
+            let newOpts = {};
+            Object.keys(descriptions).forEach(key => {
+                if (Object.keys(option)[0] === key) {
+                    newOpts[key] = option[key];
+                } else {
+                    newOpts[key] = true;
+                }
+            });
+
+            if (optsResponse.exists) {
+                await db.collection(USER_OPTS_COLLECTION).doc(userId).update(option);
+            } else {
+                await db.collection(USER_OPTS_COLLECTION).doc(userId).set(newOpts);
+            }
+
+            return this.#buildOptsWithDescriptions(newOpts, descriptions);
         } catch (err) {
             this.#logErr(err);
         }
