@@ -55,13 +55,14 @@ class FirebaseData {
     #buildOptsWithDescriptions = (options, descriptions) => {
         const opts = {};
 
-        Object.keys(options).map(key => {
-            if (options.hasOwnProperty(key)) {
-                opts[key] = {
-                    value: options[key],
-                    description: descriptions[key] || null
-                };
-            }
+        const keys = Object.keys(descriptions).map(key => key);
+        keys.sort();
+
+        keys.forEach(key => {
+            opts[key] = {
+                value: options.hasOwnProperty(key) ? options[key] : true,
+                description: descriptions[key] || null
+            };
         });
 
         return opts;
