@@ -52,6 +52,6 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: 'src/index.html'
     }),
-    new EnvironmentPlugin(["DISCORD_API"]),
+    new EnvironmentPlugin(["DISCORD_API", "STREAM_PROTOCOL"]),
   ].concat(devMode ? [] : [new MiniCssExtractPlugin()])
 };
