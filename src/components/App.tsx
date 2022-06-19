@@ -11,6 +11,7 @@ import Bots from './Bots/Bots';
 import Commands from './Bots/Commands/Commands';
 import Members from "./Members/Members";
 import Movies from './Movies/Movies';
+import Giphy from './Bots/Commands/Giphy';
 
 const App: React.FC = () => (
     <SnackbarProvider>
@@ -23,6 +24,7 @@ const App: React.FC = () => (
                     <Route path="/members" component={Members} />
                     <Route path="/movies" component={Movies} />
                     <Route path="/commands" component={Commands} />
+                    <Route path='/giphy-examples' component={Giphy} />
                 </Switch>
             </Router>
         </Provider>

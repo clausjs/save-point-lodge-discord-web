@@ -173,6 +173,8 @@ app.use('/api/movies', require(`${API_DIR}/movies`));
 
 app.use('/api/commands', require(`${API_DIR}/commands`));
 
+app.use('/api/giphy', require(`${API_DIR}/giphy`));
+
 if (process.env.NODE_ENV === 'dev') {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);
