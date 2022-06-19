@@ -67,7 +67,8 @@
         "description": "Number of dice to roll (Min: 1, Max: 10)"
       }
     ],
-    "description": "Roll a provided number of dice, including different types of die"
+    "description": "Roll a provided number of dice, including different types of die",
+    "private": true
   },
   {
     "description": "Searches and returns results from an imdb search",
