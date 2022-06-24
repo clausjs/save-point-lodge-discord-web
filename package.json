@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./server/app.js",
     "build:watch": "webpack --config webpack.dev.js --watch",
-    "build:dev": "webpack --config webpack.dev.js",
+    "build:dev": "npx tsc && webpack --config webpack.dev.js",
     "test": "test"
   },
   "author": "Joseph Claus",
