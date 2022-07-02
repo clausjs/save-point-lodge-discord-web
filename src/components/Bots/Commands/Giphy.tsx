@@ -15,6 +15,10 @@ interface GiphyGridParams {
     gifSelected: (gif: AnimatedIGif, e: SyntheticEvent<HTMLElement, Event>) => void;
 }
 
+interface PoweredByGiphyParams {
+    className?: string;
+}
+
 const calculateColumnsAndGutter = (width: number): { columns: number, gutter: number } => {
 
     let newColumns: number;
@@ -42,6 +46,12 @@ const calculateColumnsAndGutter = (width: number): { columns: number, gutter: nu
     response.gutter = newGutter;
 
     return response;
+}
+
+const PoweredByGiphy = ({
+    className
+}: PoweredByGiphyParams) => {
+    return <img className={className || ""} src="/img/giphy.gif" />
 }
 
 const GiphyGrid: React.FC<GiphyGridParams> = (props: GiphyGridParams) => {
@@ -127,19 +137,24 @@ const GiphyExamples: React.FC = () => {
                     </Fade>
                 )}
             </Popper>
-            <OutlinedInput
-                className='giphy-creation-text'
-                value={textField}
-                placeholder="Test gif generation here..."
-                onChange={(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setTextField(event.target.value)}
-                onKeyDown={keyDown}
-                endAdornment={<InputAdornment position='end'><IconButton onClick={submitSearch}><ArrowForwardIosOutlined /></IconButton></InputAdornment>}
-            />
-            <span className='instructions'>Click any gif to copy the font style to clipboard</span>
+            <div className='search-content'>
+                <div className='search'>
+                    <OutlinedInput
+                        className='giphy-creation-text'
+                        value={textField}
+                        placeholder="Test gif generation here..."
+                        onChange={(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setTextField(event.target.value)}
+                        onKeyDown={keyDown}
+                        endAdornment={<InputAdornment position='end'><IconButton onClick={submitSearch}><ArrowForwardIosOutlined /></IconButton></InputAdornment>}
+                    />
+                    <span className='instructions'>Click any gif to copy the name of the font style to your clipboard.</span>
+                </div>
+            </div>
             <GiphyGrid
                 text={searchText}
                 gifSelected={gifSelected}
             />
+            <PoweredByGiphy />
         </div>
     );
 }

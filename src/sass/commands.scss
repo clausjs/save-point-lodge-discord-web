@@ -51,13 +51,30 @@
     justify-content: center;
     align-items: center;
 
-    .instructions {
-        font-size: 14px;
-        font-weight: 400;
-        line-height: 16px;
+    .search-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+
+        .search {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 10px;
+
+            .giphy-creation-text {
+                margin: 10px;
+            }
+            
+            .instructions {
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 16px;
+            }
+        }
+
     }
 
-    .giphy-creation-text {
-        margin: 10px;
-    }
+
 }
