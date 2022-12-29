@@ -1,4 +1,4 @@
-A single page react-router based application which connects to Discord.js and Google Firebase to retrieve information about users of the Planet Express Discord.
+A single page react-router based application which connects to Discord.js and Google Firebase to retrieve information about users of the Save Point Lodge Discord.
 
 # Running
 
