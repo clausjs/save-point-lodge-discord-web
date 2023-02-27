@@ -1,3 +1,4 @@
+import { ChangeEventHandler } from 'react';
 import { TableCellProps } from '@material-ui/core';
 
 export type TableHeader = {
@@ -18,7 +19,9 @@ type rowItems = {
 }
 
 export interface TableSearchProps {
-    searchForResults: Function;
+    searchForResults: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
+    searchText: string;
+    clearSearch: () => void;
     searchLabel?: string;
     disabled?: boolean;
 }
@@ -38,7 +41,7 @@ export interface DisplayTableProps {
     rowData: rowItems;
     tableHeaders: TableHeader[];
     tableCells: TableCell[];
-    filterResults?: (searchText: string) => {};
+    filterResults?: (searchText: string) => Promise<{}>;
     tableId?: string;
     itemName?: string;
     searchLabel?: string | false;

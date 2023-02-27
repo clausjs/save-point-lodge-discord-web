@@ -14,7 +14,7 @@ const Watch: React.FC<{ auth: User | null }> = (auth = null) => {
             //@ts-ignore
             const sldpPlayer = SLDP.init({
                 container:           'player',
-                stream_url:          "ws://planetexpressmovie.redirectme.net:8081/movie/obs",
+                stream_url:          `${process.env.STREAM_PROTOCOL}://planetexpressmovie.ddns.net${process.env.STREAM_PROTOCOL === 'ws' ? ':8081' : ''}/live/spl-movies`,
                 splash_screen:       `img/splash_screen.png`,
                 buffering:           1000,
                 sync_buffer:         4000,
@@ -28,6 +28,8 @@ const Watch: React.FC<{ auth: User | null }> = (auth = null) => {
             setPlayer(sldpPlayer);
         }
     }, [auth]);
+
+    console.log('url: ', `${process.env.STREAM_PROTOCOL}://planetexpressmovie.ddns.net/live/spl-movies`)
 
     if (auth) {
         return (

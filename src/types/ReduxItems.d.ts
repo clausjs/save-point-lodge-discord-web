@@ -46,12 +46,20 @@ export interface UserState {
     error: string | null;
     user: User | null;
     opts: UserOptions | {};
+    isMoviegoer: boolean;
+    isLodgeGuest: boolean;
 }
 
 export interface VotableMovie {
-    [id: string]: {
-
-    }
+    author: string;
+    plus: number;
+    posted: Date;
+    poster: string;
+    title: string;
+    voted: {
+        [id: string]: boolean;
+    };
+    watched: boolean;
 }
 
 export interface MovieResult {

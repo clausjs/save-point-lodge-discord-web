@@ -11,30 +11,15 @@ import ClearIcon from '@material-ui/icons/Clear';
 import { TableSearchProps } from '../../../types';
 
 const TableSearch = (props: TableSearchProps) => {
-    const { searchForResults, searchLabel, disabled } = props;
-
-    const [ search, setSearch ] = useState("");
-
-    const onSearch = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-        const { value }: { value: string } = event.target;
-        setSearch(value);
-
-        if (value && value.length >= 2) searchForResults(value);
-    }
-
-    const clearResults = () => {
-        setSearch("");
-        searchForResults(null);
-    }
+    const { searchForResults, searchLabel, searchText, disabled } = props;
 
     return (
         <div className="table-search">
             <TextField
-                error={search.length >= 1 && search.length <= 2}
                 label={searchLabel || "Search here"}
-                onChange={onSearch}
+                onChange={searchForResults}
                 disabled={disabled}
-                value={search}
+                value={searchText}
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position="start">
@@ -42,7 +27,7 @@ const TableSearch = (props: TableSearchProps) => {
                         </InputAdornment>
                     ),
                     endAdornment: (
-                        <InputAdornment position="end" onClick={clearResults}>
+                        <InputAdornment position="end" onClick={props.clearSearch}>
                             <ClearIcon />
                         </InputAdornment>
                     )

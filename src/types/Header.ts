@@ -5,6 +5,7 @@ import { User } from './ReduxItems';
 export interface View {
     to: string,
     requiresAuth?: boolean,
+    requiresMoviegoer?: boolean,
     disabled?: boolean,
     class?: string,
     ancillary?: {
@@ -25,5 +26,7 @@ export interface HeaderProps {
         }
     };
     getAuth?: Function;
+    getMoviegoerStatus?: Function;
+    getGuestStatus?: Function;
     children?: React.ReactNode;
 }

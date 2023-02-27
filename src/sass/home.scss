@@ -211,6 +211,14 @@
                         left: 25px;
                     }
                 }
+
+                .widget {
+                    width: inherit;
+                    height: inherit;
+                    position: absolute;
+                    z-index: 999;
+                    margin-top: -25px;
+                }
             }
 
             .singin {

@@ -24,7 +24,7 @@ import { RootState } from '../../reducers';
 import { fetchUserOpts, setUserOption } from '../../actions';
 
 import '../../sass/members.scss';
-import { UserOption, UserOptions } from '../../types';
+import { User, UserOption, UserOptions } from '../../types';
 
 interface MemberOptionsProps {
     fetchOpts: Function;
@@ -44,56 +44,33 @@ interface DisplayTableUserOpts {
 
 const Members: React.FC<MemberOptionsProps> = (props) => {
 
-    const [ fetchUserOpts, setFetchedUserOpts ] = useState<boolean>(false);
-    const user = useSelector((state: RootState) => state.user.user);
-    const opts = useSelector((state: RootState) => state.user.opts);
+    const [ fetchedUserOpts, setFetchedUserOpts ] = useState<boolean>(false);
+    const user: User = useSelector((state: RootState) => state.user.user);
+    const isLodgeGuest: boolean = useSelector((state: RootState) => state.user.isLodgeGuest);
+    const opts: UserOptions = useSelector((state: RootState) => state.user.opts);
 
     useEffect(() => {
-        if (user !== null && !fetchUserOpts) {
+        if (user !== null && !fetchedUserOpts) {
             props.fetchOpts();
             setFetchedUserOpts(true);
         }
     }, [user]);
 
-    // useEffect(() => {
-    //     if (process.env.NODE_ENV !== 'production') console.info("Opts/Descriptions have changed");
-    //     const userOptions: DisplayTableUserOpts | {} = {};
-    //     if (Object.keys(opts).length > 0) {
-    //         for (const optKey of Object.keys(opts)) {
-    //             if (!userOptions.hasOwnProperty(optKey)) {
-    //                 //@ts-ignore
-    //                 const description = descriptions[optKey];
-    
-    //                 const newKey: TableOpt = {
-    //                     //@ts-ignore        
-    //                     value: opts[optKey],
-    //                     description,
-    //                     isLoading: false
-    //                 };
-    
-    //                 //@ts-ignore
-    //                 userOptions[optKey] = newKey;
-    //             }
-    //         }
-    //     }
-
-    //     setUserOpts(userOptions);
-    // }, [opts]);
-
     const toggleOption = (event: any) => {
-        // const { value: label } = event.target.attributes["aria-label"];
-        // const newOpt: UserOption = {};
-        // //@ts-ignore
-        // newOpt[label] = !opts[label];
-        // const fullOptions: DisplayTableUserOpts = userOpts;
-        // //@ts-ignore
-        // if (fullOptions.hasOwnProperty(label)) fullOptions[label].isLoading = true;
-        // props.setOpt(newOpt);
+        const { name: label } = event.target;
+        const newOpt: { [id: string]: boolean } = {};
+        newOpt[label] = !opts[label].value;
+
+        props.setOpt(newOpt);
     }
 
     const getContainerContent = () => {
-        if (user === null) {
-            return (<h3>You must login with discord to continue. <a href="/login">Click here</a></h3>);
+        let errorMessage: string | false = false;
+        if (user === null) errorMessage = "You must login with Discord to continue.";
+        else if (!isLodgeGuest) errorMessage = "To access these options, come join us on Discord!";
+
+        if (errorMessage) {
+            return (<h3>{errorMessage} <a href={`${isLodgeGuest ? "/login" : "https://discord.gg/spl"}`}>Click here</a></h3>)
         }
 
         return (
@@ -149,7 +126,7 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
                                 }
 
                                 //@ts-ignore
-                                return <Switch inputProps={{ 'aria-label': key }} checked={opts[key].value} onChange={toggleOption} />
+                                return <Switch inputProps={{ 'aria-label': key }} name={key} checked={opts[key].value} onChange={toggleOption} />
                             }
                         }
                     ]}

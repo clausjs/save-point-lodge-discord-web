@@ -7,7 +7,8 @@ import {
 } from '@material-ui/core';
 
 import {
-    MovieStats, VotableMovies
+    MovieResults,
+    MovieStats
 } from '../../../types';
 
 import DisplayTable from '../../shared/DisplayTable/DisplayTable';
@@ -49,8 +50,8 @@ interface ResultsProps {
 const Results: React.FC<ResultsProps> = (props) => {
     const { stats: movieStats, isLoading } = props;
 
-    const filterResults = (searchText: string) => {
-        const newMovies: VotableMovies = {};
+    const filterResults = async (searchText: string) => {
+        const newMovies: MovieResults = {};
 
         Object.keys(movieStats.movies).map(movieKey => {
             if (movieKey.toLowerCase().includes(searchText.toLowerCase())) {

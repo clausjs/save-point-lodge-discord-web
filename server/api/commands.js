@@ -13,7 +13,6 @@ router.get('/', async function(req, res) {
             return 
         }
 
-        console.log('making network request for commands');
         const commands = await req.db.firebase.getCommands();
         return res.status(200).send(commands);
     } catch (e) {

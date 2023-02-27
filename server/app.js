@@ -20,7 +20,7 @@ let RedisStore = require('connect-redis')(session);
 let redisClient = redis.createClient();
 
 const app = express();
-const devMode = process.env.NODE_ENV !== 'production' ? true : false;
+const devMode = process.env.NODE_ENV === 'dev' ? true : false;
 
 const port = devMode ? 3000 : 8080;
 
@@ -69,7 +69,8 @@ var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
 
 const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com": "savepointlodge.com";
-const callbackURL = `http://${devMode ? 'localhost:3000' : `${productionDomain}`}/login-redirect`;
+const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
+const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 
 passport.use(new Strategy({
     authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
@@ -88,8 +89,7 @@ passport.use(new Strategy({
 const redisStore = devMode ? new RedisStore({ client: redisClient }) : new RedisStore({
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
-    client: redisClient,
-    ttl: 86400
+    client: redisClient
 });
 
 app.use(session({
@@ -97,13 +97,16 @@ app.use(session({
     saveUninitialized: false,
     secret: process.env.SESSION_SECRET,
     resave: false,
-    cookie: false,
-    name: '_splUserSessions'
+    secure: true,
+    cookie: { maxAge: 10800000 },
+    sameSite: true,
+    name: '_savepointlodgesession',
+    ttl: 10800
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
+app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
 app.get('/login-redirect',
     passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/') } // auth success
 );
@@ -144,7 +147,7 @@ passport.deserializeUser(function(obj, done) {
 });
 
 const checkHeaders = (referer) => {
-    const ACCEPTED_HEADERS = ['localhost:3000', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
+    const ACCEPTED_HEADERS = ['localhost:3000', 'localhost:8080', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
 
     let foundAcceptableHeader = false;
 
@@ -170,7 +173,9 @@ app.use('/api/movies', require(`${API_DIR}/movies`));
 
 app.use('/api/commands', require(`${API_DIR}/commands`));
 
-if (process.env.NODE_ENV !== 'production') {
+app.use('/api/giphy', require(`${API_DIR}/giphy`));
+
+if (process.env.NODE_ENV === 'dev') {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);
     console.info("ASSET_DIR: ", ASSET_DIR);

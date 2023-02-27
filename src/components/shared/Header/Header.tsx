@@ -15,7 +15,7 @@ import {
 import { AccountCircle } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { fetchUserAuthorization } from '../../../actions';
+import { fetchUserAuthorization, isMoviegoer, isSPLMember } from '../../../actions';
 
 import { RootState } from '../../../reducers';
 import { UserState, User } from '../../../types';
@@ -37,15 +37,12 @@ const views: PageViews = {
     },
     Commands: {
         to: "/commands",
-        disabled: true,
-        ancillary: {
-            class: 'super',
-            content: "Coming Soon!!"
-        }
+        disabled: false
     },
     Movies: {
         to: "/movies",
-        requiresAuth: true
+        requiresAuth: true,
+        requiresMoviegoer: true
     }
 }
 
@@ -72,11 +69,13 @@ const Header: React.FC<HeaderProps> = (props) => {
     const authMenuOpen: boolean = Boolean(authAnchorEl);
     const currentLoc: string = useLocation().pathname;
 
-    const { user }: { user: User } = userState;
+    const { user, isMoviegoer, isLodgeGuest }: { user: User, isMoviegoer: boolean, isLodgeGuest: boolean } = userState;
 
     useLayoutEffect(() => {
         if (userState.status === 'idle') {
             props.getAuth();
+            props.getMoviegoerStatus();
+            props.getGuestStatus();
         }
     });
     
@@ -97,6 +96,8 @@ const Header: React.FC<HeaderProps> = (props) => {
             if (page.requiresAuth && user === null) {
                 continue;
             }
+
+            if (page.requiresMoviegoer && !isMoviegoer) continue;
 
             let label: React.ReactNode | string;
 
@@ -119,7 +120,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             _tabs.push(<LinkTab key={i} label={label} href={page.to} disabled={page.disabled} />);
         }
         setTabs(_tabs);
-    }, [user]);
+    }, [user, isLodgeGuest, isMoviegoer]);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);
@@ -159,7 +160,8 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     onClick={handleAuthMenu}
                                 >
                                     {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
-                                    {userState.status === 'succeeded' && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                    {userState.status === 'succeeded' && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                    {userState.status === 'succeeded' && user.avatar === null && <AccountCircle />}
                                 </IconButton>
                                 <Menu
                                     id="account-menu"
@@ -177,14 +179,14 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     open={authMenuOpen}
                                     onClose={handleAuthMenuClose}
                                 >
-                                    {user && user.isPlanetExpressMember && (
+                                    {user && isLodgeGuest === true && (
                                         <MenuItem onClick={handleAuthMenuClose}><Link to="/members">Discord Options</Link></MenuItem>
                                     )}
                                     <MenuItem onClick={handleAuthMenuClose}><a href="/logout">Logout</a></MenuItem>
                                 </Menu>
                             </div>
                         )}
-                        {/* {user === null && (
+                        {user === null && (
                             <div className='acct'>
                                 <Button
                                     variant="contained"
@@ -192,7 +194,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     startIcon={<AccountCircle />}
                                 >Login</Button>
                             </div>
-                        )} */}
+                        )}
                     </div>
                 </Toolbar>
             </AppBar>
@@ -216,7 +218,9 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: any) => ({
-    getAuth: () => dispatch(fetchUserAuthorization())
+    getAuth: () => dispatch(fetchUserAuthorization()),
+    getMoviegoerStatus: () => dispatch(isMoviegoer()),
+    getGuestStatus: () => dispatch(isSPLMember())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Header);

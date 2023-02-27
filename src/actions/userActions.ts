@@ -3,7 +3,9 @@ import fetch from 'node-fetch';
 import { 
     FETCH_AUTHORIZATION,
     INITIATE_AUTH_FETCH,
-    FETCH_MEMBER_OPTS
+    FETCH_MEMBER_OPTS,
+    FETCH_MOVIEGOER_STATUS,
+    FETCH_GUEST_STATUS
 } from '../redux-types/userTypes';
 
 import {
@@ -26,6 +28,14 @@ function setOption(option: UserOption) {
     };
 
     return fetch('/api/user/opts', requestParams).then(res => res.json());
+}
+
+function getMoviegoerStatus() {
+    return fetch('/api/user/moviegoer').then(res => res.json());
+}
+
+function getGuestStatus() {
+    return fetch('/api/user/lodgeguest').then(res => res.json());
 }
 
 export function fetchUserAuthorization() {
@@ -51,6 +61,22 @@ export function setUserOption(option: UserOption) {
             fetchMemberOptions().then(opts => {
                 dispatch({ type: FETCH_MEMBER_OPTS, payload: opts });
             });
+        });
+    }
+}
+
+export function isMoviegoer() {
+    return (dispatch: any) => {
+        getMoviegoerStatus().then(res => {
+            dispatch({ type: FETCH_MOVIEGOER_STATUS, payload: res });
+        });
+    }
+}
+
+export function isSPLMember() {
+    return (dispatch: any) => {
+        getGuestStatus().then(res => {
+            dispatch({ type: FETCH_GUEST_STATUS, payload: res });   
         });
     }
 }

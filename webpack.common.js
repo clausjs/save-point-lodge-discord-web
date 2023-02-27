@@ -41,17 +41,17 @@ module.exports = {
     historyApiFallback: true,
   },
   plugins: [
-    // new CopyPlugin({
-    //   patterns: [
-    //     {
-    //       from: path.resolve(__dirname, './src/sass'),
-    //       to: path.resolve(__dirname, './build/src/sass')
-    //     }
-    //   ]
-    // }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, './src/sass'),
+          to: path.resolve(__dirname, './build/sass')
+        }
+      ]
+    }),
     new HtmlWebpackPlugin({
       template: 'src/index.html'
     }),
-    new EnvironmentPlugin(["COMMANDS_IN_BETA"]),
+    new EnvironmentPlugin(["DISCORD_API", "STREAM_PROTOCOL"]),
   ].concat(devMode ? [] : [new MiniCssExtractPlugin()])
 };

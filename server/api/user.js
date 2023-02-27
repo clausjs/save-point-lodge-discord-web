@@ -18,9 +18,7 @@ router.get('/', function(req, res) {
         const simplifiedUser = {
             id: req.user.id,
             username: req.user.username,
-            avatar: req.user.avatar,
-            isPlanetExpressMember: req.user.isPlanetExpressMember,
-            isMoviegoer: req.user.isMoviegoer
+            avatar: req.user.avatar
         }
         return res.status(200).json(simplifiedUser);
     }
@@ -38,11 +36,28 @@ router.get('/opts', async function(req, res) {
 
 router.post('/opts', async function(req, res) {
     try {
-        await req.db.firebase.setUserOptions(req.body);
+        await req.db.firebase.setUserOption(req.user.id, req.body);
         res.status(200).send(req.body);
     } catch (err) {
+        console.error("err: ", err);
         res.status(500).send(err);
     }
+});
+
+router.get('/moviegoer', function(req, res) {
+    if (req.isAuthenticated() && req.user) {
+        return res.status(200).send(req.user.isMoviegoer);
+    }
+
+    res.status(200).send(false);
+});
+
+router.get('/lodgeguest', function(req, res) {
+    if (req.isAuthenticated() && req.user) {
+        return res.status(200).send(req.user.isPlanetExpressMember);
+    }
+
+    res.status(200).send(false);
 });
 
 module.exports = router;
