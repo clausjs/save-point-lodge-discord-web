@@ -1,9 +1,23 @@
 @import './globals';
 
+body.light {
+    .bots-content {
+        background-color: $color-pallette-white;
+        color: black;
+        
+        .divider {
+            background-color: black !important;
+        }
+    }
+
+}
+
 .bots-content {
     display: flex;
     flex-direction: column;
     font-size: 18px;
+    background-color: $color-pallette-dark-background;
+    color: white;
 
     .about {
         display: flex;
@@ -11,6 +25,7 @@
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
+        padding-bottom: 100px;
 
         .joebot-description {
             flex: 1 1 443px;
@@ -115,24 +130,34 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        padding-top: 80px;
 
-        .third-party-bot-list {
+        .bot-list {
+            width: 100%;
             display: flex;
-            flex-direction: row;
-            justify-content: space-evenly;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            width: 75%;
-            flex-wrap: wrap;
 
-            .tpBotCard {
-                flex: 1 1 33%;
-                padding: 10px;
+            .divider {
+                width: 25%;
+                background-color: white;
             }
+            
+            .bot-list-item {
+                width: 25%;
 
-            .action-button {
-                cursor: pointer;
+                .bot-list-image {
+                    padding: 10px;
+
+                    img {
+                        width: 128px;
+                        height: 128px;
+                    }
+                }
+
+                p {
+                    font-size: 12px;
+                }
             }
         }
     }

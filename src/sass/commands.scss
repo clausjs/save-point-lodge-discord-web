@@ -1,5 +1,24 @@
 @import './globals';
 
+body.light {
+    .commands-content {
+        .command-item {
+            background-color: inherit !important;
+            color: black !important;
+        }
+    }
+
+    .giphy-grid {
+        .search {
+            color: black !important;
+
+            .PrivateNotchedOutline-root-8.MuiOutlinedInput-notchedOutline {
+                border-color: $color-pallette-black !important;
+            }
+        }
+    }
+}
+
 .commands-content {
     height: 100%;
     width: 100%;
@@ -7,6 +26,9 @@
 
     .command-item {
         padding: 10px 0;
+        margin: 20px 0 !important;
+        background-color: $color-pallette-dark-2;
+        color: white;
 
         hr {
             width: 98%;
@@ -62,15 +84,31 @@
             flex-direction: column;
             justify-content: center;
             margin: 10px;
+            color: white;
 
             .giphy-creation-text {
                 margin: 10px;
+                color: inherit;
+
+                input {
+                    color: inherit;
+                }
+
+                .textfield-end-adornment {
+                    button {
+                        color: inherit;
+                    }
+                }
             }
             
             .instructions {
                 font-size: 14px;
                 font-weight: 400;
                 line-height: 16px;
+            }
+
+            .PrivateNotchedOutline-root-8.MuiOutlinedInput-notchedOutline {
+                border-color: $color-pallette-white;
             }
         }
 

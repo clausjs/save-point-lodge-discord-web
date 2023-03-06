@@ -15,10 +15,6 @@ const useStyles = makeStyles({
     }
 });
 
-// const App: React.FC<{ message: string }> = ({ message }) => (
-//     <div>{message}</div>
-//   );
-
 const CenteredTabs: React.FC<CenteredTabsProps> = (props) => {
     const classes = useStyles();
     const [value, setValue] = useState(0);

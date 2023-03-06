@@ -9,7 +9,8 @@
       }
     ],
     "name": "urbandictionary",
-    "description": "Provides the top 3 results for an urban dictionary search with a provided search terms"
+    "description": "Provides the top 3 results for an urban dictionary search with a provided search terms",
+    "type": 1
   },
   {
     "description": "Searches for and returns a \"Let Me Google That For You\" link",
@@ -27,7 +28,8 @@
         "name": "user",
         "description": "A user to mention when adding the link to a channel"
       }
-    ]
+    ],
+    "type": 1
   },
   {
     "description": "Converts currency using real time exchange rates or temperatures from Fahrenheit to Celsius",
@@ -39,7 +41,8 @@
         "required": true,
         "description": "The thing to convert (e.g. \"$25USD\", \"13F\", \"$40CAD\", \"46C\")"
       }
-    ]
+    ],
+    "type": 1
   },
   {
     "name": "roll",
@@ -68,7 +71,8 @@
       }
     ],
     "description": "Roll a provided number of dice, including different types of die",
-    "private": true
+    "private": true,
+    "type": 1
   },
   {
     "description": "Searches and returns results from an imdb search",
@@ -80,7 +84,8 @@
         "name": "query",
         "required": true
       }
-    ]
+    ],
+    "type": 1
   },
   {
     "description": "Perform a bing image search and get the top result",
@@ -92,7 +97,8 @@
         "name": "query"
       }
     ],
-    "name": "image"
+    "name": "image",
+    "type": 1
   },
   {
     "options": [
@@ -104,7 +110,8 @@
       }
     ],
     "name": "wikipedia",
-    "description": "Search wikipedia and get back results"
+    "description": "Search wikipedia and get back results",
+    "type": 1
   },
   {
     "description": "Calculates remaining time until 12:00 am EST on the next Friday",
@@ -120,10 +127,17 @@
       }
     ],
     "name": "youtube",
-    "description": "Searches YouTube and returns the top result in chat"
+    "description": "Searches YouTube and returns the top result in chat",
+    "type": 1
   },
   {
     "name": "lfg",
-    "description": "Adds/removes user from the LFG group"
+    "description": "Adds/removes user from the LFG group",
+    "type": 1
+  },
+  {
+    "name": "pillage",
+    "description": "Pillage a user for their Valheim role",
+    "type": 2
   }
 ]

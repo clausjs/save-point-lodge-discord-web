@@ -1,15 +1,12 @@
 import React from 'react';
 
 import {
-    CssBaseline,
+    Divider,
     Container,
-    Card,
-    CardActionArea,
-    CardActions,
-    CardContent,
-    CardMedia,
-    Button,
-    Typography
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
@@ -48,16 +45,16 @@ const tpBots: BotInfo[] = [
         description: "Dank Memer patrols our meme channels to provide quick access to the internets most valuable contribution"
     },
     {
-        name: "Rythm Bot",
-        image: "/img/rythm.jpeg",
-        url: "https://rythm.fm/",
-        description: "Patrols our music channels and has access to certain voice channels to offer people an opportunity to have listening parties"
+        name: "Apollo",
+        image: "/img/apollo.png",
+        url: "https://apollo.fyi/",
+        description: "Apollo is a bot that allows you to create events and invite users. It can even create external calendar invites so everyone can plan accordingly for events they agree to! It's easy to use and has a lot of features."
     },
     {
-        name: "B*** Bot",
-        image: "/img/bbbot.png",
-        url: "https://boobbot.us/",
-        description: "This bot provides NSFW content in a NSFW channel only"
+        name: "Pachimari",
+        image: "/img/pachimari.png",
+        url: "https://acupoftee.github.io/Pachimari-Dashboard/",
+        description: "Gets the latest news and real time stats for Overwatch League and Overwatch Contenders!"
     }
 ];
 
@@ -66,7 +63,6 @@ const Bots: React.FC = () => {
 
     return (
         <div className={`${classes.root} bots-content`}>
-            <CssBaseline />
             <div className='about'>
                 <Container className='joebot-description' maxWidth='md'>
                     <div className='text-flair'>
@@ -87,9 +83,9 @@ const Bots: React.FC = () => {
                         Since Save Point Lodge staff has direct access to the bot's inner workings (the code) we also want to hear feedback about him.
                         Did he say something you don't like? Are his tools difficult to use? Let us know in the feedback channel or by talking to our staff!
                     </div>
-                    <a className="bmac-button" href="https://www.buymeacoffee.com/joebot" target="_blank">
+                    {/* <a className="bmac-button" href="https://www.buymeacoffee.com/joebot" target="_blank">
                         <img id='bmac' src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" />
-                    </a>
+                    </a> */}
                 </Container>
                 <Container className='discord-example' maxWidth='md'>
                     <div className='image-container'>
@@ -97,41 +93,30 @@ const Bots: React.FC = () => {
                             <div className='top'></div>
                             <div className='bottom'></div>
                         </div>
-                        <img src='/img/joebot/command_entry_mobile.gif' />
+                        <img src='/img/joebot/slash-command-entry.gif' />
                     </div>
                 </Container>
             </div>
             <div className='third-party'>
                 <h2>Save Point Lodge also uses these third party bots</h2>
-                <div className='third-party-bot-list'>
+                <List className='bot-list' component='nav'>
+                    <Divider className='divider' />
                     {tpBots.map((botInfo: BotInfo, i: number) => {
                         const openUrl = () => window.open(botInfo.url, '_blank');
 
                         return (
-                            <div className='tpBotCard' key={i}>
-                                <Card className={classes.cardRoot}>
-                                    <CardActionArea onClick={openUrl}>
-                                        <CardMedia
-                                            className={classes.media}
-                                            image={botInfo.image}
-                                            title={botInfo.name}
-                                        />
-                                    </CardActionArea>
-                                    {botInfo.description && <CardContent>
-                                        <Typography>
-                                            {botInfo.description}
-                                        </Typography>
-                                    </CardContent>}
-                                    <CardActionArea className={classes.button}>
-                                        <Button className='action-button' onClick={openUrl} size='small' color='primary'>
-                                            Learn More
-                                        </Button>
-                                    </CardActionArea>
-                                </Card>
-                            </div>
+                            <>
+                                <ListItem button className='bot-list-item' key={i} onClick={openUrl}>
+                                    <ListItemAvatar className='bot-list-image'>
+                                        <img src={botInfo.image} />
+                                    </ListItemAvatar>
+                                    <ListItemText primary={<h4>{botInfo.name}</h4>} secondary={<p>{botInfo.description}</p>} disableTypography={true} ></ListItemText>
+                                </ListItem>
+                                <Divider className='divider' />
+                            </>
                         );
                     })}
-                </div>
+                </List>
             </div>
         </div>
     );

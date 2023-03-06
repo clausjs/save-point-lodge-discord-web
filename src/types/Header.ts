@@ -3,6 +3,7 @@ import React from "react";
 import { User } from './ReduxItems';
 
 export interface View {
+    label?: React.ReactNode;
     to: string,
     requiresAuth?: boolean,
     requiresMoviegoer?: boolean,

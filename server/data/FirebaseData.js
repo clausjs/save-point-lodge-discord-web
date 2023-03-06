@@ -130,7 +130,7 @@ class FirebaseData {
         getCommandsResponse.forEach(res => {
             const command = res.data();
 
-            if (res.id.indexOf('_input') === -1 && !command.private) {
+            if (res.id.indexOf('_input') === -1) {
                 commands.push(command);
             }
         });

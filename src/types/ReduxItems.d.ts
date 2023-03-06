@@ -9,6 +9,8 @@ export type Command = {
     name: string;
     description: string;
     options?: CommandOption[];
+    private?: boolean;
+    type: number;
 }
 
 export type TabledCommands = {

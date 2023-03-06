@@ -27,8 +27,13 @@ import {
 } from '../../../types';
 
 import '../../../sass/_globals.scss';
+import ThemeSwitch from './ThemeSwitch';
 
 const views: PageViews = {
+    Logo: {
+        to: "/",
+        label: <img src='/img/logo.png' />
+    },
     Home: {
         to: "/"
     },
@@ -113,7 +118,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                     </div>
                 );
             } else {
-                label = viewName;
+                label = page.label ? page.label : viewName;
             }
 
 
@@ -150,51 +155,54 @@ const Header: React.FC<HeaderProps> = (props) => {
                                 {tabs}
                             </Tabs>
                         </div>
-                        {user !== null && (
-                            <div className='acct'>
-                                <IconButton
-                                    aria-label={`${user.username}'s Account'`}
-                                    aria-controls="menu-appbar"
-                                    aria-haspopup="true"
-                                    color="inherit"
-                                    onClick={handleAuthMenu}
-                                >
-                                    {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
-                                    {userState.status === 'succeeded' && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
-                                    {userState.status === 'succeeded' && user.avatar === null && <AccountCircle />}
-                                </IconButton>
-                                <Menu
-                                    id="account-menu"
-                                    variant="menu"
-                                    anchorEl={authAnchorEl}
-                                    anchorOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right"
-                                    }}
-                                    keepMounted
-                                    transformOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right"
-                                    }}
-                                    open={authMenuOpen}
-                                    onClose={handleAuthMenuClose}
-                                >
-                                    {user && isLodgeGuest === true && (
-                                        <MenuItem onClick={handleAuthMenuClose}><Link to="/members">Discord Options</Link></MenuItem>
-                                    )}
-                                    <MenuItem onClick={handleAuthMenuClose}><a href="/logout">Logout</a></MenuItem>
-                                </Menu>
-                            </div>
-                        )}
-                        {user === null && (
-                            <div className='acct'>
-                                <Button
-                                    variant="contained"
-                                    href="/login"
-                                    startIcon={<AccountCircle />}
-                                >Login</Button>
-                            </div>
-                        )}
+                        <div className='personalization'>
+                            <div className='theme-toggle'><ThemeSwitch /></div>
+                            {user !== null && (
+                                <div className='acct'>
+                                    <IconButton
+                                        aria-label={`${user.username}'s Account'`}
+                                        aria-controls="menu-appbar"
+                                        aria-haspopup="true"
+                                        color="inherit"
+                                        onClick={handleAuthMenu}
+                                    >
+                                        {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
+                                        {userState.status === 'succeeded' && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                        {userState.status === 'succeeded' && user.avatar === null && <AccountCircle />}
+                                    </IconButton>
+                                    <Menu
+                                        id="account-menu"
+                                        variant="menu"
+                                        anchorEl={authAnchorEl}
+                                        anchorOrigin={{
+                                            vertical: "top",
+                                            horizontal: "right"
+                                        }}
+                                        keepMounted
+                                        transformOrigin={{
+                                            vertical: "top",
+                                            horizontal: "right"
+                                        }}
+                                        open={authMenuOpen}
+                                        onClose={handleAuthMenuClose}
+                                    >
+                                        {user && isLodgeGuest === true && (
+                                            <MenuItem onClick={handleAuthMenuClose}><Link to="/members">Discord Options</Link></MenuItem>
+                                        )}
+                                        <MenuItem onClick={handleAuthMenuClose}><a href="/logout">Logout</a></MenuItem>
+                                    </Menu>
+                                </div>
+                            )}
+                            {user === null && (
+                                <div className='acct'>
+                                    <Button
+                                        variant="contained"
+                                        href="/login"
+                                        startIcon={<AccountCircle />}
+                                    >Login</Button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </Toolbar>
             </AppBar>

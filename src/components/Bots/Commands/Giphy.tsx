@@ -2,13 +2,14 @@ import React, { useState, useEffect, SyntheticEvent } from 'react';
 import { Grid } from '@giphy/react-components'
 import fetch from 'node-fetch';
 
-import { OutlinedInput, IconButton, Box, Popper, Fade, TextField, InputAdornment } from '@material-ui/core';
+import { OutlinedInput, IconButton, Box, Popper, Fade, TextField, InputAdornment, FormControl, InputLabel } from '@material-ui/core';
 import ArrowForwardIosOutlined from '@material-ui/icons/ArrowForwardIosOutlined';
 
 import { useMediaQuery } from '../../../hooks';
 import { AnimatedIGif } from '../../../types';
 
 import '../../../sass/commands.scss';
+import { SearchOutlined } from '@material-ui/icons';
 
 interface GiphyGridParams {
     text?: string;
@@ -121,7 +122,7 @@ const GiphyExamples: React.FC = () => {
     }
 
     const keyDown = (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        if (event.keyCode === 13) submitSearch();
+        if (event.code === "Enter") submitSearch();
     }
 
     const open = Boolean(anchorEl);
@@ -139,14 +140,17 @@ const GiphyExamples: React.FC = () => {
             </Popper>
             <div className='search-content'>
                 <div className='search'>
-                    <OutlinedInput
-                        className='giphy-creation-text'
-                        value={textField}
-                        placeholder="Test gif generation here..."
-                        onChange={(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setTextField(event.target.value)}
-                        onKeyDown={keyDown}
-                        endAdornment={<InputAdornment position='end'><IconButton onClick={submitSearch}><ArrowForwardIosOutlined /></IconButton></InputAdornment>}
-                    />
+                    <FormControl variant='outlined'>
+                        <OutlinedInput
+                            id='outlined-adornment'
+                            className='giphy-creation-text'
+                            value={textField}
+                            placeholder="Test gif generation here..."
+                            onChange={(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setTextField(event.target.value)}
+                            onKeyDown={keyDown}
+                            endAdornment={<InputAdornment className='textfield-end-adornment' position='end'><IconButton onClick={submitSearch}><SearchOutlined /></IconButton></InputAdornment>}
+                        />
+                    </FormControl>
                     <span className='instructions'>Click any gif to copy the name of the font style to your clipboard.</span>
                 </div>
             </div>
