@@ -2,6 +2,7 @@
     @return rgba($base, $alphaPercent)
 }
 
+$color-pallette-dark-background-2: #0d1923;
 $color-pallette-dark-background: #132533;
 $color-pallette-dark-2: #42505b;
 $color-pallette-light-blue: #44E5E7;
@@ -30,6 +31,11 @@ body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     width: 100%;
+    height: 100vh;
+
+    div#root {
+        height: 100%;
+    }
 }
 
 .spl-header {
@@ -76,5 +82,25 @@ body {
             flex-direction: row;
             justify-content: center;
         }
+    }
+}
+
+.copyright-info {
+    color: white;
+    font-size: 8px;
+    background-color: $color-pallette-dark-background-2;
+    margin-top: 20px;
+    
+    .c-content {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    img {
+        width: 50px;
+        height: 50px;
+        padding: 25px 10px;
     }
 }

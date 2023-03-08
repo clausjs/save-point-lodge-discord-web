@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 
 import {
     Accordion,
@@ -12,6 +12,9 @@ import { Command, TabledCommands, TableHeader, TableCell } from "../../../types"
 import { fetchCommands } from "../../../actions/botsActions";
 
 import '../../../sass/commands.scss';
+import { CircleLoader, PacmanLoader } from "react-spinners";
+
+const LOADING_SIZE: number = 150;
 
 interface CommandsProps {
     commands: Command[];
@@ -25,6 +28,8 @@ const Commands: React.FC<CommandsProps> = (props) => {
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ commands, setCommands ] = useState<TabledCommands | {}>({});
     const [ expanded, setExpanded ] = useState<number>(-1);
+
+    const lightMode: boolean = useSelector((state: any) => state.theme.lightMode);
 
     useEffect(() => {
         if (!fetchedCommands) {
@@ -53,6 +58,7 @@ const Commands: React.FC<CommandsProps> = (props) => {
         }
     }, [props.commands]);
 
+
     const onAccordionChange = (index: number, open: boolean) => {
         if (open) {
             setExpanded(index);
@@ -65,7 +71,13 @@ const Commands: React.FC<CommandsProps> = (props) => {
 
     return (
         <div className="commands-content">
-            <Container className='commands' maxWidth='xl'>
+            {isLoading && <div className='loading'>
+                <h3>Finding the fruit...</h3>
+                <div className='loader-container'>
+                    <PacmanLoader loading={isLoading} size={75} color={lightMode ? 'black' : 'white'} margin={0} />
+                </div>
+            </div>}
+            {!isLoading && <Container className='commands' maxWidth='xl'>
                 {props.commands.map((command: Command, index: number) => {
                     return (
                         <AccordionItem
@@ -77,7 +89,7 @@ const Commands: React.FC<CommandsProps> = (props) => {
                         />
                     )
                 })}
-            </Container>
+            </Container>}
         </div>
     );
 };

@@ -47,34 +47,31 @@ const Home: React.FC = () => {
                             <div className="bottom"></div>
                         </div>
                         <p>
-                            Welcome to Save Point Lodge (SPL) Discord server! We're a community of gamers and thinkers who love 
-                            to come together and discuss the state of the world, as well as just hangout and have fun. Whether you're into 
-                            first-person shooters, strategy games, or anything in between, you'll find like-minded individuals here who share 
-                            your passion for gaming.
+                            Welcome to Save Point Lodge (SPL), a community founded in 2016 with the goal of bringing gamers together, 
+                            fostering thoughtful discussions on the state of the world, and building meaningful friendships in a fun and welcoming environment.
                         </p>
 
                         <p>
-                            Our server was founded in 2016 with the goal of bringing together like-minded individuals who share a passion for 
-                            gaming and intellectual curiosity. We believe that by fostering a welcoming and respectful community, 
-                            we can create a space where people feel comfortable sharing their ideas and opinions. Our server is more than just a 
-                            place to play games, though. We believe in having thoughtful discussions about the world around us, from politics and social issues 
-                            to science and technology. We encourage everyone to share their opinions and ideas in a respectful and 
-                            open-minded manner, and to listen and learn from one another.
+                            Whether you're a hardcore gamer or a casual player, we have channels dedicated to a variety of games and platforms where you can connect 
+                            with other like-minded individuals, share tips and tricks, and even organize multiplayer sessions. But gaming is just one aspect of our community.
                         </p>
 
                         <p>
-                            But it's not all serious talk here. We also know how to let loose and have fun. 
-                            We also have plenty of opportunities for gaming, whether it's joining in on group play 
-                            sessions or sharing your favorite game recommendations. We believe that gaming can be a 
-                            great way to connect with others and build relationships.
+                            We also have channels dedicated to discussing current events, social issues, and other thought-provoking topics. We believe that it's important to 
+                            engage in meaningful conversations and learn from each other's perspectives, so we encourage our members to share their thoughts and engage in respectful debate.
                         </p>
 
                         <p>
-                            The lodge operates on behalf of, and with contribution from, its own members and staff. 
-                            We take user feedback seriously and strive to shape our server based on the needs and 
-                            preferences of our members. We are always open to new ideas and suggestions, 
-                            and we encourage our members to be active participants in the community.
+                            Of course, we also know that sometimes you just want to relax and hang out with friends. That's why we have channels for sharing memes, posting pictures of pets, 
+                            and just chatting about whatever's on your mind. Our community is a place where you can be yourself, make new friends, and have fun.
                         </p>
+
+                        <p>
+                            We take user feedback seriously and are always looking for ways to improve our server. Whether it's adding new channels, hosting events, or implementing new 
+                            features, we want to hear from you. Our community is shaped by its members, and we're proud of the diverse and welcoming environment we've created together.
+                        </p>
+
+                        <p>So come join us and see what our community is all about. We can't wait to meet you!</p>
 
                         <h3>Our Promise</h3>
                         <span className='promise'>This is a 'Save Point'; as such no goblins, Lich Kings, or Walls of Death can harm you here. Our doors are open

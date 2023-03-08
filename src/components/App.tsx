@@ -14,6 +14,7 @@ import Movies from './Movies/Movies';
 import Giphy from './Bots/Commands/Giphy';
 
 import { ThemeProvider, createTheme, makeStyles } from '@material-ui/core/styles';
+import { Container } from '@material-ui/core';
 
 const theme = createTheme();
 
@@ -45,6 +46,12 @@ const App: React.FC = () => (
                         <Route path='/giphy-examples' component={Giphy} />
                     </Switch>
                 </Router>
+                <div className='copyright-info'>
+                    <Container className='c-content' maxWidth='md'>
+                        <img src='/img/logo.png'></img>
+                        <span>© Copyright Save Point Lodge 2016-2023</span>
+                    </Container>
+                </div>
             </Provider>
         </SnackbarProvider>
     </ThemeProvider>

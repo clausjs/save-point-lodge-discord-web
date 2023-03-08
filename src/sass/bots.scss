@@ -130,34 +130,17 @@ body.light {
         display: flex;
         flex-direction: column;
         align-items: center;
+        background-color: $color-pallette-dark-background-2;
 
-        .bot-list {
+        .bot-cards {
             width: 100%;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             justify-content: center;
             align-items: center;
 
-            .divider {
-                width: 25%;
-                background-color: white;
-            }
-            
-            .bot-list-item {
-                width: 25%;
-
-                .bot-list-image {
-                    padding: 10px;
-
-                    img {
-                        width: 128px;
-                        height: 128px;
-                    }
-                }
-
-                p {
-                    font-size: 12px;
-                }
+            .bot-card {
+                margin: 0 25px;
             }
         }
     }
