@@ -2,11 +2,39 @@ import React, { useState, useLayoutEffect } from 'react';
 
 import {
     Container,
+    Card,
+    CardActionArea,
+    CardContent,
+    Typography
 } from '@material-ui/core';
 
 import DiscordWidget from './DiscordWidget';
+const showcases = [
+    {
+        "title": "Community Driven",
+        "description": "The server is driven by the community. We want to make sure that the server is always evolving and improving to meet the needs of the community."
+    },
+    {
+        "title": "Always up to date",
+        "description": "Since Joe_Bot allows for trending game voice/text channel creation, the server is always up-to-date with the latest trends in gaming and what the community is playing."
+    },
+    {
+        "title": "A place for everyone",
+        "description": "Inclusion is a core value of Save Point Lodge. We want to make sure that everyone feels welcome and has a place to call home."
+    },
+    {
+        "title": "SPL Dedicated Servers",
+        "description": "With dedicated servers for Terraria and Minecraft, for a small fee anyone on the server can join in on the fun in dedicated servers that anyone can join at anytime."
+    },
+    {
+        "title": "Community Events",
+        "description": "Save Point Lodge  occassionally runs community events. These events are a great way to gather with server users and get to know new friends."
+    }
+];
 
 import '../../sass/home.scss';
+
+
 
 const Home: React.FC = () => {
     return (
@@ -21,22 +49,28 @@ const Home: React.FC = () => {
             </div>
             <div className="about">
                 <div className="banner">
-                    {/* <img src={"/img/home_bg2.png"} /> */}
-                    <div className='banner-items'>
-                        <div className='btn commands' onClick={() => window.location.href = "/our-bots"}>
-                            <div className='btn-content'>
-                                <span className='action'>Get To Know Our Bots</span>
-                                <span>With our very own bot created in-house!</span>
+                    <Container className='banner-items' maxWidth="lg">
+                        <div className='logo-join'>
+                            <img src='/img/logo.gif'></img>
+                            <div className='btn join' onClick={() => window.location.href = "https://discord.gg/kZZGSU3"}>
+                                <div className='btn-content'>
+                                    <span className='action'>Join Our Discord!</span>
+                                    <span>discord.gg/spl</span>
+                                </div>
                             </div>
                         </div>
-                        <img src='/img/logo.gif'></img>
-                        <div className='btn join' onClick={() => window.location.href = "https://discord.gg/kZZGSU3"}>
-                            <div className='btn-content'>
-                                <span className='action'>Join Our Discord!</span>
-                                <span>discord.gg/spl</span>
+                        <div className='invite'>
+                            <div className="widget-container">
+                                <div className='widget'>
+                                    <DiscordWidget />
+                                </div>
+                                <div className="flair">
+                                    <div className="top"></div>
+                                    <div className="bottom"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Container>
                 </div>
                 {/* <h3>About us...</h3> */}
                 <div className="info">
@@ -77,20 +111,33 @@ const Home: React.FC = () => {
                         <span className='promise'>This is a 'Save Point'; as such no goblins, Lich Kings, or Walls of Death can harm you here. Our doors are open
                             to weary travelers and this space will be kept safe.</span>
                     </Container>
-                    <Container className="invite" maxWidth="sm">
-                        <h2>See below to join!</h2>
-                        <div className="widget-container">
-                            <div className='widget'>
-                                <DiscordWidget />
-                            </div>
-                            <div className="flair">
-                                <div className="top"></div>
-                                <div className="bottom"></div>
-                            </div>
+                    <div className='showcase'>
+                        <div className='showcase-header'>
+                            <h3>What Save Point Lodge has to offer</h3>
+                            <sub>We're proud of the community we've built. See below for some of our most notable features</sub>
                         </div>
-                    </Container>
+                        <div className='cards'>
+                            {showcases.map((showcase: any, index: number) => {
+                                return (
+                                    <Card key={index} className='showcase-card' style={{ maxWidth: 250 }}>
+                                        <CardActionArea>
+                                            <CardContent>
+                                                <Typography variant="h5" component="div">
+                                                    {showcase.title}
+                                                </Typography>
+                                                <Typography className='card-subtext' variant='body2'>
+                                                    {showcase.description}
+                                                </Typography>
+                                            </CardContent>
+                                        </CardActionArea>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div className='footer-spacing'></div>
         </div>
     );
 };

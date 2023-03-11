@@ -17,24 +17,6 @@ import { makeStyles } from '@material-ui/styles';
 
 import '../../sass/bots.scss';
 
-const useStyles = makeStyles({
-    root: {
-        flexGrow: 1
-    },
-    cardRoot: {
-        maxWidth: 345,
-        justifyContent: 'center',
-    },
-    button: {
-        display: 'flex !important',
-        cursor: 'not-allowed',
-        pointerEvents: 'auto'
-    },
-    media: {
-        height: 140
-    }
-});
-
 type BotInfo = {
     name: string;
     image: string;
@@ -64,10 +46,8 @@ const tpBots: BotInfo[] = [
 ];
 
 const Bots: React.FC = () => {
-    const classes = useStyles();
-
     return (
-        <div className={`${classes.root} bots-content`}>
+        <div className='bots-content'>
             <div className='about'>
                 <Container className='joebot-description'>
                     <div className='text-flair'>

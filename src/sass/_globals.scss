@@ -10,6 +10,7 @@ $color-pallette-dark-blue: #1C364A;
 $color-pallette-orange: #F26419;
 $color-pallette-white: #FFFFFF;
 $color-pallette-black: #000000;
+$color-pallette-light-gray: #B2B2B2;
 
 $discord-light-blue: #7289da;
 $discord-dark-blue: #202225;
@@ -18,6 +19,11 @@ $widget-text-color-dark: #4F545C;
 $widget-member-online: #43B581;
 $widget-member-idle: #FAA61A;
 $widget-member-dnd: #F04747;
+
+@mixin background-opacity($color, $opacity: 0.3) {
+    background: $color; /* The Fallback */
+    background: rgba($color, $opacity);
+}
 
 body {
     background-color: $color-pallette-dark-background;
@@ -89,7 +95,6 @@ body {
     color: white;
     font-size: 8px;
     background-color: $color-pallette-dark-background-2;
-    margin-top: 20px;
     
     .c-content {
         display: flex;

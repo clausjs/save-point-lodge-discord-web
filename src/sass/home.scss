@@ -6,6 +6,23 @@ body.light {
             background: 4px $color-pallette-white;
         }
     }
+
+    .info {
+        color: black;
+        @include background-opacity($color-pallette-light-gray, 0.18);
+
+        .showcase {
+            color: inherit;
+        }
+        
+        .showcase-card {
+            @include background-opacity($color-pallette-light-gray, 0.05);
+        }
+    }
+
+    .footer-spacing {
+        display: none;
+    }
 }
 
 .main-header {
@@ -98,9 +115,24 @@ body.light {
         .banner-items {
             display: flex;
             flex-direction: row;
-            justify-content: center;
+            justify-content: space-evenly;
             align-items: center;
             min-height: 800px;
+            flex-wrap: wrap;
+
+            .logo-join {
+                display: flex;
+                flex-direction: column;
+                
+                img {
+                    position: relative;
+                }
+
+                .btn.join {
+                    position: absolute;
+                    top: 625px;
+                }
+            }
 
             .btn {
                 display: flex;
@@ -132,28 +164,76 @@ body.light {
             img {
                 max-height: 300px;
             }
-        }
 
-        // @media screen and (max-width: 429px) {
-        //     .join-btn {
-        //         display: none !important;
-        //     }
-        // }
+            .invite {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                overflow: hidden;
+                width: 400px;
+    
+                .widget-container {
+                    width: 350px;
+                    height: 500px;
+                    position: relative;
+                    padding-top: 50px;
+    
+                    iframe {
+                        position: relative;
+                        top: -525px;
+                        left: 0;
+                    }
+    
+                    .flair {
+                        max-width: inherit;
+                        height: inherit;
+                        position: relative;
+    
+                        .top {
+                            height: 100%;
+                            width: 100%;
+                            background-color: $color-pallette-dark-blue;
+                            position: relative;
+                            top: -50px;
+                            left: -25px;
+                        }
+        
+                        .bottom {
+                            height: 100%;
+                            width: 100%;
+                            background-color: $color-pallette-orange;
+                            position: relative;
+                            top: -500px;
+                            left: 25px;
+                        }
+                    }
+    
+                    .widget {
+                        width: inherit;
+                        height: inherit;
+                        position: absolute;
+                        z-index: 999;
+                        margin-top: -25px;
+                    }
+                }
+    
+                .singin {
+                    padding-top: 20px;
+                }
+            }
+        }
     }
 
     .info {
         display: flex;
         flex-direction: row;
         align-self: center;
-        flex-wrap: wrap;
-        padding: 0 0 10px 0;
+        padding: 25px 0;
         
         .text {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 50px;
-            flex: 1 1 500px;
             
             .about-us {
                 width: 75%;
@@ -181,61 +261,52 @@ body.light {
             }
         }
 
-        .invite {
+        .showcase {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            flex: 1 1 500px;
-            overflow: hidden;
-
-            .widget-container {
-                width: 350px;
-                height: 500px;
-                position: relative;
-                padding-top: 50px;
-
-                iframe {
-                    position: relative;
-                    top: -525px;
-                    left: 0;
-                }
-
-                .flair {
-                    max-width: inherit;
-                    height: inherit;
-                    position: relative;
-
-                    .top {
-                        height: 100%;
-                        width: 100%;
-                        background-color: $color-pallette-dark-blue;
-                        position: relative;
-                        top: -50px;
-                        left: -25px;
-                    }
-    
-                    .bottom {
-                        height: 100%;
-                        width: 100%;
-                        background-color: $color-pallette-orange;
-                        position: relative;
-                        top: -500px;
-                        left: 25px;
-                    }
-                }
-
-                .widget {
-                    width: inherit;
-                    height: inherit;
-                    position: absolute;
-                    z-index: 999;
-                    margin-top: -25px;
+            justify-content: center;
+            color: white;
+            max-width: 50%;
+        
+            .showcase-header {
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                margin: 10px;
+        
+                h3 {
+                    margin: 0;
                 }
             }
-
-            .singin {
-                padding-top: 20px;
+        
+            .cards {
+                margin: 10px 0;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+        
+                .showcase-card {
+                    color: inherit;
+                    margin: 10px;
+                    @include background-opacity($color-pallette-dark-background-2, 0.5);
+        
+                    button {
+                        display: flex;
+                        align-items: flex-start;
+                        height:100%;
+                    }
+        
+                    .card-subtext {
+                        font-size: calc(font-size - 10px);
+                    }
+                }
             }
         }
     }
+}
+
+.footer-spacing {
+    height: 25px;
+    background-color: $color-pallette-dark-2;
 }
