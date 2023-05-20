@@ -12,7 +12,7 @@ import {
     Button,
     IconButton
 } from '@material-ui/core';
-import { AccountCircle } from '@material-ui/icons';
+import { AccountCircle, Launch } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { fetchUserAuthorization, isMoviegoer, isSPLMember } from '../../../actions';
@@ -43,6 +43,10 @@ const views: PageViews = {
     Commands: {
         to: "/commands",
         disabled: false
+    },
+    Subscribe: {
+        to: "https://ptb.discord.com/servers/save-point-lodge-184535415363993600",
+        externalSite: true
     },
     Movies: {
         to: "/movies",
@@ -121,8 +125,16 @@ const Header: React.FC<HeaderProps> = (props) => {
                 label = page.label ? page.label : viewName;
             }
 
-
-            _tabs.push(<LinkTab key={i} label={label} href={page.to} disabled={page.disabled} />);
+            const props = {
+                key: i,
+                label,
+                href: page.to,
+                disabled: page.disabled,
+                icon: page.externalSite ? <Launch /> : undefined,
+                external: page.externalSite || false
+            };
+            
+            _tabs.push(<LinkTab {...props} />);
         }
         setTabs(_tabs);
     }, [user, isLodgeGuest, isMoviegoer]);
@@ -214,7 +226,8 @@ const LinkTab = (props: any) => {
     return (
         <Tab
             component="a"
-            onClick={(e: any) => { e.preventDefault(); }}
+            onClick={(e: any) => { if (!props.external) e.preventDefault(); }}
+            target={props.external ? "_blank" : undefined}
             {...props}
         />
     )

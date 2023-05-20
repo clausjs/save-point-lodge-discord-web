@@ -81,6 +81,14 @@ body {
                     padding: 5px;
                 }
             }
+
+            .MuiButtonBase-root {
+                .MuiTab-wrapper {
+                    display: flex;
+                    flex-direction: row-reverse;
+                    justify-content: space-evenly;
+                }
+            }
         }
 
         .personalization {

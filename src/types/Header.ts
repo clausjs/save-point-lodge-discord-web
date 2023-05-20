@@ -12,7 +12,8 @@ export interface View {
     ancillary?: {
         content: string | React.ReactNode;
         class?: string;
-    }
+    },
+    externalSite?: boolean
 }
 
 export interface PageViews {
