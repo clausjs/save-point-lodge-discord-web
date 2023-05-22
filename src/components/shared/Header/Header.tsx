@@ -44,15 +44,15 @@ const views: PageViews = {
         to: "/commands",
         disabled: false
     },
-    Subscribe: {
-        to: "https://ptb.discord.com/servers/save-point-lodge-184535415363993600",
-        externalSite: true
-    },
     Movies: {
         to: "/movies",
         requiresAuth: true,
         requiresMoviegoer: true
-    }
+    },
+    Subscribe: {
+        to: "https://ptb.discord.com/servers/save-point-lodge-184535415363993600",
+        externalSite: true
+    },
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -148,6 +148,8 @@ const Header: React.FC<HeaderProps> = (props) => {
     }
 
     const handleNavigation = (event: any, newView: number | false) => {
+        if (newView !== false && newView === Object.keys(views).findIndex(view => view === 'Subscribe')) return;
+
         setView(newView);
         if (newView !== false) history.push(Object.values(views)[newView].to);
     }

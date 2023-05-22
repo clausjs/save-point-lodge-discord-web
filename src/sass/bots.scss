@@ -8,6 +8,10 @@ body.light {
         .divider {
             background-color: black !important;
         }
+
+        a {
+            color: unset;
+        }
     }
 
     .third-party {
@@ -19,113 +23,85 @@ body.light {
 .bots-content {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     font-size: 18px;
     background-color: $color-pallette-dark-background;
     color: white;
+    width: 100%;
 
-    .about {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
+    a {
+        color: $color-pallette-dark-mode-links;
 
-        .joebot-description {
-            flex: 1 1 443px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            height: 717px;
-            width: 100%;
-            padding-top: 50px;
+        &:visited {
+            color: $color-pallette-dark-mode-links-visited;
+        }
+    }
 
-            .text-flair {
-                width: 95%;
-                height: 50px;
-                align-self: flex-start;
 
-                .top {
-                    background-color: $color-pallette-orange;
-                    height: 50%;
-                    position: relative;
-                    z-index: 999;
-                }
+    .text-flair {
+        height: 50px;
+        margin-top: 10px;
 
-                .bottom {
-                    background-color: $color-pallette-dark-blue;
-                    width: 95%;
-                    height: 50%;
-                    margin-top: -10px;
-                    position: relative;
-                    z-index: 998;
-                }
-            }
-
-            .heading {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
-
-            .bmac-button {
-                height: 100%;
-                width: 100%;
-                max-height: 100px;
-                max-width: 300px;
-
-                img#bmac {
-                    width: 100%;
-                    height: 100%;
-                }
-            }
+        .top {
+            background-color: $color-pallette-orange;
+            height: 50%;
+            position: relative;
+            z-index: 999;
         }
 
-        .discord-example {
-            flex: 1 1 557px;
+        .bottom {
+            background-color: $color-pallette-dark-blue;
+            width: 95%;
+            height: 50%;
+            margin-top: -10px;
+            position: relative;
+            z-index: 998;
+        }
+    }
+
+    .heading {
+        font-family: 'Best Choice Demo', 'Roboto';
+        font-size: inherit;
+
+        h1 {
+            font-size: 30px;
+        }
+    }
+
+    .joebot-profile {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 50px;
+
+        .bot-item-content .bot-avatar {
+            padding: unset !important;
+        }
+    }
+
+    .joebot-description {
+        display: flex;
+        flex-direction: column;
+
+        .image-example {
             display: flex;
-            align-items: center;
             justify-content: center;
+        }
 
-            .image-container {
-                position: relative;
-                width: 557px;
-                height: 717px;
-                padding-top: 50px;
+        div.MuiGrid-root[class*="-info"] {
+            padding: 10px 0;
 
-                img {
-                    position: relative;
-                    top: -717px;
-                    left: 0;
-                }
-    
-                .image-flair {
-                    position: relative;
-                    max-width: inherit;
-                    height: inherit;
-    
-                    div {
-                        width: 100%;
-                        height: 100%;
-                        position: relative;
-                        
-                        &.top {
-                            background-color: $color-pallette-orange;
-                            top: -25px;
-                            left: -25px;
-                        }
-        
-                        &.bottom {
-                            background-color: $color-pallette-dark-blue;
-                            left: 25px;
-                            top: -692px;
-                        }
-                    }
-    
-                }
+            .MuiGrid-root.MuiGrid-grid-lg-true {
+                align-self: center;
             }
 
+            .create-terms {
+                display: flex;
+                justify-content: center;
+                font-size: 10px;
+                padding: 5px;
+            }
         }
     }
 
@@ -134,19 +110,43 @@ body.light {
         flex-direction: column;
         align-items: center;
         background-color: $color-pallette-dark-2;
-        margin-top: 75px;
-        padding-bottom: 25px;
+        margin: 20px 0;
 
-        .bot-cards {
-            width: 100%;
+        .bot-list {
             display: flex;
             flex-direction: row;
-            justify-content: center;
-            align-items: center;
+            justify-content: space-between;
+        }
+    }
 
-            .bot-card {
-                margin: 0 25px;
+    .bot-item {
+        margin: 5px 10px;
+        
+        .bot-item-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+    
+            .bot-avatar {
+                padding: 0 10px;
+                margin: 0 10px;
+            }
+    
+            .bot-info {
+                display: flex;
+                flex-direction: column;
+    
+                .bot-name {
+                    font-size: 20px;
+                    font-weight: 700;
+                }
+    
+                .bot-site {
+                    font-size: 11px;
+                }
             }
         }
     }
+
 }

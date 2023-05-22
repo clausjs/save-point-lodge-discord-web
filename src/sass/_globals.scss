@@ -11,6 +11,8 @@ $color-pallette-orange: #F26419;
 $color-pallette-white: #FFFFFF;
 $color-pallette-black: #000000;
 $color-pallette-light-gray: #B2B2B2;
+$color-pallette-dark-mode-links: #D9F9F9;
+$color-pallette-dark-mode-links-visited: #C3DBEF;
 
 $discord-light-blue: #7289da;
 $discord-dark-blue: #202225;
@@ -87,6 +89,11 @@ body {
                     display: flex;
                     flex-direction: row-reverse;
                     justify-content: space-evenly;
+
+                    .MuiSvgIcon-root {
+                        font-size: 15px;
+                        margin-bottom: unset;
+                    }
                 }
             }
         }
