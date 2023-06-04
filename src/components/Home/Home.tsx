@@ -5,7 +5,8 @@ import {
     Card,
     CardActionArea,
     CardContent,
-    Typography
+    Typography,
+    useMediaQuery
 } from '@material-ui/core';
 
 import DiscordWidget from './DiscordWidget';
@@ -34,11 +35,11 @@ const showcases = [
 
 import '../../sass/home.scss';
 
-
-
 const Home: React.FC = () => {
+    const isUnderSevenHundredPixels = useMediaQuery('(max-width:700px)');
+
     return (
-        <div className="home-content">
+        <Container className="home-content" maxWidth={false} disableGutters>
             <div className="main-header">
                 <div className="logo">
                     <img src="/img/logo.png" />
@@ -47,39 +48,38 @@ const Home: React.FC = () => {
                     <h1>SAVE POINT LODGE</h1>
                 </div>
             </div>
-            <div className="about">
-                <div className="banner">
-                    <Container className='banner-items' maxWidth="lg">
-                        <div className='logo-join'>
-                            <img src='/img/logo.gif'></img>
-                            <div className='btn join' onClick={() => window.location.href = "https://discord.gg/kZZGSU3"}>
-                                <div className='btn-content'>
-                                    <span className='action'>Join Our Discord!</span>
-                                    <span>discord.gg/spl</span>
-                                </div>
+            <Container className='about banner' maxWidth={false} disableGutters>
+                <div className='banner-items'>
+                    <div className='logo-join'>
+                        <img src='/img/logo.gif'></img>
+                        <div className='btn join' onClick={() => window.location.href = "https://discord.gg/kZZGSU3"}>
+                            <div className='btn-content'>
+                                <span className='action'>Join Our Discord!</span>
+                                <span>discord.gg/spl</span>
                             </div>
                         </div>
-                        <div className='invite'>
-                            <div className="widget-container">
-                                <div className='widget'>
-                                    <DiscordWidget />
-                                </div>
-                                <div className="flair">
-                                    <div className="top"></div>
-                                    <div className="bottom"></div>
-                                </div>
+                    </div>
+                    <div className='invite'>
+                        <div className="widget-container">
+                            <div className='widget'>
+                                <DiscordWidget />
+                            </div>
+                            <div className="flair">
+                                <div className="top"></div>
+                                <div className="bottom"></div>
                             </div>
                         </div>
-                    </Container>
+                    </div>
                 </div>
-                {/* <h3>About us...</h3> */}
-                <div className="info">
-                    <Container className="text" maxWidth="md">
-                        <div className="about-us">
-                            <h3>About Us...</h3>
-                            <div className="top"></div>
-                            <div className="bottom"></div>
-                        </div>
+            </Container>
+            <Container className='info' maxWidth={false} disableGutters>
+                <Container className="info-content">
+                    <div className="about-us">
+                        <h3>About Us...</h3>
+                        <div className="top"></div>
+                        <div className="bottom"></div>
+                    </div>
+                    <div className='text'>
                         <p>
                             Welcome to Save Point Lodge (SPL), a community founded in 2016 with the goal of bringing gamers together, 
                             fostering thoughtful discussions on the state of the world, and building meaningful friendships in a fun and welcoming environment.
@@ -110,35 +110,35 @@ const Home: React.FC = () => {
                         <h3>Our Promise</h3>
                         <span className='promise'>This is a 'Save Point'; as such no goblins, Lich Kings, or Walls of Death can harm you here. Our doors are open
                             to weary travelers and this space will be kept safe.</span>
-                    </Container>
-                    <div className='showcase'>
-                        <div className='showcase-header'>
-                            <h3>What Save Point Lodge has to offer</h3>
-                            <sub>We're proud of the community we've built. See below for some of our most notable features</sub>
-                        </div>
-                        <div className='cards'>
-                            {showcases.map((showcase: any, index: number) => {
-                                return (
-                                    <Card key={index} className='showcase-card' style={{ maxWidth: 250 }}>
-                                        <CardActionArea>
-                                            <CardContent>
-                                                <Typography variant="h5" component="div">
-                                                    {showcase.title}
-                                                </Typography>
-                                                <Typography className='card-subtext' variant='body2'>
-                                                    {showcase.description}
-                                                </Typography>
-                                            </CardContent>
-                                        </CardActionArea>
-                                    </Card>
-                                );
-                            })}
-                        </div>
                     </div>
+                </Container>
+            </Container>
+            <Container className='showcase' maxWidth='md' disableGutters={isUnderSevenHundredPixels}>
+                <div className='showcase-header'>
+                    <h3>What Save Point Lodge has to offer</h3>
+                    <sub>We're proud of the community we've built. See below for some of our most notable features</sub>
                 </div>
-            </div>
+                <div className='cards'>
+                    {showcases.map((showcase: any, index: number) => {
+                        return (
+                            <Card key={index} className='showcase-card' style={{ maxWidth: 250 }}>
+                                <CardActionArea>
+                                    <CardContent>
+                                        <Typography variant="h5" component="div">
+                                            {showcase.title}
+                                        </Typography>
+                                        <Typography className='card-subtext' variant='body2'>
+                                            {showcase.description}
+                                        </Typography>
+                                    </CardContent>
+                                </CardActionArea>
+                            </Card>
+                        );
+                    })}
+                </div>
+            </Container>
             <div className='footer-spacing'></div>
-        </div>
+        </Container>
     );
 };
 

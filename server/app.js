@@ -175,6 +175,8 @@ app.use('/api/commands', require(`${API_DIR}/commands`));
 
 app.use('/api/giphy', require(`${API_DIR}/giphy`));
 
+app.use('/api/status', require(`${API_DIR}/status`));
+
 if (process.env.NODE_ENV === 'dev') {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);

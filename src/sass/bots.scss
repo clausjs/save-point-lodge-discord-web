@@ -80,13 +80,17 @@ body.light {
         }
     }
 
-    .joebot-description {
+    .joebot-info {
         display: flex;
         flex-direction: column;
 
         .image-example {
             display: flex;
             justify-content: center;
+
+            @media screen and (max-width: 600px) {
+                width: 100%;
+            }
         }
 
         div.MuiGrid-root[class*="-info"] {
@@ -112,11 +116,11 @@ body.light {
         background-color: $color-pallette-dark-2;
         margin: 20px 0;
 
-        .bot-list {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-        }
+        // .bot-list {
+        //     display: flex;
+        //     flex-direction: row;
+        //     justify-content: space-between;
+        // }
     }
 
     .bot-item {

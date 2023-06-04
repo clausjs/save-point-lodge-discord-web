@@ -1,13 +1,12 @@
 {
-  "name": "planet-express-crew-site",
+  "name": "save-point-lodge-crew-site",
   "version": "2.0.0",
   "description": "A web interface for crew members to interface with Planet Express specific things",
   "main": "index.js",
   "scripts": {
-    "start": "npx gulp dev && node ./server/app.js",
-    "server": "node ./server/app.js",
-    "build:watch": "webpack --config webpack.dev.js --watch",
+    "start": "node ./server/app.js",
     "build:dev": "gulp dev",
+    "build:prod": "gulp prod",
     "test": "test"
   },
   "author": "Joseph Claus",

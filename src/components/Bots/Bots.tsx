@@ -1,18 +1,8 @@
 import React from 'react';
 
 import {
-    Divider,
+    useMediaQuery,
     Container,
-    Card,
-    CardActionArea,
-    CardMedia,
-    CardContent,
-    Typography,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Paper,
     Avatar,
     Grid
 } from '@material-ui/core';
@@ -67,8 +57,8 @@ const Bots: React.FC = () => {
                     </div>
                 </div>
             </Container>
-            <Container className='joebot-description'>
-                <Grid container className='search-info' spacing={5}>
+            <Container className='joebot-info'>
+                <Grid container className='search-info'>
                     <Grid lg>
                         <p>
                             Joe_Bot is a versatile and entertaining addition to Save Point Lodge. Built by the server owner, with its ability to search popular services like YouTube, 
@@ -80,7 +70,7 @@ const Bots: React.FC = () => {
                         <img src='/img/joebot/slash-command-entry-example.gif' />
                     </Grid>
                 </Grid>
-                <Grid container className='trigger-info' spacing={5}>
+                <Grid container className='trigger-info' style={{ display: useMediaQuery('(min-width:1280px)') ? 'flex' : 'none' }}>
                     <Grid sm className='image-example'>
                         <img src='/img/joebot/joebot-responses-example.gif' />
                     </Grid>
@@ -90,6 +80,18 @@ const Bots: React.FC = () => {
                             the bot can keep members engaged and entertained. Whether someone is looking for a laugh or just wants to see what the bot will say next, they're sure 
                             to be entertained. 
                         </p>
+                    </Grid>
+                </Grid>
+                <Grid container className='trigger-info' style={{ display: useMediaQuery('(max-width:1279px)') ? 'flex' : 'none'}}>
+                    <Grid lg>
+                        <p>
+                            But Joe_Bot is more than just a search tool - he has a snarky personality that adds a fun and unique element to the server. With clever and amusing text triggers, 
+                            the bot can keep members engaged and entertained. Whether someone is looking for a laugh or just wants to see what the bot will say next, they're sure 
+                            to be entertained. 
+                        </p>
+                    </Grid>
+                    <Grid sm className='image-example'>
+                        <img src='/img/joebot/joebot-responses-example.gif' />
                     </Grid>
                 </Grid>
                 <Grid container className='trending-games-info'>
@@ -109,27 +111,26 @@ const Bots: React.FC = () => {
                     </Grid>
                 </Grid>
                 <Grid container className='spl-control-info'>
-                    <Grid sm className='image-example'>
+                    <Grid sm className='image-example' style={{ display: useMediaQuery('(min-width: 601px)') ? 'flex' : 'none' }}>
                         <img src='/img/code-example.png' />
                     </Grid>
-                    {/* <Grid lg>
+                    <Grid sm className='image-example' style={{ display: useMediaQuery('(max-width: 600px)') ? 'flex' : 'none' }}>
                         <p>
-                            Since Save Point Lodge staff has direct access to the bot's inner workings (the code) we also want to hear feedback about him. Did he say something you don't like? 
-                            Are his tools difficult to use? Let us know in the feedback channel or by talking to our staff!
+                            Since Save Point Lodge staff has direct access to the bot's inner workings (the code) we can change him to be anything we want him to be! 
+                            We want to hear from you. Did he say something you don't like? Are his tools difficult to use? Let us know in the feedback channel or by 
+                            talking to our staff!
                         </p>
-                    </Grid> */}
+                    </Grid>
                 </Grid>
             </Container>
             <Container className='third-party' maxWidth={false} disableGutters>
                 <Container maxWidth={'xl'}>
                     <h2>Save Point Lodge also uses these third party bots</h2>
                 </Container>
-                <Container className='bot-list' maxWidth={'xl'}>
+                <Grid container className='bot-list'>
                     {tpBots.map((botInfo: BotInfo, i: number) => {
-                        const openUrl = () => window.open(botInfo.url, '_blank');
-
                         return (
-                            <Container className='bot-item'>
+                            <Grid sm className='bot-item'>
                                 <div className='bot-item-content'>
                                     <Avatar alt={`${botInfo.name}-icon`} src={botInfo.image} className='bot-avatar' />
                                     <div className='bot-info'>
@@ -137,10 +138,10 @@ const Bots: React.FC = () => {
                                         <span className='bot-site'><a target="_blank" href={botInfo.url}>{botInfo.url}</a></span>
                                     </div>
                                 </div>
-                            </Container>
+                            </Grid>
                         )
                     })}
-                </Container>
+                </Grid>
             </Container>
         </Container>
     );

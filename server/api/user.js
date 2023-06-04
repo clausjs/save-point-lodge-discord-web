@@ -1,18 +1,5 @@
 const router = require('express').Router();
 
-const sendSuccess = (res, payload, isJson = false) => {
-    if (isJson) return res.status(200).json(payload);
-    return res.status(200).send(payload)
-}
-
-const sendError = (res, status, err) => {
-    return res.status(status).send(err);
-}
-
-const send401 = (res) => {
-    return res.status(401).send('Not authenticated');
-}
-
 router.get('/', function(req, res) {
     if (req.isAuthenticated() && req.user) {
         const simplifiedUser = {
