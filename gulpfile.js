@@ -78,7 +78,7 @@ function runWebpackProd() {
     return runWebpack(PROD);
 }
 
-
+// exports.watch = gulp.watch("./src/**/*", gulp.series(buildTypescript, copySassToBuild, runWebpackDev));
 exports.typescript = buildTypescript;
 exports.sass = copySassToBuild;
 exports.webpack = runWebpack;

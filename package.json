@@ -4,7 +4,7 @@
   "description": "A web interface for crew members to interface with Planet Express specific things",
   "main": "index.js",
   "scripts": {
-    "start": "node ./server/app.js",
+    "start": "gulp dev && node ./server/app.js",
     "build:dev": "gulp dev",
     "build:prod": "gulp prod",
     "test": "test"

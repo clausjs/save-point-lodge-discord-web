@@ -2,22 +2,21 @@ import React from "react";
 
 import { User } from './ReduxItems';
 
-export interface View {
-    label?: React.ReactNode;
+export interface PageLink {
     to: string,
+    label?: React.ReactNode;
     requiresAuth?: boolean,
     requiresMoviegoer?: boolean,
     disabled?: boolean,
-    class?: string,
-    ancillary?: {
-        content: string | React.ReactNode;
-        class?: string;
-    },
     externalSite?: boolean
 }
 
-export interface PageViews {
-    [id: string]: View
+export interface MobilePageLink extends PageLink {
+    icon: React.ReactNode;
+}
+
+export interface Pages {
+    [id: string]: PageLink | MobilePageLink;
 }
 
 export interface HeaderProps {
