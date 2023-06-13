@@ -36,7 +36,7 @@ import {
 import '../../../sass/_globals.scss';
 
 import { AllPages as views } from './Views';
-import { AccountCircle, Launch } from '@material-ui/icons';
+import { AccountCircle, Cancel, Launch } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -111,8 +111,7 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
                                         <Button
                                             className='btn'
                                             size='small'
-                                            color='default'
-                                            variant="outlined"
+                                            variant="contained"
                                             href="/login"
                                         >Login</Button>
                                     </div>
@@ -126,7 +125,11 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
                         key={i}
                         selected={view.to === currentLoc}
                         className='list-item'
-                        onClick={(event) => handleNavigation(event, i)}
+                        onClick={(event) => {
+                            if (view.externalSite) {
+                                window.open(view.to, "_blank");
+                            } else handleNavigation(event, i)
+                        }}
                     >
                         <ListItemIcon style={{ color: 'inherit' }}>
                             {view.icon}
@@ -176,7 +179,10 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
                 PaperProps={{ className: 'menu-container' }}
             >
                 <Container className='menu-content' maxWidth={false} disableGutters>
-                    <MenuIcon className='nav-menu-button' onClick={() => setNavMenuOpen(false)} />
+                    <Container className='content-top' maxWidth={false} disableGutters>
+                        <MenuIcon className='nav-menu-button' onClick={() => setNavMenuOpen(false)} />
+                        <Cancel onClick={() => setNavMenuOpen(false)} />
+                    </Container>
                     <Menu
                         id="account-menu"
                         variant="menu"
