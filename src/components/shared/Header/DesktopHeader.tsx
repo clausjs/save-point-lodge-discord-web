@@ -44,10 +44,22 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
+interface TabProps {
+    key: number;
+    name: string;
+    label: React.ReactNode | string;
+    href: string;
+    disabled?: boolean;
+    icon?: JSX.Element;
+    external?: boolean;
+    requiresAuth?: boolean;
+    requiresMoviegoer?: boolean;
+}
+
 const DefaultHeader: React.FC<HeaderProps> = (props) => {
     const classes = useStyles();
     const [ view, setView ] = useState<number | false>(0);
-    const [ tabs, setTabs ] = useState(null);
+    const [ tabs, setTabs ] = useState<TabProps[]>([]);
     const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | ((element: Element) => Element) | null>(null);
     const userState: UserState = useSelector((state: RootState) => state.user);
     const history = useHistory();
@@ -101,7 +113,8 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
             // }
             label = page.label ? page.label : viewName;
 
-            const props = {
+            const props: TabProps = {
+                name: viewName,
                 key: i,
                 label,
                 href: page.to,
@@ -110,7 +123,7 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
                 external: page.externalSite || false
             };
             
-            _tabs.push(<LinkTab {...props} />);
+            _tabs.push(props);
         }
         setTabs(_tabs);
     }, [user, isLodgeGuest, isMoviegoer]);
@@ -124,7 +137,7 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
     }
 
     const handleNavigation = (event: any, newView: number | false) => {
-        if (newView !== false && newView === Object.keys(views).findIndex(view => view === 'Subscribe')) return;
+        if (newView !== false && newView === tabs.findIndex(view => view.name === 'Subscribe')) return;
 
         setView(newView);
         if (newView !== false) history.push(Object.values(views)[newView].to);
@@ -142,7 +155,7 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
                                 onChange={handleNavigation}
                                 aria-label='nav tabs'
                             >
-                                {tabs}
+                                {tabs.map((tab: TabProps) => <LinkTab {...tab} />)}
                             </Tabs>
                         </div>
                         <div className='personalization'>
