@@ -69,7 +69,7 @@ app.use(function(req, res, next) {
 var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
 
-const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com": `${process.env.NODE_ENV === 'test' ? 'dev.' : ''}savepointlodge.com`;
+const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com" : `${process.env.NODE_ENV === 'test' ? 'dev.' : ''}savepointlodge.com`;
 const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
 const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 
