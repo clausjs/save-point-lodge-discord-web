@@ -69,13 +69,13 @@ app.use(function(req, res, next) {
 var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
 
-const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com": "savepointlodge.com";
+const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com": `${process.env.NODE_ENV === 'test' ? 'dev.' : ''}savepointlodge.com`;
 const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
 const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 
 passport.use(new Strategy({
     authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
-    clientID: process.env.PASSPORT_CLIENT_ID,
+    clientID: process.env.DISCORD_CLIENT_ID,
     clientSecret: process.env.PASSPORT_SECRET,
     tokenURL: 'https://discord.com/api/oauth2/token',
     callbackURL,
