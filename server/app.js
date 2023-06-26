@@ -22,7 +22,8 @@ let redisClient = redis.createClient();
 const app = express();
 const devMode = process.env.NODE_ENV === 'dev' ? true : false;
 
-const port = devMode ? 3000 : 8080;
+const defaultPort = devMode ? 3000 : 8080;
+const port = process.env.PORT || defaultPort;
 
 db.authenticate();
 app.use(compression());
