@@ -214,7 +214,8 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
                     </Menu>
                     <List className='nav-menu-items'>
                         {links}
-                    </List>    
+                    </List>
+                    <div className='theme-switch'><ThemeSwitch /></div>    
                 </Container>        
             </SwipeableDrawer> 
         </div>
