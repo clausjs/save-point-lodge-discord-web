@@ -78,6 +78,18 @@ const Commands: React.FC<CommandsProps> = (props) => {
                 </div>
             </div>}
             {!isLoading && <Container className='commands' maxWidth='xl'>
+                <div className='commands-info'>
+                    <h1>Joe_Bot Slash Commands</h1>
+                    <p>
+                        Commands with parameters can be entered by using Discord's slash command syntax. 
+                        For instance, with Joe_Bot, to convert the temperature 36.5 degrees Celsius to Fahrenheit 
+                        you would enter 36.fc into the parameter field.
+                    </p>
+                    <img src='/img/joebot/command_param_example.png' />
+                    <p>
+                        More information can be found on Discord's official website <a href="https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ">here</a>.
+                    </p>
+                </div>
                 {props.commands.map((command: Command, index: number) => {
                     return (
                         <AccordionItem

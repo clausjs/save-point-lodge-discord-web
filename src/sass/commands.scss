@@ -2,10 +2,7 @@
 
 body.light {
     .commands-content {
-        .command-item {
-            background-color: inherit !important;
-            color: black !important;
-        }
+        background-color: white;
     }
 
     .giphy-grid {
@@ -22,6 +19,8 @@ body.light {
 .commands-content {
     height: 100%;
     width: 100%;
+    overflow: scroll;
+    background-color: $color-pallette-dark-2;
 
     .loading {
         display: flex;
@@ -39,10 +38,16 @@ body.light {
         }
     }
 
+    .commands-info {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
+
     .command-item {
         padding: 10px 0;
         margin: 20px 0 !important;
-        background-color: $color-pallette-dark-2;
+        background-color: $color-pallette-dark-background;
         color: white;
 
         hr {
@@ -128,6 +133,4 @@ body.light {
         }
 
     }
-
-
 }
