@@ -83,7 +83,7 @@ const Commands: React.FC<CommandsProps> = (props) => {
                     <p>
                         Commands with parameters can be entered by using Discord's slash command syntax. 
                         For instance, with Joe_Bot, to convert the temperature 36.5 degrees Celsius to Fahrenheit 
-                        you would enter 36.fc into the parameter field.
+                        you would enter 36.5c into the parameter field.
                     </p>
                     <img src='/img/joebot/command_param_example.png' />
                     <p>
