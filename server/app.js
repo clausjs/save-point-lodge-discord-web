@@ -147,7 +147,7 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
-const checkHeaders = (referer) => {
+const checkHeaders = (referer, params) => {
     const ACCEPTED_HEADERS = ['localhost:3000', 'localhost:8080', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
 
     let foundAcceptableHeader = false;
@@ -156,13 +156,15 @@ const checkHeaders = (referer) => {
         ACCEPTED_HEADERS.map(header => {
             if (referer.includes(header)) foundAcceptableHeader = true;
         });
+    } else if (params) {
+        if (params.apiKey === process.env.AUTHORIZED_API_KEY) foundAcceptableHeader = true;
     }
 
     return foundAcceptableHeader;
 }
 
-app.use('/api', function(req, res, next) {
-    if (!checkHeaders(req.get('Referer'))) return res.status(401).send('Unauthorized');
+app.use('/api', function(req, res, next) {;
+    if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     req.db = db;
     req.isTesting = process.env.NODE_ENV === 'dev';
     next();
