@@ -7,6 +7,10 @@ const { EnvironmentPlugin } = require('webpack');
 // const CspHtmlWebpackPlugin = require('csp-html-webpack-plugin');
 
 const devMode = process.env.NODE_ENV !== 'production';
+if (!process.env.DISCORD_API) {
+  process.env.DISCORD_API = 'https://discord.com/';
+  console.warn("DISCORD_API not set, using default value. Discord Widget will cease to function.");
+}
 
 module.exports = {
   entry: {
