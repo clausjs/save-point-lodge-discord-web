@@ -1,12 +1,54 @@
 @import './globals';
 
+body.light {
+    .commands-content {
+        background-color: white;
+    }
+
+    .giphy-grid {
+        .search {
+            color: black !important;
+
+            .PrivateNotchedOutline-root-8.MuiOutlinedInput-notchedOutline {
+                border-color: $color-pallette-black !important;
+            }
+        }
+    }
+}
+
 .commands-content {
     height: 100%;
     width: 100%;
-    padding: 20px;
+    overflow: scroll;
+    background-color: $color-pallette-dark-2;
+
+    .loading {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+
+        .loader-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    .commands-info {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
 
     .command-item {
         padding: 10px 0;
+        margin: 20px 0 !important;
+        background-color: $color-pallette-dark-background;
+        color: white;
 
         hr {
             width: 98%;
@@ -62,9 +104,21 @@
             flex-direction: column;
             justify-content: center;
             margin: 10px;
+            color: white;
 
             .giphy-creation-text {
                 margin: 10px;
+                color: inherit;
+
+                input {
+                    color: inherit;
+                }
+
+                .textfield-end-adornment {
+                    button {
+                        color: inherit;
+                    }
+                }
             }
             
             .instructions {
@@ -72,9 +126,11 @@
                 font-weight: 400;
                 line-height: 16px;
             }
+
+            .PrivateNotchedOutline-root-8.MuiOutlinedInput-notchedOutline {
+                border-color: $color-pallette-white;
+            }
         }
 
     }
-
-
 }

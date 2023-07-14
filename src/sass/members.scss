@@ -1,9 +1,19 @@
+@import './globals';
+
+body.light {
+    .member-main {
+        background: $color-pallette-white;
+        color: black;
+    }
+}
+
 .member-main {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    padding: 25px;
+    padding-top: 25px;
+    overflow: scroll;
+    height: calc(100% - ((#{$header-height} * 1px) + (#{$copyright-height} * 1px)));
 
     .description-cell {
         img {

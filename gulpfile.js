@@ -36,7 +36,7 @@ function copySassToBuild() {
             .pipe(gulp.dest(path.resolve(__dirname, './build/sass/')));
 }
 
-function runWebpack(env) {
+function runWebpack(env, watch = false) {
     return new Promise((resolve, reject) => {
         let config;
 
@@ -50,6 +50,10 @@ function runWebpack(env) {
             default:
                 config = webpackConfigCommon;
                 break;
+        }
+
+        if (watch) {
+            config.watch = true;
         }
 
         webpack(config, (err, status) => {
@@ -74,7 +78,7 @@ function runWebpackProd() {
     return runWebpack(PROD);
 }
 
-
+// exports.watch = gulp.watch("./src/**/*", gulp.series(buildTypescript, copySassToBuild, runWebpackDev));
 exports.typescript = buildTypescript;
 exports.sass = copySassToBuild;
 exports.webpack = runWebpack;

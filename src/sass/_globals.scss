@@ -2,11 +2,17 @@
     @return rgba($base, $alphaPercent)
 }
 
+$color-pallette-dark-background-2: #0d1923;
+$color-pallette-dark-background: #132533;
+$color-pallette-dark-2: #42505b;
 $color-pallette-light-blue: #44E5E7;
 $color-pallette-dark-blue: #1C364A;
 $color-pallette-orange: #F26419;
 $color-pallette-white: #FFFFFF;
 $color-pallette-black: #000000;
+$color-pallette-light-gray: #B2B2B2;
+$color-pallette-dark-mode-links: #D9F9F9;
+$color-pallette-dark-mode-links-visited: #C3DBEF;
 
 $discord-light-blue: #7289da;
 $discord-dark-blue: #202225;
@@ -16,15 +22,37 @@ $widget-member-online: #43B581;
 $widget-member-idle: #FAA61A;
 $widget-member-dnd: #F04747;
 
+$copyright-height: 100;
+$header-height: 72;
+
+@mixin background-opacity($color, $opacity: 0.3) {
+    background: $color; /* The Fallback */
+    background: rgba($color, $opacity);
+}
+
 body {
+    background-color: $color-pallette-dark-background;
+    color: white;
+
+    &.light {
+        background-color: $color-pallette-white;
+        color: black;
+    }
+
     font-family: 'Roboto', sans-serif;
     margin: 0;
     width: 100%;
+    height: 100vh;
+
+    div#root {
+        height: 100%;
+    }
 }
 
 .spl-header {
-    background-color: $color-pallette-orange !important;
-    color: $color-pallette-black !important;
+    background-color: $color-pallette-dark-blue !important;
+    color: $color-pallette-white !important;
+    min-height: $header-height * 1px;
 
     .header-content {
         display: flex;
@@ -34,13 +62,12 @@ body {
         width: 100%;
         height: 100%;
 
-        .acct {
-            .acct-icon {
-                border-radius: 50%;
-            }
-        }
-
         .nav-tabs {
+            img {
+                width: 50px;
+                height: 50px;
+            }
+
             .MuiTabs-indicator {
                 background-color: $color-pallette-dark-blue;
             }
@@ -54,6 +81,141 @@ body {
                     padding: 5px;
                 }
             }
+
+            .MuiButtonBase-root {
+                .MuiTab-wrapper {
+                    display: flex;
+                    flex-direction: row-reverse;
+                    justify-content: space-evenly;
+
+                    .MuiSvgIcon-root {
+                        font-size: 15px;
+                        margin-bottom: unset;
+                    }
+                }
+            }
         }
+
+        .personalization {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+    }
+
+    &.mobile {
+        .nav-menu-button {
+            font-size: 35px;
+        }
+    }
+
+    .acct {
+        .acct-icon {
+            border-radius: 50%;
+        }
+    }
+}
+
+.nav-menu {
+    .menu-container {
+        background-color: $color-pallette-dark-2;
+
+        .menu-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            font-size: 18px;
+            line-height: 18px;
+            font-style: normal;
+    
+            .nav-menu-button {
+                font-size: 35px;
+            }
+
+            .content-top {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 5px;
+            }
+
+            .theme-switch {
+                display: flex;
+                justify-content: center;
+            }
+
+            .MuiListItem-root {
+                &.Mui-selected {
+                    background-color: $color-pallette-dark-blue;
+                }
+
+                &:hover {
+                    background-color: #264863;
+                }
+            }
+    
+            .nav-menu-items {
+                img {
+                    width: 50px;
+                    height: 50px;
+                }
+    
+                .list-item {
+                    cursor: pointer;
+
+                    &.label {
+                        padding: 20px 5px;
+
+                        .acct {
+                            display: flex;
+                            align-items: center;
+
+                            .acct-icon {
+                                border-radius: 50%;
+                            }
+
+                            .icon-btn {
+                                padding: unset;
+                            }
+                        }
+
+                        .account-section {
+                            width: 100%;
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: space-between;
+                        }
+                    }
+
+                    .external-launch-ico {
+                        font-size: 11px;
+                        padding: 0 10px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.copyright-info {
+    color: white;
+    font-size: 8px;
+    background-color: $color-pallette-dark-background-2;
+    height: $copyright-height * 1px;
+    
+    .c-content {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    img {
+        width: 50px;
+        height: 50px;
+        padding: 25px 10px;
     }
 }

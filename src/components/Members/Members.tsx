@@ -2,20 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { connect, useSelector } from 'react-redux';
 
 import {
-    CssBaseline,
     Typography,
     Container,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
     Switch
 } from '@material-ui/core';
-
-import { BounceLoader } from 'react-spinners';
 
 import DisplayTable from "../shared/DisplayTable/DisplayTable"
 
@@ -30,16 +20,6 @@ interface MemberOptionsProps {
     fetchOpts: Function;
     setOpt: Function;
     children: React.ReactNode;
-}
-
-interface TableOpt {
-    value: boolean;
-    description: any;
-    isLoading?: boolean;
-}
-
-interface DisplayTableUserOpts {
-    [id: string]: TableOpt;
 }
 
 const Members: React.FC<MemberOptionsProps> = (props) => {
@@ -74,7 +54,7 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
         }
 
         return (
-            <>
+            <React.Fragment>
                 <h2>{`${user.username}'s user options on Save Point Lodge`}</h2>
                 <DisplayTable
                     rowData={opts}
@@ -135,20 +115,14 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
                     tableId='member options table'
                     isLoadingData={!fetchUserOpts}
                 />
-            </>
+            </React.Fragment>
         );
     }
 
     return (
-        <React.Fragment>
-            <CssBaseline />
-            <Container maxWidth='lg'>
-                <Typography component="div" style={{ backgroundColor: '#ffffff' }} />
-                <div className='member-main'>
-                    {getContainerContent()}
-                </div>
-            </Container>
-        </React.Fragment>
+        <Container className='member-main' maxWidth='xl'>
+            {getContainerContent()}
+        </Container>
     );
 }
 

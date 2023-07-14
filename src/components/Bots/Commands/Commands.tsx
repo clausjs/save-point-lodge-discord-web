@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 
 import {
     Accordion,
@@ -12,6 +12,9 @@ import { Command, TabledCommands, TableHeader, TableCell } from "../../../types"
 import { fetchCommands } from "../../../actions/botsActions";
 
 import '../../../sass/commands.scss';
+import { CircleLoader, PacmanLoader } from "react-spinners";
+
+const LOADING_SIZE: number = 150;
 
 interface CommandsProps {
     commands: Command[];
@@ -25,6 +28,8 @@ const Commands: React.FC<CommandsProps> = (props) => {
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ commands, setCommands ] = useState<TabledCommands | {}>({});
     const [ expanded, setExpanded ] = useState<number>(-1);
+
+    const lightMode: boolean = useSelector((state: any) => state.theme.lightMode);
 
     useEffect(() => {
         if (!fetchedCommands) {
@@ -53,78 +58,6 @@ const Commands: React.FC<CommandsProps> = (props) => {
         }
     }, [props.commands]);
 
-    let tableHeaders: TableHeader[], tableCells: TableCell[];
-    tableHeaders = [
-        {
-            label: 'Command Name'
-        },
-        {
-            label: 'Description'
-        },
-        {
-            label: 'Options'
-        }
-    ];
-
-    tableCells = [
-        {
-            field: 'name'
-        },
-        {
-            field: 'description'
-        },
-        {
-            valueGetter: (item: any) => {
-                return (
-                    <div className='command-option'>
-                        {item.options !== undefined && item.options.length > 0 ? 
-                            item.options.map((option: any, i: number) => {
-                                return (
-                                    <div key={i} className="option-details">
-                                        <span><b>Name: </b> {option.name}</span>
-                                        <span><b>Is Required?:</b> {option.required ? '✔️' : '❌'}</span>
-                                        <span><b>Description:</b> {option.description}</span>
-                                    </div>
-                                )
-                            })
-                        :
-                            <span className='na'>N/A</span>
-                        }
-                    </div>
-                )
-            }
-        }
-    ];
-
-    const filterResults = (searchText: string) => {
-        const newCommands = {};
-        Object.keys(commands).map((commandName: string) => {
-            //@ts-ignore
-            const command: Command = commands[commandName];
-
-            if (commandName.toLowerCase().includes(searchText.toLowerCase())) {
-                //@ts-ignore
-                if (!newCommands[commandName]) {
-                    //@ts-ignore
-                    newCommands[commandName] = command;
-                }
-            }
-
-            if (command.options && command.options.length > 0) {
-                for (let i = 0; i < command.options.length; i++) {
-                    const option = command.options[i];
-                    if (option.name.toLowerCase().includes(searchText.toLowerCase())) {
-                        //@ts-ignore
-                        if (!newCommands[commandName]) {
-                            //@ts-ignore
-                            newCommands[commandName] = command;
-                        }
-                    }
-                }
-            } 
-        });
-        return newCommands;
-    }
 
     const onAccordionChange = (index: number, open: boolean) => {
         if (open) {
@@ -138,7 +71,25 @@ const Commands: React.FC<CommandsProps> = (props) => {
 
     return (
         <div className="commands-content">
-            <Container className='commands' maxWidth='xl'>
+            {isLoading && <div className='loading'>
+                <h3>Finding the fruit...</h3>
+                <div className='loader-container'>
+                    <PacmanLoader loading={isLoading} size={75} color={lightMode ? 'black' : 'white'} margin={0} />
+                </div>
+            </div>}
+            {!isLoading && <Container className='commands' maxWidth='xl'>
+                <div className='commands-info'>
+                    <h1>Joe_Bot Slash Commands</h1>
+                    <p>
+                        Commands with parameters can be entered by using Discord's slash command syntax. 
+                        For instance, with Joe_Bot, to convert the temperature 36.5 degrees Celsius to Fahrenheit 
+                        you would enter 36.5c into the parameter field.
+                    </p>
+                    <img src='/img/joebot/command_param_example.png' />
+                    <p>
+                        More information can be found on Discord's official website <a href="https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ">here</a>.
+                    </p>
+                </div>
                 {props.commands.map((command: Command, index: number) => {
                     return (
                         <AccordionItem
@@ -150,7 +101,7 @@ const Commands: React.FC<CommandsProps> = (props) => {
                         />
                     )
                 })}
-            </Container>
+            </Container>}
         </div>
     );
 };

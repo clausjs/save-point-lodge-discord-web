@@ -22,7 +22,8 @@ let redisClient = redis.createClient();
 const app = express();
 const devMode = process.env.NODE_ENV === 'dev' ? true : false;
 
-const port = devMode ? 3000 : 8080;
+const defaultPort = devMode ? 3000 : 8080;
+const port = process.env.PORT || defaultPort;
 
 db.authenticate();
 app.use(compression());
@@ -68,13 +69,13 @@ app.use(function(req, res, next) {
 var scopes = ['identify', 'guilds'];
 var prompt = 'consent';
 
-const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com": "savepointlodge.com";
+const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com" : `${process.env.NODE_ENV === 'test' ? 'dev.' : ''}savepointlodge.com`;
 const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
 const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 
 passport.use(new Strategy({
     authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
-    clientID: process.env.PASSPORT_CLIENT_ID,
+    clientID: process.env.DISCORD_CLIENT_ID,
     clientSecret: process.env.PASSPORT_SECRET,
     tokenURL: 'https://discord.com/api/oauth2/token',
     callbackURL,
@@ -146,8 +147,8 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
-const checkHeaders = (referer) => {
-    const ACCEPTED_HEADERS = ['localhost:3000', 'localhost:8080', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
+const checkHeaders = (referer, params) => {
+    const ACCEPTED_HEADERS = ['localhost:3000', 'localhost:8080', 'dev.savepointlodge.com', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
 
     let foundAcceptableHeader = false;
 
@@ -155,13 +156,15 @@ const checkHeaders = (referer) => {
         ACCEPTED_HEADERS.map(header => {
             if (referer.includes(header)) foundAcceptableHeader = true;
         });
+    } else if (params) {
+        if (params.apiKey === process.env.AUTHORIZED_API_KEY) foundAcceptableHeader = true;
     }
 
     return foundAcceptableHeader;
 }
 
-app.use('/api', function(req, res, next) {
-    if (!checkHeaders(req.get('Referer'))) return res.status(401).send('Unauthorized');
+app.use('/api', function(req, res, next) {;
+    if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     req.db = db;
     req.isTesting = process.env.NODE_ENV === 'dev';
     next();
@@ -174,6 +177,8 @@ app.use('/api/movies', require(`${API_DIR}/movies`));
 app.use('/api/commands', require(`${API_DIR}/commands`));
 
 app.use('/api/giphy', require(`${API_DIR}/giphy`));
+
+app.use('/api/status', require(`${API_DIR}/status`));
 
 if (process.env.NODE_ENV === 'dev') {
     console.info("Execution directory: ", __dirname);
