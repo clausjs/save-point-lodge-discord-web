@@ -17,13 +17,15 @@ const ASSET_DIR = path.join(__dirname, '../assets');
 const API_DIR = path.join(__dirname, 'api');
 
 let RedisStore = require('connect-redis')(session);
-let redisClient = redis.createClient();
+let redisClient = redis.createClient({
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT
+});
 
 const app = express();
-const devMode = process.env.NODE_ENV === 'dev' ? true : false;
+const devMode = process.env.NODE_ENV === 'test' ? true : false;
 
-const defaultPort = devMode ? 3000 : 8080;
-const port = process.env.PORT || defaultPort;
+const port = process.env.PORT || 3000;
 
 db.authenticate();
 app.use(compression());
@@ -166,7 +168,7 @@ const checkHeaders = (referer, params) => {
 app.use('/api', function(req, res, next) {;
     if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     req.db = db;
-    req.isTesting = process.env.NODE_ENV === 'dev';
+    req.isTesting = process.env.NODE_ENV === 'test';
     next();
 });
 
@@ -180,12 +182,12 @@ app.use('/api/giphy', require(`${API_DIR}/giphy`));
 
 app.use('/api/status', require(`${API_DIR}/status`));
 
-if (process.env.NODE_ENV === 'dev') {
+if (devMode) {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);
     console.info("ASSET_DIR: ", ASSET_DIR);
     console.info("API_DIR: ", API_DIR);
 }
 
-app.listen(port, () => console.log(`Example app listening on port ${port} and env is ${process.env.NODE_ENV}!`));
+app.listen(port, () => console.log(`SPL Web listening on port ${port} and env is ${process.env.NODE_ENV}!`));
 
