@@ -1,3 +1,4 @@
+name: savepointlodge.com
 services:
   frontend:
     build:
