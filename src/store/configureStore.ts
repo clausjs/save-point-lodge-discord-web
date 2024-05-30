@@ -3,13 +3,15 @@ import themeReducer from '../reducers/theme';
 import moviesReducer from '../reducers/movies';
 import botsReducer from '../reducers/bots';
 import userReducer from '../reducers/user';
+import discordReducer from '../reducers/discord';
 
 export const store = configureStore({
   reducer: {
     theme: themeReducer,
     movies: moviesReducer,
     bots: botsReducer,
-    user: userReducer
+    user: userReducer,
+    discord: discordReducer
   },
 })
 

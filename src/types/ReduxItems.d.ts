@@ -88,6 +88,20 @@ export interface MovieState {
     stats: MovieStats;
 }
 
+export interface DiscordState {
+    members: DiscordUser[];
+}
+
+export interface DiscordUser {
+    id: string;
+    username: string;
+    discriminator: number;
+    avatar: string;
+    status: string;
+    game?: any
+    avatar_url: string;
+}
+
 export interface Action {
     type: string;
     payload: any

@@ -17,7 +17,10 @@ const ASSET_DIR = path.join(__dirname, '../assets');
 const API_DIR = path.join(__dirname, 'api');
 
 let RedisStore = require('connect-redis')(session);
-let redisClient = redis.createClient();
+let redisClient = redis.createClient({
+    host: process.env.REDIS_HOST ?? 'redis',
+    port: process.env.REDIS_PORT ?? 6379
+});
 
 const app = express();
 const devMode = process.env.NODE_ENV === 'dev' ? true : false;
@@ -74,9 +77,9 @@ const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'pro
 const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 
 passport.use(new Strategy({
-    authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
-    clientID: process.env.DISCORD_CLIENT_ID,
-    clientSecret: process.env.PASSPORT_SECRET,
+    authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
+    clientID: process.env.DISCORD_AUTH_CLIENT_ID,
+    clientSecret: process.env.DISCORD_AUTH_CLIENT_SECRET,
     tokenURL: 'https://discord.com/api/oauth2/token',
     callbackURL,
     scope: scopes,
@@ -88,15 +91,15 @@ passport.use(new Strategy({
 }));
 
 const redisStore = devMode ? new RedisStore({ client: redisClient }) : new RedisStore({
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    client: redisClient
+    host: process.env.REDIS_HOST ?? 'redis',
+    port: process.env.REDIS_PORT ?? 6379,
+    client: redisClient,
 });
 
 app.use(session({
     store: redisStore, 
     saveUninitialized: false,
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.AUTH_SESSION_SECRET,
     resave: false,
     secure: true,
     cookie: { maxAge: 10800000 },
@@ -148,7 +151,8 @@ passport.deserializeUser(function(obj, done) {
 });
 
 const checkHeaders = (referer, params) => {
-    const ACCEPTED_HEADERS = ['localhost:3000', 'localhost:8080', 'dev.savepointlodge.com', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
+    console.log("Referer: ", referer);
+    const ACCEPTED_HEADERS = ['localhost', 'dev.savepointlodge.com', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
 
     let foundAcceptableHeader = false;
 
@@ -180,6 +184,8 @@ app.use('/api/giphy', require(`${API_DIR}/giphy`));
 
 app.use('/api/status', require(`${API_DIR}/status`));
 
+app.use('/api/discord', require(`${API_DIR}/discord`));
+
 if (process.env.NODE_ENV === 'dev') {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);
@@ -187,5 +193,5 @@ if (process.env.NODE_ENV === 'dev') {
     console.info("API_DIR: ", API_DIR);
 }
 
-app.listen(port, () => console.log(`Example app listening on port ${port} and env is ${process.env.NODE_ENV}!`));
+app.listen(port, () => console.log(`SPL Web listening on port ${port} and env is ${process.env.NODE_ENV}!`));
 

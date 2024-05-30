@@ -1,35 +1,31 @@
 import React, { useState, useLayoutEffect } from 'react';
 import fetch from 'node-fetch';
-
-type User = {
-    id: string;
-    username: string;
-    discriminator: number;
-    avatar: string;
-    status: string;
-    game?: any
-    avatar_url: string;
-}
+import { DiscordUser, DiscordUser as User } from '../../types';
 
 import '../../sass/widget.scss';
+import { RootState } from '../../reducers';
+import { fetchDiscordWidget } from '../../actions';
+import { connect } from 'react-redux';
 
-const DiscordWidget: React.FC = () => {
-    const [ userlist, setUserlist ] = useState<any[]>([]);
+type DiscordWidgetProps = {
+    members?: DiscordUser[];
+    getWidget?: () => void;
+}
+
+const DiscordWidget: React.FC<DiscordWidgetProps> = (props) => {
+    // const [ userlist, setUserlist ] = useState<any[]>([]);
     const [ fetchedUserList, setFetchedUserList ] = useState<boolean>(false);
+
+    const { members: userlist = [], getWidget = () => {} } = props;
 
     useLayoutEffect(() => {
         if (!fetchedUserList) {
-            console.log("fetching userlist");
             setFetchedUserList(true);
-            const url = new URL(process.env.DISCORD_API);
-            fetch(url).then(res => res.json()).then(data => {
-                const list = data.members.filter((user: User) => user.username !== 'BoobBot™');
-                setUserlist(list);
-            }).catch(err => {
-                console.error("Error fetching widget info", err);
-            })
+            getWidget();
         }
     }, [fetchedUserList]);
+
+    console.log("MEMBERS: ", userlist);
 
     return (
         <div className='widget-content'>
@@ -70,4 +66,13 @@ const DiscordWidget: React.FC = () => {
     );
 }
 
-export default DiscordWidget;
+const mapStateToProps = (state: RootState): { members: DiscordUser[] } => {
+    const { members } = state.discord;
+    return { members };
+}
+
+const mapDispatchToProps = (dispatch: any) => ({
+    getWidget: () => dispatch(fetchDiscordWidget())
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(DiscordWidget);
