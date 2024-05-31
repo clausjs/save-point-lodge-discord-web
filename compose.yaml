@@ -1,4 +1,4 @@
-name: savepointlodge.com
+name: savepointlodge-web
 services:
   frontend:
     build:
