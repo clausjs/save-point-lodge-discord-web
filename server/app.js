@@ -151,8 +151,7 @@ passport.deserializeUser(function(obj, done) {
 });
 
 const checkHeaders = (referer, params) => {
-    console.log("Referer: ", referer);
-    const ACCEPTED_HEADERS = ['localhost', 'dev.savepointlodge.com', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
+    const ACCEPTED_HEADERS = ['localhost', 'dev.savepointlodge.com', 'savepointlodge.com'];
 
     let foundAcceptableHeader = false;
 
