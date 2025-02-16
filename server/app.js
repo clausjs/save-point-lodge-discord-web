@@ -31,8 +31,7 @@ if (!devMode) {
 
 const app = express();
 
-const defaultPort = devMode ? 3000 : 8080;
-const port = process.env.PORT || defaultPort;
+const port = process.env.PORT || 3000;
 
 db.authenticate();
 app.use(compression());
@@ -178,7 +177,7 @@ const checkHeaders = (referer, params) => {
 app.use('/api', function(req, res, next) {;
     if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     req.db = db;
-    req.isTesting = process.env.NODE_ENV === 'dev';
+    req.isTesting = process.env.NODE_ENV === 'test';
     next();
 });
 
@@ -196,7 +195,7 @@ app.use('/api/discord', require(`${API_DIR}/discord`));
 
 app.use('/api/soundboard', require(`${API_DIR}/soundboard`));
 
-if (process.env.NODE_ENV === 'dev') {
+if (devMode) {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);
     console.info("ASSET_DIR: ", ASSET_DIR);
