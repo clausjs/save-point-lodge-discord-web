@@ -1,5 +1,5 @@
 import { ChangeEventHandler } from 'react';
-import { TableCellProps } from '@material-ui/core';
+import { TableCellProps } from '@mui/material';
 
 export type TableHeader = {
     label: string;

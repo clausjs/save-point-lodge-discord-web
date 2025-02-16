@@ -1,18 +1,30 @@
 import React from 'react';
 
-import { useMediaQuery } from '@material-ui/core';
+import { useMediaQuery } from '@mui/material';
 
 import MobileHeader from './MobileHeader';
 import DesktopHeader from './DesktopHeader';
-import { HeaderProps } from '../../../types';
+import { ClassNameMap, makeStyles } from '@mui/styles';
 
-const Header: React.FC<HeaderProps> = (props) => {
-    const isMobile: boolean = useMediaQuery('(max-width: 1100px)');
+export interface HeaderProps {
+    classes: ClassNameMap;
+}
+
+const useStyles = makeStyles((theme: any) => ({
+    root: {
+        display: 'flex',
+        flexGrow: 0,
+    }
+}));
+
+const Header: React.FC = () => {
+    const classes = useStyles();
+    const isMobile: boolean = useMediaQuery('(max-width: 1100px)', { noSsr: true });
 
     return (
-        <>
-            {isMobile ? <MobileHeader {...props} /> : <DesktopHeader {...props} />}
-        </>
+        <div className={classes.root}>
+            {isMobile ? <MobileHeader classes={classes} /> : <DesktopHeader classes={classes} />}
+        </div>
     );
 }
 

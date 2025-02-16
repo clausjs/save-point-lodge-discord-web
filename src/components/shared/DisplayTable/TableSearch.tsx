@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import {
     InputAdornment,
     TextField
-} from '@material-ui/core';
+} from '@mui/material';
 
-import SearchIcon from '@material-ui/icons/Search';
-import ClearIcon from '@material-ui/icons/Clear';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 
 import { TableSearchProps } from '../../../types';
 

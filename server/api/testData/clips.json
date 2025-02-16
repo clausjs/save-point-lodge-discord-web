@@ -1,0 +1,35 @@
+[
+    {
+        "id": "URL-955fc0ef-f202-43f5-8eb9-c84a1be8b027",
+        "name": "Fart",
+        "description": "A fart sound. Just a little poot.",
+        "tags": ["fart", "poot", "toot"],
+        "uploadedBy": "ice2morrow",
+        "url": "https://www.myinstants.com/media/sounds/dry-fart.mp3",
+        "favoritedBy": ["184535234153414656"]
+    },
+    {
+        "id": "URL-dc66e24e-dec3-4b4f-b346-8e7a2e7e9ca8",
+        "name": "DJ Airhorn",
+        "description": "Airhorn sound",
+        "tags": ["airhorn", "dj"],
+        "uploadedBy": "ice2morrow",
+        "url": "https://www.myinstants.com/media/sounds/dj-airhorn.mp3"
+    },
+    {
+        "id": "URL-231c3101-67d9-48ac-8543-06ad426421a4",
+        "name": "Bruh",
+        "description": "Bruh sound effect",
+        "tags": ["bruh"],
+        "uploadedBy": "ice2morrow",
+        "url": "https://www.myinstants.com/media/sounds/bruh.mp3"
+    },
+    {
+        "id": "URL-cff8f0cd-6825-4700-886f-6f546a945fdc",
+        "name": "Smoke Detector Beep",
+        "description": "Smoke detector beep",
+        "tags": ["beep", "smoke detector"],
+        "uploadedBy": "ice2morrow",
+        "url": "https://www.myinstants.com/media/sounds/smoke-detector-beep.mp3"
+    }
+]

@@ -17,7 +17,7 @@ export type TabledCommands = {
     [id: string]: Command;
 }
 
-export interface BotState {
+export interface CommandState {
     commands: Command[];
 }
 
@@ -26,7 +26,7 @@ export interface User {
     username: string;
     avatar: string;
     isPlanetExpressMember: boolean;
-    isMoviegoer: boolean;
+    isSoundboardUser: boolean;
 }
 
 interface UserOption {
@@ -44,12 +44,8 @@ interface UserOptDescription {
 }
 
 export interface UserState {
-    status: 'idle' | 'loading' | 'succeeded' | 'failed';
-    error: string | null;
     user: User | null;
     opts: UserOptions | {};
-    isMoviegoer: boolean;
-    isLodgeGuest: boolean;
 }
 
 export interface VotableMovie {
@@ -100,6 +96,22 @@ export interface DiscordUser {
     status: string;
     game?: any
     avatar_url: string;
+}
+
+export interface Clip {
+    id: string;
+    name: string;
+    tags: string[];
+    description: string;
+    uploadedBy: string;
+    playCount: number;
+    fileName?: string;
+    url?: string;
+    favoritedBy?: string[];
+}
+
+export interface SoundboardState {
+    clips: Clip[];
 }
 
 export interface Action {

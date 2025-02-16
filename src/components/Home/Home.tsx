@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React from 'react';
 
 import {
     Container,
@@ -7,7 +7,7 @@ import {
     CardContent,
     Typography,
     useMediaQuery
-} from '@material-ui/core';
+} from '@mui/material';
 
 import DiscordWidget from './DiscordWidget';
 const showcases = [
@@ -33,7 +33,7 @@ const showcases = [
     }
 ];
 
-import '../../sass/home.scss';
+import './Home.scss';
 
 const Home: React.FC = () => {
     const isUnderSevenHundredPixels = useMediaQuery('(max-width:700px)');

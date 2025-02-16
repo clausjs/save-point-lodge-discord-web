@@ -1,47 +1,50 @@
 import React, { useEffect, useState } from 'react';
-import { connect, useSelector } from 'react-redux';
+import { connect, useSelector, useDispatch } from 'react-redux';
 
 import {
-    Typography,
     Container,
     Switch
-} from '@material-ui/core';
+} from '@mui/material';
 
 import DisplayTable from "../shared/DisplayTable/DisplayTable"
 
-import { RootState } from '../../reducers';
+// import { RootState } from '../../store/configureStore';
+import { AppDispatch, RootState } from '../../state/store';
 
-import { fetchUserOpts, setUserOption } from '../../actions';
+// import { fetchUserOpts, setUserOption } from '../../actions';
 
-import '../../sass/members.scss';
+import './Members.scss';
 import { User, UserOption, UserOptions } from '../../types';
+import { fetchUser, setOption } from '../../state/reducers/user';
 
-interface MemberOptionsProps {
-    fetchOpts: Function;
-    setOpt: Function;
-    children: React.ReactNode;
-}
-
-const Members: React.FC<MemberOptionsProps> = (props) => {
-
-    const [ fetchedUserOpts, setFetchedUserOpts ] = useState<boolean>(false);
+const Members: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
     const user: User = useSelector((state: RootState) => state.user.user);
-    const isLodgeGuest: boolean = useSelector((state: RootState) => state.user.isLodgeGuest);
+    const isLodgeGuest: boolean = useSelector((state: RootState) => state.user.user?.isPlanetExpressMember) || false;
     const opts: UserOptions = useSelector((state: RootState) => state.user.opts);
+    const [ fetchedUserOpts, setFetchedUserOpts ] = useState<boolean>(false);
 
     useEffect(() => {
         if (user !== null && !fetchedUserOpts) {
-            props.fetchOpts();
+            dispatch(fetchUser());
             setFetchedUserOpts(true);
         }
     }, [user]);
 
     const toggleOption = (event: any) => {
         const { name: label } = event.target;
-        const newOpt: { [id: string]: boolean } = {};
-        newOpt[label] = !opts[label].value;
+        if (opts.hasOwnProperty(label)) {
+            const newOpt: UserOption = {
+                value: !opts[label].value,
+                description: opts[label].description
+            };
+            dispatch(setOption({ ...opts, [label]: newOpt } as UserOptions));
+        }
+        // const newOpt: UserOption | {} = {};
+        // newOpt[label] = !opts[label].value;
 
-        props.setOpt(newOpt);
+        // props.setOpt(newOpt);
+        // dispatch(setOption({ ...opts, newOpt } as UserOptions));
     }
 
     const getContainerContent = () => {
@@ -113,7 +116,7 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
                     searchLabel={false}
                     itemName="user option"
                     tableId='member options table'
-                    isLoadingData={!fetchUserOpts}
+                    isLoadingData={!fetchedUserOpts}
                 />
             </React.Fragment>
         );
@@ -126,9 +129,4 @@ const Members: React.FC<MemberOptionsProps> = (props) => {
     );
 }
 
-const mapDispatchToProps = (dispatch: any) => ({
-    fetchOpts: () =>  dispatch(fetchUserOpts()),
-    setOpt: (option: any) => dispatch(setUserOption(option))
-});
-
-export default connect(null, mapDispatchToProps)(Members);
+export default Members;

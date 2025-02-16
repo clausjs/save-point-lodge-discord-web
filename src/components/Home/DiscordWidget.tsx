@@ -1,38 +1,31 @@
 import React, { useState, useLayoutEffect } from 'react';
-import fetch from 'node-fetch';
 import { DiscordUser, DiscordUser as User } from '../../types';
 
-import '../../sass/widget.scss';
-import { RootState } from '../../reducers';
-import { fetchDiscordWidget } from '../../actions';
-import { connect } from 'react-redux';
+import './Widget.scss';
+import { fetchDiscordMembers } from '../../state/reducers/discord';
+import { connect, useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from '../../state/store';
+import { useSelector } from 'react-redux';
 
-type DiscordWidgetProps = {
-    members?: DiscordUser[];
-    getWidget?: () => void;
-}
-
-const DiscordWidget: React.FC<DiscordWidgetProps> = (props) => {
-    // const [ userlist, setUserlist ] = useState<any[]>([]);
+const DiscordWidget: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
     const [ fetchedUserList, setFetchedUserList ] = useState<boolean>(false);
 
-    const { members: userlist = [], getWidget = () => {} } = props;
+    const members: DiscordUser[] = useSelector((state: RootState) => state.discord.members);
 
     useLayoutEffect(() => {
         if (!fetchedUserList) {
             setFetchedUserList(true);
-            getWidget();
+            dispatch(fetchDiscordMembers());
         }
     }, [fetchedUserList]);
-
-    console.log("MEMBERS: ", userlist);
 
     return (
         <div className='widget-content'>
             <div className='content-header'>
                 <a className='widgetLogo' href='https://discord.com' target="_blank" />
                 <span className='online-count'>
-                    <strong>{userlist.length}</strong>
+                    <strong>{members.length}</strong>
                     <> </>
                     <> Members</>
                     <> Online</>
@@ -43,7 +36,7 @@ const DiscordWidget: React.FC<DiscordWidgetProps> = (props) => {
                 <div className='user-list'>
                     <div className='membersOnline'>Members Online</div>
                     <div>
-                        {userlist.map((user: User, i: number) => {
+                        {members.map((user: User, i: number) => {
                             return (
                                 <div className='widget-member' key={i}>
                                     <div className='widget-avatar'>
@@ -66,13 +59,4 @@ const DiscordWidget: React.FC<DiscordWidgetProps> = (props) => {
     );
 }
 
-const mapStateToProps = (state: RootState): { members: DiscordUser[] } => {
-    const { members } = state.discord;
-    return { members };
-}
-
-const mapDispatchToProps = (dispatch: any) => ({
-    getWidget: () => dispatch(fetchDiscordWidget())
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(DiscordWidget);
+export default DiscordWidget;

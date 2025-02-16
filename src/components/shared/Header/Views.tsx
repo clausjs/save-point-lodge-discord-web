@@ -3,22 +3,22 @@ import {
     Home,
     Contacts,
     Keyboard,
-    Movie,
-    Subscriptions
-} from '@material-ui/icons';
+    Subscriptions,
+    VolumeUp
+} from '@mui/icons-material';
 
 import { Pages } from "../../../types";
 
 export const AllPages: Pages = {
-    Logo: {
-        to: "/",
-        label: <img src='/img/logo.png' />
-    },
+    // Logo: {
+    //     to: "/",
+    //     label: <img src='/img/logo.png' />
+    // },
     Home: {
         to: "/",
         icon: <Home />
     },
-    "Bots on SPL": {
+    Joe_Bot: {
         to: "/our-bots",
         icon: <Contacts />
     },
@@ -27,11 +27,11 @@ export const AllPages: Pages = {
         disabled: false,
         icon: <Keyboard />
     },
-    Movies: {
-        to: "/movies",
+    Soundboard: {
+        to: "/soundboard",
         requiresAuth: true,
-        requiresMoviegoer: true,
-        icon: <Movie />
+        requiresSoundboarder: true,
+        icon: <VolumeUp />
     },
     Subscribe: {
         to: "https://ptb.discord.com/servers/save-point-lodge-184535415363993600",

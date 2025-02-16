@@ -1,12 +1,11 @@
 import React from 'react';
-import { Switch, FormControl, FormControlLabel } from '@material-ui/core';
+import { Switch, FormControl, FormControlLabel } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../reducers';
-import { AppDispatch } from '../../../store/configureStore';
-import { toggleLightMode } from '../../../actions/themeActions';
+import { AppDispatch, RootState } from '../../../state/store';
+import { toggleLightMode } from '../../../state/reducers/theme';
 
 const ThemeSwitch: React.FC = () => {
-    const dispatch: AppDispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const lightMode: boolean = useSelector((state: RootState) => state.theme.lightMode);
 
     return (

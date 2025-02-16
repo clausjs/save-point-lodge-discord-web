@@ -1,47 +1,42 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
-import { connect, useSelector } from 'react-redux';
+import { connect, useSelector, useDispatch } from 'react-redux';
 
 import {
-    Accordion,
     Container
-} from '@material-ui/core';
+} from '@mui/material';
 
-import DisplayTable from '../../shared/DisplayTable/DisplayTable';
 import AccordionItem from "./AccordionItem";
-import { Command, TabledCommands, TableHeader, TableCell } from "../../../types";
-import { fetchCommands } from "../../../actions/botsActions";
+import { Command, TabledCommands } from "../../../types";
 
-import '../../../sass/commands.scss';
-import { CircleLoader, PacmanLoader } from "react-spinners";
+import './Commands.scss';
+import { PacmanLoader } from "react-spinners";
+import { AppDispatch, RootState } from "../../../state/store";
+import { fetchCommands } from "../../../state/reducers/commands";
 
 const LOADING_SIZE: number = 150;
 
-interface CommandsProps {
-    commands: Command[];
-    getCommands: Function;
-    children: React.ReactNode;
-}
-
-const Commands: React.FC<CommandsProps> = (props) => {
+const Commands: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
 
     const [ fetchedCommands, setFetchedCommands ] = useState<boolean>(false);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ commands, setCommands ] = useState<TabledCommands | {}>({});
     const [ expanded, setExpanded ] = useState<number>(-1);
 
+    const _commands: Command[] = useSelector((state: RootState) => state.commands.commands);
     const lightMode: boolean = useSelector((state: any) => state.theme.lightMode);
 
     useEffect(() => {
         if (!fetchedCommands) {
             setIsLoading(true);
-            props.getCommands();
+            dispatch(fetchCommands());
             setFetchedCommands(true);
         }
     });
 
     const generateTabledCommandsFromProps = () => {
         const newCommands = {};
-        props.commands.map((commandFromDb: any) => {
+        _commands.map((commandFromDb: any) => {
             //@ts-ignore
             if (!newCommands[commandFromDb.name]) {
                 //@ts-ignore
@@ -52,11 +47,11 @@ const Commands: React.FC<CommandsProps> = (props) => {
     }
 
     useEffect(() => {
-        if (Object.keys(commands).length !== props.commands.length) {
+        if (Object.keys(commands).length !== _commands.length) {
             setCommands(generateTabledCommandsFromProps());
             setIsLoading(false);
         }
-    }, [props.commands]);
+    }, [_commands]);
 
 
     const onAccordionChange = (index: number, open: boolean) => {
@@ -90,7 +85,7 @@ const Commands: React.FC<CommandsProps> = (props) => {
                         More information can be found on Discord's official website <a href="https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ">here</a>.
                     </p>
                 </div>
-                {props.commands.map((command: Command, index: number) => {
+                {_commands.map((command: Command, index: number) => {
                     return (
                         <AccordionItem
                             key={index} 
@@ -106,13 +101,4 @@ const Commands: React.FC<CommandsProps> = (props) => {
     );
 };
 
-const mapStateToProps = (state: any) => {
-    const { commands } = state.bots;
-    return { commands }
-};
-
-const mapDispatchToProps = (dispatch: any) => ({
-    getCommands: () => dispatch(fetchCommands())
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Commands);
+export default Commands;

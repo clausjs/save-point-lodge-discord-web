@@ -5,6 +5,7 @@ const express = require('express');
 const compression = require('compression');
 const favicon = require('serve-favicon');
 const session  = require('express-session');
+const MemoryStore = require('memorystore')(session);
 const redis = require('redis');
 const passport = require('passport');
 const history = require('connect-history-api-fallback');
@@ -16,14 +17,19 @@ const BUILD_DIR = path.join(__dirname, '../build');
 const ASSET_DIR = path.join(__dirname, '../assets');
 const API_DIR = path.join(__dirname, 'api');
 
-let RedisStore = require('connect-redis')(session);
-let redisClient = redis.createClient({
-    host: process.env.REDIS_HOST ?? 'redis',
-    port: process.env.REDIS_PORT ?? 6379
-});
+let RedisStore, redisClient;
+
+const devMode = process.env.NODE_ENV === 'dev' ? true : false;
+
+if (!devMode) {
+    RedisStore = require('connect-redis')(session);
+    redisClient = redis.createClient({
+        host: process.env.REDIS_HOST ?? 'redis',
+        port: process.env.REDIS_PORT ?? 6379
+    });
+}
 
 const app = express();
-const devMode = process.env.NODE_ENV === 'dev' ? true : false;
 
 const defaultPort = devMode ? 3000 : 8080;
 const port = process.env.PORT || defaultPort;
@@ -69,7 +75,7 @@ app.use(function(req, res, next) {
     next();
 });
 
-var scopes = ['identify', 'guilds'];
+var scopes = ['identify', 'guilds', 'guilds.members.read'];
 var prompt = 'consent';
 
 const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com" : `${process.env.NODE_ENV === 'test' ? 'dev.' : ''}savepointlodge.com`;
@@ -90,14 +96,17 @@ passport.use(new Strategy({
     });
 }));
 
-const redisStore = devMode ? new RedisStore({ client: redisClient }) : new RedisStore({
+const store = devMode ? new MemoryStore() : new RedisStore({ 
     host: process.env.REDIS_HOST ?? 'redis',
     port: process.env.REDIS_PORT ?? 6379,
-    client: redisClient,
+    client: redis.createClient({
+        host: process.env.REDIS_HOST ?? 'redis',
+        port: process.env.REDIS_PORT ?? 6379
+    })
 });
 
 app.use(session({
-    store: redisStore, 
+    store, 
     saveUninitialized: false,
     secret: process.env.AUTH_SESSION_SECRET,
     resave: false,
@@ -184,6 +193,8 @@ app.use('/api/giphy', require(`${API_DIR}/giphy`));
 app.use('/api/status', require(`${API_DIR}/status`));
 
 app.use('/api/discord', require(`${API_DIR}/discord`));
+
+app.use('/api/soundboard', require(`${API_DIR}/soundboard`));
 
 if (process.env.NODE_ENV === 'dev') {
     console.info("Execution directory: ", __dirname);

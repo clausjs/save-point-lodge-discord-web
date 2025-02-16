@@ -1,0 +1,114 @@
+@import '../../sass/_globals';
+
+body.light {
+    .main-header {
+        .logo {
+            background: 4px $color-pallette-white;
+        }
+    }
+
+    
+}
+
+.soundboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    width: auto;
+
+    .search-bar {
+        width: auto;
+        justify-content: center;
+        margin: 0 auto;
+        min-width: 75%;
+        color: white !important;
+    }
+
+    .grid-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin: auto;
+        width: auto;
+        margin: 10px 20px;
+        box-shadow: unset;
+
+        button {
+            margin: 0 5px;
+        }
+
+        .status {
+            color: white;
+            flex: 1;
+
+            .success {
+                color: green;
+            }
+
+            .error {
+                color: red;
+            }
+
+            .unknown {
+                color: yellow;
+            }
+        }
+    }
+
+    .soundboard-items {
+        justify-content: center;
+
+        .MuiGrid-item {
+            margin: 0 10px;
+            
+            .clip-card {
+                @include background-opacity($color-pallette-dark-background-2, 0.5);
+                margin: 0 auto;
+                color: white;
+
+                .clip-name {
+                    text-decoration: solid;
+                }
+
+                .clip-uploader {
+                    color: $color-pallette-light-gray;
+                }
+
+                .clip-description {
+                    visibility: hidden;
+
+                    &.show {
+                        visibility: visible;
+                    }
+                }
+
+                .clip-footer {
+                    display: flex;
+                    flex-direction: row;
+
+                    .MuiChip-root {
+                        max-height: 15px;
+                        background-color: $color-pallette-light-blue;
+                    }
+
+                    .actions {
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: flex-end;
+                        width: 100%;
+
+                        svg {
+                            max-height: 15px;
+                            margin: 0 2px;
+
+                            &.favorited {
+                                color: red;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}

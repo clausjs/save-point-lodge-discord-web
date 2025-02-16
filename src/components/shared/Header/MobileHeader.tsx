@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { connect, useSelector } from 'react-redux';
-import { useLocation, useHistory, Link } from "react-router-dom";
+import { useSelector } from 'react-redux';
+import { useLocation, useNavigate, Link } from "react-router-dom";
 
 import {
     AppBar,
@@ -14,56 +14,51 @@ import {
     IconButton,
     Button,
     Menu,
-    MenuItem
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import MenuIcon from '@material-ui/icons/Menu';
+    MenuItem,
+    createTheme
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 
 import ThemeSwitch from './ThemeSwitch';
 
 import { 
-    HeaderProps,
     MobilePageLink,
     User,
     UserState 
 } from '../../../types';
 
-import { fetchUserAuthorization, isMoviegoer, isSPLMember } from '../../../actions';
-import {
-    RootState
-} from '../../../reducers';
+// import { fetchUserAuthorization, isMoviegoer, isSoundboardMember, isSPLMember } from '../../../actions';
+// import { fetch }
+// import {
+//     RootState
+// } from '../../../store/configureStore';
+import { AppDispatch, RootState } from '../../../state/store';
 
 import '../../../sass/_globals.scss';
 
 import { AllPages as views } from './Views';
-import { AccountCircle, Cancel, Launch } from '@material-ui/icons';
-
-const useStyles = makeStyles((theme) => ({
-    root: {
-        flexGrow: 0,
-    }
-}));
+import { AccountCircle, Cancel, Launch } from '@mui/icons-material';
+import { useDispatch } from 'react-redux';
+import { fetchUser } from '../../../state/reducers/user';
+import { HeaderProps } from './Header';
 
 const MobileHeader: React.FC<HeaderProps> = (props) => {
-    const classes = useStyles();
+    const { classes } = props;
+    const dispatch = useDispatch<AppDispatch>();
     const [ view, setView ] = useState<number | false>(0);
     const [ links, setLinks ] = useState<React.ReactNode[]>([]);
     const [ navMenuOpen, setNavMenuOpen ] = useState<boolean>(false);
-    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | ((element: Element) => Element) | null>(null);
+    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element) | null>(null);
     const userState: UserState = useSelector((state: RootState) => state.user);
     const authMenuOpen: boolean = Boolean(authAnchorEl);
-    const history = useHistory();
+    const history = useNavigate();
     const currentLoc: string = useLocation().pathname;
 
-    const { user, isMoviegoer, isLodgeGuest }: { user: User, isMoviegoer: boolean, isLodgeGuest: boolean } = userState;
+    const { user  } = userState;
 
-    useLayoutEffect(() => {
-        if (userState.status === 'idle') {
-            props.getAuth();
-            props.getMoviegoerStatus();
-            props.getGuestStatus();
-        }
-    });
+    useEffect(() => {
+        dispatch(fetchUser());
+    }, []);
 
     useEffect(() => {
         const actualView = Object.values(views).findIndex(view => view.to === currentLoc);
@@ -80,7 +75,6 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
             const viewName = Object.keys(views)[i];
             const view: MobilePageLink = views[viewName] as MobilePageLink;
             if (view.requiresAuth && user === null) continue;
-            if (view.requiresMoviegoer && !isMoviegoer) continue;
 
             if (view.label) {
                 links.push(
@@ -101,8 +95,8 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
                                             color="inherit"
                                             onClick={handleAuthMenu}
                                         >
-                                            {userState.status === 'succeeded' && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
-                                            {userState.status === 'succeeded' && user.avatar === null && <AccountCircle />}
+                                            {user && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                            {user && user.avatar === null && <AccountCircle />}
                                         </IconButton>
                                     </div>
                                 )}
@@ -142,7 +136,7 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
             }
         }
         setLinks(links);
-    }, [user, isLodgeGuest, isMoviegoer]);
+    }, [user]);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);
@@ -158,7 +152,7 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
         setView(newView);
         if (newView !== false) {
             setNavMenuOpen(false);
-            history.push(Object.values(views)[newView].to);
+            history(Object.values(views)[newView].to);
         }
     }
 
@@ -199,7 +193,7 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
                         open={authMenuOpen}
                         onClose={handleAuthMenuClose}
                     >
-                        {user && isLodgeGuest === true && (
+                        {user && user.isPlanetExpressMember === true && (
                             <MenuItem 
                                 onClick={(e) => {
                                     handleAuthMenuClose();
@@ -222,15 +216,4 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
     );
 }
 
-const mapStateToProps = (state: RootState) => {
-    const { user } = state.user;
-    return { user }
-};
-
-const mapDispatchToProps = (dispatch: any) => ({
-    getAuth: () => dispatch(fetchUserAuthorization()),
-    getMoviegoerStatus: () => dispatch(isMoviegoer()),
-    getGuestStatus: () => dispatch(isSPLMember())
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(MobileHeader);
+export default MobileHeader;

@@ -6,23 +6,21 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TablePagination,
     TableRow,
-    Paper,
-    InputAdornment,
-    TextField
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+    Paper
+} from '@mui/material';
 
 import { ScaleLoader } from 'react-spinners';
 
-import { useSnackbar } from 'notistack';
+// TODO: Use React-Toastify
+// import { useSnackbar } from 'notistack';
 
-import '../../../sass/displayTable.scss';
+import './DisplayTable.scss';
 
 import TableSearch from './TableSearch';
 import TabbedTablePagination from './DisplayTablePagination';
 import { DisplayTableProps } from '../../../types';
+import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles(() => ({
     table: {

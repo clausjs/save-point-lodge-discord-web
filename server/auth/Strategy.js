@@ -74,6 +74,7 @@ util.inherits(Strategy, OAuth2Strategy);
 Strategy.prototype.userProfile = function(accessToken, done) {
    var self = this;
    console.log('fetching profile');
+   const oauth2 = this._oauth2;
    this._oauth2.get('https://discord.com/api/users/@me', accessToken, function(err, body, res) {
        if (err) {
            return done(new InternalOAuthError('Failed to fetch the user profile.', err))
@@ -95,15 +96,23 @@ Strategy.prototype.userProfile = function(accessToken, done) {
            if (connections) profile.connections = connections;
            self.checkScope('guilds', accessToken, async function(erry, guilds) {
                if (erry) done(erry);
-               if (guilds) profile.guilds = guilds;
-               const isMoviegoer = await db.firebase.isMoviegoer(profile.id);
-               const PEGuild = profile.guilds.find(guild => guild.id === "184535415363993600");
-               if (PEGuild) profile.isPlanetExpressMember = true;
-               else profile.isPlanetExpressMember = false;
-               profile.isMoviegoer = isMoviegoer;
-               profile.fetchedAt = new Date();
-            //    console.log('returning profile: ', profile)
-               return done(null, profile)
+               const PEGuild = guilds.find(guild => guild.id === "184535415363993600");
+               if (PEGuild) {
+                    profile.isPlanetExpressMember = true;
+                    oauth2.get(`https://discord.com/api/users/@me/guilds/184535415363993600/member`, accessToken, async function(err, body, res) {
+                        if (err) console.error("Error getting member data: ", err);
+                        else {
+                            const memberData = JSON.parse(body);
+                            profile.isSoundboardUser = memberData.roles.includes("1335694712027480175");
+                            profile.fetchedAt = new Date();
+                        }
+                        return done(null, profile)
+                    });
+                } else {
+                    profile.isPlanetExpressMember = false;
+                    profile.isSoundboardUser = false;
+                    return done(null, profile);
+                }
            });
        });
    });
