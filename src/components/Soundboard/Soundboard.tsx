@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Button, Grid, Input } from '@mui/material';
 
-import AddClipDialog from './AddClipDialog';
+import ConfigClipDialog from './ConfigClipDialog';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../state/store';
 import { Clip, User } from '../../types';
@@ -10,7 +10,7 @@ import SoundboardClip from './SoundbardClip';
 import toastr from '../../utils/toastr';
 
 import { Search } from '@mui/icons-material';
-import { fetchSoundboardClips, addClip } from '../../state/reducers/soundboard';
+import { fetchSoundboardClips, addClip, editClip } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
 
@@ -22,9 +22,13 @@ const Soundboard: React.FC = () => {
     const [ messageHistory, setMessageHistory ] = useState<MessageEvent<{ type: string, sound?: string }>[]>([]);
     const [ searchTerm, setSearchTerm ] = useState('');
     const [ dialogOpen, setDialogOpen ] = useState(false);
+    const [ editingClip, setEditingClip ] = useState<Clip | null>(null);
 
     const openDialog = () => setDialogOpen(true);
-    const closeDialog = () => setDialogOpen(false);
+    const closeDialog = () => {
+        setEditingClip(null);
+        setDialogOpen(false);
+    }
 
     const user: User = useSelector((state: RootState) => state.user.user);
     const clips: Clip[] = useSelector((state: RootState) => state.soundboard.clips);
@@ -91,12 +95,26 @@ const Soundboard: React.FC = () => {
         }
     }, []);
 
-    const _addClip = (clip: Clip) => {
-        // props.addClip(clip);
-        dispatch(addClip(clip))
+    const _addOrEditClip = (clip: Clip) => {
+        if (editingClip) {
+            dispatch(editClip(clip));
+        } else {
+            dispatch(addClip(clip));
+        }
     }
 
     const favoriteClip = (clipId: string) => {}
+
+    const openClipEdit = (clipId: string) => {
+        const clip: Clip | undefined = clips.find(c => {
+            return c.id === clipId
+        });
+        if (clip) {
+            setEditingClip(clip);
+            openDialog();
+        }
+    }
+
 
     const filteredClips = searchTerm === "" ? clips : clips.filter(clip =>
         clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -106,7 +124,7 @@ const Soundboard: React.FC = () => {
 
     return (
         <div className='soundboard'>
-            <AddClipDialog open={dialogOpen} onClose={closeDialog} onSave={addClip} />
+            <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
             <div className='grid-actions'>
                 <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
                 <div className='button-grp'>
@@ -130,6 +148,7 @@ const Soundboard: React.FC = () => {
                             isFavorite={clip.favoritedBy?.includes(user?.id)} 
                             onClick={playClip} 
                             onFavorite={favoriteClip}
+                            onEdit={openClipEdit}
                         />
                     </Grid>
                 ))}

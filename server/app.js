@@ -177,13 +177,11 @@ const checkHeaders = (referer, params) => {
 app.use('/api', function(req, res, next) {;
     if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     req.db = db;
-    req.isTesting = process.env.NODE_ENV === 'test';
+    req.isTesting = process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'dev';
     next();
 });
 
 app.use('/api/user', require(`${API_DIR}/user`));
-
-app.use('/api/movies', require(`${API_DIR}/movies`));
 
 app.use('/api/commands', require(`${API_DIR}/commands`));
 

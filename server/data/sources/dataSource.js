@@ -4,7 +4,7 @@ class DataSource {
         this.db = store;
     }
     get() {}
-    get(id) {}
+    getById(id) {}
     add(opts) {}
     set(opts) {}
     delete(opts) {}

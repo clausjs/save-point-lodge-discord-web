@@ -7,6 +7,7 @@ const SoundboardClip: React.FC<Clip & {
     isFavorite?: boolean, 
     onClick: (clipId: string) => void, 
     onFavorite: (clipId: string) => void 
+    onEdit: (clipId: string) => void
 }> = ({
     id,
     name, 
@@ -16,6 +17,7 @@ const SoundboardClip: React.FC<Clip & {
     url,
     onClick,
     onFavorite,
+    onEdit,
     isFavorite = false
 }) => {
     const audioFile = useRef(null);
@@ -43,7 +45,7 @@ const SoundboardClip: React.FC<Clip & {
                 <div className='actions'>
                     <PlayArrow onClick={playAudio} />
                     <Favorite className={`${isFavorite ? 'favorited' : ''}`} onClick={onFavorite.bind(this, id)} />
-                    {/* <Edit /> */}
+                    <Edit onClick={onEdit.bind(this, id)} />
                 </div>
             </div>
             <audio className='clip-audio' ref={audioFile} src={url} />

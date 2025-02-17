@@ -22,9 +22,9 @@ const buildOptsWithDescriptions = (options, descriptions) => {
 
 class UserOpts extends DataSource {
     constructor(store) {
+        super(store);
         this.collectionName = "user_options";
         this.descriptionsCollectionName = "descriptions";
-        this.db = store;
     }
     get = async (userId) => {
         if (!userId) return logErr(new Error("No userId supplied to getUserOptions"));

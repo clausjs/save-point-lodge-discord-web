@@ -6,8 +6,8 @@ const logErr = (err) => {
 
 class Commands extends DataSource {
     constructor(store) {
+        super(store);
         this.collectionName = "commands";
-        this.db = store;
     }
     get = async () => {
         const { db } = this;

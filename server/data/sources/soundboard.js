@@ -6,8 +6,8 @@ const logErr = (err) => {
 
 class Soundboard extends DataSource {
     constructor(store) {
+        super(store);
         this.collectionName = "soundboard-clips";
-        this.db = store;
     }
     get = async () => {
         const { db } = this;
@@ -57,6 +57,17 @@ class Soundboard extends DataSource {
                     fileName: urlOrFileName
                 });
             }
+        } catch (err) {
+            logErr(err);
+        }
+    }
+    set = async (clip) => {
+        const { db } = this;
+        const collection = db.collection(this.collectionName);
+        const doc = collection.doc(id);
+
+        try {
+            await doc.set(clip);
         } catch (err) {
             logErr(err);
         }

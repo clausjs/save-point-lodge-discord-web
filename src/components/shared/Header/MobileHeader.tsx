@@ -117,9 +117,9 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
                 links.push(
                     <ListItem
                         key={i}
-                        selected={view.to === currentLoc}
+                        // selected={view.to === currentLoc}
                         className='list-item'
-                        onClick={(event) => {
+                        onClick={(event: React.MouseEvent) => {
                             if (view.externalSite) {
                                 window.open(view.to, "_blank");
                             } else handleNavigation(event, i)

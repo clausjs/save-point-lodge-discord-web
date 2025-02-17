@@ -110,8 +110,13 @@ export interface Clip {
     favoritedBy?: string[];
 }
 
+export type apiState = 'pending' | 'fulfilled' | 'rejected';
+
 export interface SoundboardState {
     clips: Clip[];
+    clipFetchState?: apiState;
+    clipAddState?: apiState;
+    clipEditState?: apiState;
 }
 
 export interface Action {

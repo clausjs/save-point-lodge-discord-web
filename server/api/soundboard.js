@@ -6,7 +6,7 @@ const multer  = require('multer');
 const upload = multer({ dest: os.tmpdir() });
 const uuid = require('uuid').v4();
 
-const clips = require('./testData/clips.json');
+const clips = require('./testData').clips;
 
 const devMode = process.env.NODE_ENV === 'dev';
 
@@ -64,6 +64,20 @@ router.get('/:id', async function(req, res) {
 //         return res.status(500).send(e);
 //     }
 // });
+
+router.post('/:id', async function(req, res) {
+    if (req.isTesting) {
+        return res.status(200).send(req.body);
+    }
+
+    try {
+        const clip = req.body;
+        await req.db.firebase.soundboard.set({ ...clip, id: req.params.id });
+        return res.status(200).send();
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+});
 
 router.post('/favorite/:id', async function(req, res) {
     if (req.isTesting) {
