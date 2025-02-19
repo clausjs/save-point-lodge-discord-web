@@ -32,7 +32,7 @@ export interface ToastrOpts {
 export default {
     success: (message: string, opts?: ToastrOpts) => {
         toastr.options = getOptions(opts?.additionalOpts);
-        toastr.success(message, opts.title);
+        toastr.success(message, opts?.title);
     },
     error: (message: string, opts?: ToastrOpts) => {
         toastr.options = getOptions(opts?.additionalOpts);

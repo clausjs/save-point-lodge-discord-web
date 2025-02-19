@@ -26,7 +26,7 @@ import ThemeSwitch from './ThemeSwitch';
 
 import { AllPages as views } from './Views';
 import { useDispatch } from 'react-redux';
-import { fetchUser } from '../../../state/reducers/user';
+import { fetchPlanetExpressStatus, fetchSoundboarderStatus, fetchUser } from '../../../state/reducers/user';
 import { HeaderProps } from './Header';
 
 interface TabProps {
@@ -49,11 +49,13 @@ const DefaultHeader: React.FC<HeaderProps> = () => {
     const history = useNavigate();
     const authMenuOpen: boolean = Boolean(authAnchorEl);
 
-    const user: User = useSelector((state: RootState) => state.user.user);
+    const user: User | undefined = useSelector((state: RootState) => state.user.user);
 
     useEffect(() => {
         if (!user) {
             dispatch(fetchUser());
+            dispatch(fetchPlanetExpressStatus());
+            dispatch(fetchSoundboarderStatus());
         }
     }, []);
 
@@ -62,9 +64,8 @@ const DefaultHeader: React.FC<HeaderProps> = () => {
         for (let i = 0; i < Object.keys(views).length; i++) {
             const viewName = Object.keys(views)[i];
             const page: PageLink = views[viewName];
-            if (page.requiresAuth && user === null) {
-                continue;
-            }
+            if (page.requiresAuth && !user) continue;
+            if (page.requiresSoundboarder && !user?.isSoundboardUser) continue;
 
             let label: React.ReactNode | string;
             label = page.label ? page.label : viewName;
@@ -192,17 +193,6 @@ const DefaultHeader: React.FC<HeaderProps> = () => {
             </AppBar>
         </>
     );
-};
-
-const LinkTab = (props: any) => {
-    return (
-        <Tab
-            component="a"
-            onClick={(e: any) => { if (!props.external) e.preventDefault(); }}
-            target={props.external ? "_blank" : undefined}
-            {...props}
-        />
-    )
 };
 
 export default DefaultHeader;

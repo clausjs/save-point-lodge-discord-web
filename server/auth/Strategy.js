@@ -96,12 +96,12 @@ Strategy.prototype.userProfile = function(accessToken, done) {
            if (connections) profile.connections = connections;
            self.checkScope('guilds', accessToken, async function(erry, guilds) {
                if (erry) done(erry);
-               const PEGuild = guilds.find(guild => guild.id === "184535415363993600");
+               const PEGuild = guilds.find(guild => guild.id === process.env.SPL_ID);
                if (PEGuild) {
-                    profile.isPlanetExpressMember = true;
-                    oauth2.get(`https://discord.com/api/users/@me/guilds/184535415363993600/member`, accessToken, async function(err, body, res) {
-                        if (err) console.error("Error getting member data: ", err);
-                        else {
+                   oauth2.get(`https://discord.com/api/users/@me/guilds/${process.env.SPL_ID}/member`, accessToken, async function(err, body, res) {
+                       if (err) console.error("Error getting member data: ", err);
+                       else {
+                            profile.isPlanetExpressMember = true;
                             const memberData = JSON.parse(body);
                             profile.isSoundboardUser = memberData.roles.includes("1335694712027480175");
                             profile.fetchedAt = new Date();

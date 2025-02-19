@@ -20,7 +20,6 @@ interface ConfigClipDialogProps {
 }
 
 const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, open, onClose, onSave }) => {
-    console.log("editClip", editClip);
     const [ submitted, setSubmitted ] = useState<'add' | 'edit' | null>(null);
     const [clipType, setClipType] = useState<'local' | 'url'>('url');
     const [tags, setTags] = useState<string[]>(editClip ? editClip.tags : []);

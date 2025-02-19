@@ -24,6 +24,7 @@ if (!devMode) {
 
 router.get('/', async function(req, res) {
     if (req.isTesting) {
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate delay
         return res.status(200).send(clips);
     }
 
@@ -47,23 +48,6 @@ router.get('/:id', async function(req, res) {
         return res.status(500).send(e);
     }
 });
-
-// router.get('/play/:id', async function(req, res) {
-//     if (req.isTesting) {
-//         const clip = clips.find(clip => clip.id === req.params.id);
-//         if (clip) {
-//             wsClient.playSound(clip.url);
-//             return res.status(200).send(clip);
-//         }
-//     }
-
-//     try {
-//         const soundboardItem = await req.db.firebase.soundboard.get(req.params.id);
-//         // wsClient.playSound(soundboardItem.url);
-//     } catch (e) {
-//         return res.status(500).send(e);
-//     }
-// });
 
 router.post('/:id', async function(req, res) {
     if (req.isTesting) {

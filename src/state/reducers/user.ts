@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { UserOptions, UserState } from '../../types';
+import { User, UserOptions, UserState } from '../../types';
 
 const initialState: UserState = {
     user: null,
@@ -12,6 +12,22 @@ export const fetchUser = createAsyncThunk(
     'user/fetchUser',
     async () => {
         const response = await fetch('/api/user');
+        return response.json();
+    }
+)
+
+export const fetchSoundboarderStatus = createAsyncThunk(
+    'user/fetchSoundboarderStatus',
+    async () => {
+        const response = await fetch('/api/user/soundboarder');
+        return response.json();
+    }
+)
+
+export const fetchPlanetExpressStatus = createAsyncThunk(
+    'user/fetchPlanetExpressStatus',
+    async () => {
+        const response = await fetch('/api/user/planetexpress');
         return response.json();
     }
 )
@@ -51,10 +67,16 @@ const userSlice = createSlice({
     },
     extraReducers(builder) {
         builder
-            .addCase(fetchUser.fulfilled, (state, action) => {
+            .addCase(fetchSoundboarderStatus.fulfilled, (state, action: PayloadAction<boolean>) => {
+                state.user.isSoundboardUser = action.payload;
+            })
+            .addCase(fetchPlanetExpressStatus.fulfilled, (state, action: PayloadAction<boolean>) => {
+                state.user.isPlanetExpressMember = action.payload;
+            })
+            .addCase(fetchUser.fulfilled, (state, action: PayloadAction<User>) => {
                 state.user = action.payload;
             })
-            .addCase(fetchUserOpts.fulfilled, (state, action) => {
+            .addCase(fetchUserOpts.fulfilled, (state, action: PayloadAction<UserOptions>) => {
                 state.opts = action.payload;
             })
     },

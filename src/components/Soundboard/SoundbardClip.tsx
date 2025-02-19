@@ -28,7 +28,7 @@ const SoundboardClip: React.FC<Clip & {
     }
 
     return (
-        <Paper className='clip-card' style={{ padding: 10 }} onClick={() => onClick(id)} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
+        <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`} style={{ padding: 10 }} onClick={() => onClick(id)} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
             <Typography className='clip-name' variant="body1">{name}</Typography>
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
             <Typography className={`clip-description ${expanded ? 'show' : ''}`} variant="body2">{description}</Typography>

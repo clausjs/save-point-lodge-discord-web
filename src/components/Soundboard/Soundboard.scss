@@ -10,12 +10,29 @@ body.light {
     
 }
 
+.no-soundboard-access {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
 .soundboard {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     padding: 1rem;
     width: auto;
+    height: 100%;
+
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+    }
 
     .search-bar {
         width: auto;
@@ -60,11 +77,18 @@ body.light {
 
         .MuiGrid-item {
             margin: 0 10px;
+
             
             .clip-card {
+                border: 2px solid transparent;
+                cursor: pointer;
                 @include background-opacity($color-pallette-dark-background-2, 0.5);
                 margin: 0 auto;
                 color: white;
+                
+                &:hover {
+                    border: 2px solid addOpacity($color-pallette-light-blue, 0.5);
+                }
 
                 .clip-name {
                     text-decoration: solid;
@@ -75,6 +99,8 @@ body.light {
                 }
 
                 .clip-description {
+                    height: auto;
+                    padding: 5px;
                     visibility: hidden;
 
                     &.show {

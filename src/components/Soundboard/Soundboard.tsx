@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Button, Grid, Input } from '@mui/material';
+import { GridLoader } from 'react-spinners';
 
 import ConfigClipDialog from './ConfigClipDialog';
 import { useSelector, useDispatch } from 'react-redux';
@@ -14,12 +15,15 @@ import { fetchSoundboardClips, addClip, editClip } from '../../state/reducers/so
 
 import './Soundboard.scss';
 
+const devMode = process.env.NODE_ENV === 'development' ? true : false;
+
 const Soundboard: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     //Public API that will echo messages sent to it back to the client
-    const [ socketUrl ] = useState('ws://localhost:8080/soundboard');
+    const [ socketUrl, setSocketUrl ] = useState<string | null>(null);
     const [ hasBeenConnected, setHasBeenConnected ] = useState<boolean>(false);
     const [ messageHistory, setMessageHistory ] = useState<MessageEvent<{ type: string, sound?: string }>[]>([]);
+    const [ fetchingClips, setFetchingClips ] = useState<boolean>(false);
     const [ searchTerm, setSearchTerm ] = useState('');
     const [ dialogOpen, setDialogOpen ] = useState(false);
     const [ editingClip, setEditingClip ] = useState<Clip | null>(null);
@@ -30,9 +34,9 @@ const Soundboard: React.FC = () => {
         setDialogOpen(false);
     }
 
+    const lightMode: boolean = useSelector((state: RootState) => state.theme.lightMode);
     const user: User = useSelector((state: RootState) => state.user.user);
     const clips: Clip[] = useSelector((state: RootState) => state.soundboard.clips);
-    console.log("clips", clips);
 
     const { sendJsonMessage, lastMessage, readyState } = useWebSocket(socketUrl, { shouldReconnect: (closeEvent) => true });
 
@@ -60,7 +64,33 @@ const Soundboard: React.FC = () => {
     }
 
     useEffect(() => {
+        if (!user) return;
+        if (!user.isSoundboardUser) return;
+        if (!clips.length) {
+            setFetchingClips(true);
+            dispatch(fetchSoundboardClips());
+        }
+    }, []);
+
+    useEffect(() => {
+        if (user && user.isSoundboardUser) {
+            if (clips.length) setFetchingClips(false);
+            console.log("NODE_ENV", process.env.NODE_ENV);
+            if (devMode) {
+                setSocketUrl('ws://localhost:8080/soundboard/');
+            } else {
+                setSocketUrl('wss://joebotdiscord.com/soundboard/');
+            }
+        }
+    }, [clips]);
+
+    useEffect(() => {
         switch (readyState) {
+            case ReadyState.UNINSTANTIATED:
+                break;
+            case ReadyState.CONNECTING:
+                toastr.info('Connecting to Joe_Bot...');
+                break;
             case ReadyState.OPEN:
                 toastr.success('Connected to Joe_Bot');
                 setHasBeenConnected(true);
@@ -89,18 +119,17 @@ const Soundboard: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        if (!clips.length) {
-            dispatch(fetchSoundboardClips());
-        }
-    }, []);
-
     const _addOrEditClip = (clip: Clip) => {
         if (editingClip) {
             dispatch(editClip(clip));
         } else {
             dispatch(addClip(clip));
         }
+    }
+
+    const playRandomClip = () => {
+        const randomIndex = Math.floor(Math.random() * clips.length);
+        playClip(clips[randomIndex].id);
     }
 
     const favoriteClip = (clipId: string) => {}
@@ -123,37 +152,41 @@ const Soundboard: React.FC = () => {
     );
 
     return (
-        <div className='soundboard'>
-            <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
-            <div className='grid-actions'>
-                <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
-                <div className='button-grp'>
-                    <Button variant="contained" color="primary" onClick={openDialog}>Add Clip</Button>
-                    <Button variant="contained">Play Random Sound</Button>
+        <>
+            {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
+            {user && user.isSoundboardUser && <div className='soundboard'>
+                <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
+                <div className='grid-actions'>
+                    <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
+                    <div className='button-grp'>
+                        <Button variant="contained" onClick={openDialog}>Add Clip</Button>
+                        <Button variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
+                    </div>
                 </div>
-            </div>
-            <Input
-                name='clip-search'
-                className='search-bar'
-                placeholder="Search sounds..."
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(event.target.value)}
-                value={searchTerm}
-                endAdornment={<Search />}
-            />
-            <Grid className='soundboard-items' container spacing={2} style={{ marginTop: 20 }}>
-                {filteredClips.map((clip, index) => (
-                    <Grid item xs={6} sm={4} md={2} key={index} onClick={() => playClip(clip.id)}>
-                        <SoundboardClip 
-                            {...clip}
-                            isFavorite={clip.favoritedBy?.includes(user?.id)} 
-                            onClick={playClip} 
-                            onFavorite={favoriteClip}
-                            onEdit={openClipEdit}
-                        />
-                    </Grid>
-                ))}
-            </Grid>
-        </div>
+                <Input
+                    name='clip-search'
+                    className='search-bar'
+                    placeholder="Search sounds..."
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(event.target.value)}
+                    value={searchTerm}
+                    endAdornment={<Search />}
+                />
+                {fetchingClips && <div className='loading'><GridLoader color={lightMode ? 'black' : 'white'} loading={fetchingClips} size={50} margin='auto' /></div>}
+                {!fetchingClips && clips.length && <Grid className='soundboard-items' container spacing={2} style={{ marginTop: 20 }}>
+                    {filteredClips.map((clip, index) => (
+                        <Grid item xs={6} sm={4} md={2} key={index} onClick={() => playClip(clip.id)}>
+                            <SoundboardClip 
+                                {...clip}
+                                isFavorite={clip.favoritedBy?.includes(user?.id)} 
+                                onClick={playClip} 
+                                onFavorite={favoriteClip}
+                                onEdit={openClipEdit}
+                            />
+                        </Grid>
+                    ))}
+                </Grid>}
+            </div>}
+        </>
     );
 };
 
