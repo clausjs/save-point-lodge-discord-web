@@ -13,6 +13,5 @@ class FirebaseData {
 
 module.exports = (store) => {
     const instance = new FirebaseData(store);
-    Object.freeze(instance);
     return instance;
 }

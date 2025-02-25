@@ -19,17 +19,22 @@ interface ConfigClipDialogProps {
     onSave: (clip: any) => void;
 }
 
+const EMPTY_CLIP: Clip = {
+    id: '',
+    name: '',
+    description: '',
+    url: '',
+    uploadedBy: '',
+    tags: [],
+    playCount: 0
+}
+
 const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, open, onClose, onSave }) => {
     const [ submitted, setSubmitted ] = useState<'add' | 'edit' | null>(null);
     const [clipType, setClipType] = useState<'local' | 'url'>('url');
     const [tags, setTags] = useState<string[]>(editClip ? editClip.tags : []);
     const [tagInput, setTagInput] = useState('');
-    const [clipData, setClipData] = useState(editClip ?? {
-        name: '',
-        description: '',
-        file: null as File | null,
-        url: '',
-    });
+    const [clipData, setClipData] = useState<Clip>(editClip ?? EMPTY_CLIP);
 
     const addApiState: apiState = useSelector((state: RootState) => state.soundboard.clipAddState);
     const editApiState: apiState = useSelector((state: RootState) => state.soundboard.clipEditState);
@@ -39,14 +44,10 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
             setClipData(editClip);
             setTags(editClip.tags);
         } else {
-            setClipData({ ...clipData, name: '', description: '', file: null, url: '' });
+            setClipData(EMPTY_CLIP);
             setTags([]);
         }
     }, [editClip]);
-
-    const handleClipTypeChange = (event: SelectChangeEvent) => {
-        setClipType(event.target.value as 'local' | 'url');
-    };
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, files } = event.target;
@@ -57,18 +58,16 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
     };
 
     const handleSave = () => {
-        console.log("handleSave", clipData);
         setSubmitted(editClip ? 'edit' : 'add');
-        onSave(clipData);
+        onSave({ ...clipData, tags });
     };
 
     useEffect(() => {
         if (submitted) {
             if ((submitted === 'add' && addApiState === 'fulfilled') ||
                 (submitted === 'edit' && editApiState === 'fulfilled')) {
-                setSubmitted(null);
-                console.log("closing");
                 onClose();
+                setSubmitted(null);
             } else if ((submitted === 'add' && addApiState === 'rejected') ||
                 (submitted === 'edit' && editApiState === 'rejected')) {
                 // Handle error
@@ -91,13 +90,13 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
         <Dialog open={open} onClose={onClose} fullWidth>
             <DialogTitle>{`${editClip ? 'Edit' : 'Add New'} Clip`}</DialogTitle>
             <DialogContent>
-                <InputLabel id="clip-type-label">Clip Type</InputLabel>
-                <FormControl fullWidth margin="normal">
+                {/* <InputLabel id="clip-type-label">Clip Type</InputLabel> */}
+                {/* <FormControl fullWidth margin="normal">
                     <Select labelId="clip-type-label" value={clipType} onChange={handleClipTypeChange}>
                         <MenuItem value="local" disabled>Local File - Coming Soon</MenuItem>
                         <MenuItem value="url">URL</MenuItem>
                     </Select>
-                </FormControl>
+                </FormControl> */}
                 <div className='clip-details'>
                     {clipType === 'local' ? (
                         <TextField

@@ -5,9 +5,9 @@ class DataSource {
     }
     get() {}
     getById(id) {}
-    add(opts) {}
-    set(opts) {}
-    delete(opts) {}
+    add(args) {}
+    update(args) {}
+    delete(id) {}
 }
 
 module.exports = DataSource;

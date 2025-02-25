@@ -73,7 +73,6 @@ util.inherits(Strategy, OAuth2Strategy);
 */
 Strategy.prototype.userProfile = function(accessToken, done) {
    var self = this;
-   console.log('fetching profile');
    const oauth2 = this._oauth2;
    this._oauth2.get('https://discord.com/api/users/@me', accessToken, function(err, body, res) {
        if (err) {

@@ -117,6 +117,7 @@ export interface SoundboardState {
     clipFetchState?: apiState;
     clipAddState?: apiState;
     clipEditState?: apiState;
+    clipDeleteState?: apiState;
 }
 
 export interface Action {

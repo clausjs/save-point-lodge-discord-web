@@ -1,3 +1,5 @@
+const uuid = require("uuid").v4;
+
 const DataSource = require("./dataSource");
 
 const logErr = (err) => {
@@ -11,76 +13,68 @@ class Soundboard extends DataSource {
     }
     get = async () => {
         const { db } = this;
-        const collection = db.collection(this.collectionName);
-        const getSoundboardItemsResponse = await collection.get();
+        const getSoundboardItemsResponse = await db.collection(this.collectionName).get();
 
         const soundboardItems = [];
         getSoundboardItemsResponse.forEach(res => {
-            soundboardItems.push(res.data());
+            const clipData = res.data();
+            soundboardItems.push({ id: res.id, ...clipData });
         });
 
         return soundboardItems;
     }
-    get = async (id) => {
+    getById = async (id) => {
         const { db } = this;
-        const collection = db.collection(this.collectionName);
-        console.log("getting soundboard item with id: ", id);
-        const doc = collection.doc(id);
-
+        
         try {
-            const response = await doc.get();
-            console.log("response: ", response.data());
-            return response.data();
+            const response = await db.collection(this.collectionName).doc(id).get();
+            if (response.exists) return response.data();
         } catch (err) {
             logErr(err);
-            return {};
+            throw err;
         }
     }
-    add = async (id, name, description, tags, urlOrFileName) => {
+    add = async (opts) => {
         const { db } = this;
-        const collection = db.collection(this.collectionName);
-        const doc = collection.doc(id);
-
+        const { name, description, tags, uploadedBy } = opts;
+        
+        const clip = {
+            id: `URL-${uuid()}`,
+            name,
+            description,
+            tags,
+            uploadedBy,
+            favoritedBy: []
+        };
+        
         try {
-            if (id.indexOf('URL')) {
-                await doc.set({
-                    name,
-                    description,
-                    tags,
-                    url: urlOrFileName
-                });
-            } else {
-                await doc.set({
-                    name,
-                    description,
-                    tags,
-                    fileName: urlOrFileName
-                });
-            }
+            await db.collection(this.collectionName).doc(clip.id).set(clip);
+            return clip;
         } catch (err) {
             logErr(err);
+            throw err;
         }
     }
-    set = async (clip) => {
+    update = async (clip) => {
         const { db } = this;
-        const collection = db.collection(this.collectionName);
-        const doc = collection.doc(id);
 
         try {
-            await doc.set(clip);
+            await db.collection(this.collectionName).doc(clip.id).set(clip);
+            return clip;
         } catch (err) {
             logErr(err);
+            throw err;
         }
     }
     delete = async (id) => {
         const { db } = this;
-        const collection = db.collection(this.collectionName);
-        const doc = collection.doc(id);
 
         try {
-            await doc.delete();
+            await db.collection(this.collectionName).doc(id).delete();
+            return true;
         } catch (err) {
             logErr(err);
+            return false;
         }
     }
 }

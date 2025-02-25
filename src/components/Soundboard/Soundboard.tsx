@@ -4,6 +4,7 @@ import { Button, Grid, Input } from '@mui/material';
 import { GridLoader } from 'react-spinners';
 
 import ConfigClipDialog from './ConfigClipDialog';
+import DeleteClipDialog from './DeleteClipDialog';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../state/store';
 import { Clip, User } from '../../types';
@@ -11,7 +12,7 @@ import SoundboardClip from './SoundbardClip';
 import toastr from '../../utils/toastr';
 
 import { Search } from '@mui/icons-material';
-import { fetchSoundboardClips, addClip, editClip } from '../../state/reducers/soundboard';
+import { fetchSoundboardClips, addClip, editClip, deleteClip } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
 
@@ -27,6 +28,7 @@ const Soundboard: React.FC = () => {
     const [ searchTerm, setSearchTerm ] = useState('');
     const [ dialogOpen, setDialogOpen ] = useState(false);
     const [ editingClip, setEditingClip ] = useState<Clip | null>(null);
+    const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
 
     const openDialog = () => setDialogOpen(true);
     const closeDialog = () => {
@@ -75,7 +77,6 @@ const Soundboard: React.FC = () => {
     useEffect(() => {
         if (user && user.isSoundboardUser) {
             if (clips.length) setFetchingClips(false);
-            console.log("NODE_ENV", process.env.NODE_ENV);
             if (devMode) {
                 setSocketUrl('ws://localhost:8080/soundboard/');
             } else {
@@ -123,8 +124,12 @@ const Soundboard: React.FC = () => {
         if (editingClip) {
             dispatch(editClip(clip));
         } else {
-            dispatch(addClip(clip));
+            dispatch(addClip({ ...clip, uploadedBy: user?.username }));
         }
+    }
+
+    const _deleteClip = (clipId: string) => {
+        setDeletingClip(clips.find(c => c.id === clipId) || null);
     }
 
     const playRandomClip = () => {
@@ -144,7 +149,6 @@ const Soundboard: React.FC = () => {
         }
     }
 
-
     const filteredClips = searchTerm === "" ? clips : clips.filter(clip =>
         clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         clip.tags.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
@@ -155,6 +159,7 @@ const Soundboard: React.FC = () => {
         <>
             {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
             {user && user.isSoundboardUser && <div className='soundboard'>
+                <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={() => setDeletingClip(null)} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
                 <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
                 <div className='grid-actions'>
                     <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
@@ -181,6 +186,7 @@ const Soundboard: React.FC = () => {
                                 onClick={playClip} 
                                 onFavorite={favoriteClip}
                                 onEdit={openClipEdit}
+                                onDelete={_deleteClip}
                             />
                         </Grid>
                     ))}

@@ -32,7 +32,7 @@ export const editClip = createAsyncThunk(
     'soundboard/editClip',
     async (clip: Clip) => {
         const response = await fetch(`/api/soundboard/${clip.id}`, {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -40,6 +40,16 @@ export const editClip = createAsyncThunk(
             body: JSON.stringify(clip)
         });
         return response.json();
+    }
+)
+
+export const deleteClip = createAsyncThunk(
+    'soundboard/deleteClip',
+    async (clip: Clip) => {
+        const response = await fetch(`/api/soundboard/${clip.id}`, {
+            method: 'DELETE'
+        });
+        return response.text();
     }
 )
 
@@ -70,19 +80,27 @@ const soundboard = createSlice({
                     state.clipAddState = 'fulfilled';
                 })
                 .addCase(editClip.pending, (state) => {
-                    console.log("pending edit");
                     state.clipEditState = 'pending';
                 })
                 .addCase(editClip.rejected, (state) => {
                     state.clipEditState = 'rejected';
                 })
                 .addCase(editClip.fulfilled, (state, action: PayloadAction<Clip>) => {
-                    console.log("edit success");
                     const index = state.clips.findIndex(clip => clip.id === action.payload.id);
                     if (index !== -1) {
                         state.clips[index] = action.payload;
                     }
                     state.clipEditState = 'fulfilled';
+                })
+                .addCase(deleteClip.pending, (state) => {
+                    state.clipDeleteState = 'pending';
+                })
+                .addCase(deleteClip.rejected, (state) => {
+                    state.clipDeleteState = 'rejected';
+                })
+                .addCase(deleteClip.fulfilled, (state, action: PayloadAction<string>) => {
+                    state.clipDeleteState = 'fulfilled';
+                    state.clips = state.clips.filter(clip => clip.id !== action.payload);
                 })
         }
 });
