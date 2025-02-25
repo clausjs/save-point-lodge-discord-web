@@ -7,7 +7,9 @@ body.light {
         }
     }
 
-    
+    .small-button-background.circle {
+        background-color: black;
+    }
 }
 
 .no-soundboard-access {
@@ -50,7 +52,45 @@ body.light {
         margin: 10px 20px;
         box-shadow: unset;
 
-        button {
+        .my-instants-button {
+            width: 25px;
+            height: 25px;
+            padding-right: 10px;
+            display: flex;
+            align-self: center;
+    
+            .small-button-background {
+                width: inherit;
+                height: inherit;
+                position: absolute;
+    
+                &.circle {
+                    border-radius: 50%;
+                    background-color: yellow;
+                }
+            }
+    
+            button {
+                height: inherit;
+                width: inherit;
+                display: block;
+                background: url('/img/my_instants_button.png') no-repeat;
+                background-attachment: scroll;
+                background-size: cover;
+                background-position-x: 0;
+                background-position-y: 0;
+                background-origin: border-box;
+                background-clip: border-box;
+                border: 0;
+                position: absolute;
+
+                &:active {
+                    background-position-x: 100%;
+                }
+            }
+        }
+
+        button.grid-action {
             margin: 0 5px;
         }
 
@@ -69,6 +109,11 @@ body.light {
             .unknown {
                 color: yellow;
             }
+        }
+
+        .button-grp {
+            display: flex;
+            align-items: center;
         }
     }
 
@@ -132,9 +177,12 @@ body.light {
                             }
                         }
                     }
+
+                    .tags {
+                        max-width: 50%;
+                    }
                 }
             }
         }
-
     }
 }

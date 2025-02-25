@@ -163,9 +163,13 @@ const Soundboard: React.FC = () => {
                 <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
                 <div className='grid-actions'>
                     <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
+                    {/* <div className='my-instants-button'>
+                        <div className='circle small-button-background'></div>
+                        <button onClick={() => console.log("Load my instants")} />
+                    </div> */}
                     <div className='button-grp'>
-                        <Button variant="contained" onClick={openDialog}>Add Clip</Button>
-                        <Button variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
+                        <Button className='grid-action' variant="contained" onClick={openDialog}>Add Clip</Button>
+                        <Button className='grid-action' variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
                     </div>
                 </div>
                 <Input
