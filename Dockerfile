@@ -36,7 +36,7 @@ COPY . .
 ENV NODE_ENV=production
 
 # Expose the port that the application listens on.
-EXPOSE 8080
+EXPOSE ${PORT}
 
 # Build the app
 RUN npm run build
@@ -45,4 +45,4 @@ RUN npm run build
 USER node
 
 # Run the application.
-CMD ["npm", 'start"]
+CMD ["npm", "start"]

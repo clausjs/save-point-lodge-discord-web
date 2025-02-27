@@ -3,6 +3,8 @@ services:
   frontend:
     build:
       context: .
+      args:
+        PORT: ${PORT:-3000}
     hostname: frontend
     env_file:
       - .env
@@ -19,11 +21,14 @@ services:
       - DISCORD_GUILD_ID=${DISCORD_GUILD_ID}
       - AUTHORIZED_API_KEY=${AUTHORIZED_API_KEY}
       - GIPHY=${GIPHY}
+      - PORT=${PORT:-3000}
+      - WS_PORT=${WS_PORT:-8080}
     depends_on:
       redis:
         condition: service_healthy
     expose:
-      - 8080
+      - "${PORT}:${PORT}"
+      - ":${WS_PORT}"
 
   redis:
     image: redis:latest
@@ -42,8 +47,13 @@ services:
   server:
     image: nginx:latest
     restart: always
+    env_file:
+      - .env
+    environment:
+      DOMAINS: ${DOMAINS:-savepointlodge.com www.savepointlodge.com}
+      PORT: ${PORT:-3000}
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/savepointlodge.conf.template:/etc/nginx/templates/default.conf.template
       - ./certs:/etc/letsencrypt/live/savepointlodge.com/
     ports:
       - 80:80
