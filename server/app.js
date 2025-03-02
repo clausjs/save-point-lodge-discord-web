@@ -174,7 +174,7 @@ const checkHeaders = (referer, params) => {
 app.use('/api', function(req, res, next) {;
     if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     req.db = db;
-    req.isTesting = process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'dev';
+    req.isTesting = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'testing';
     next();
 });
 
