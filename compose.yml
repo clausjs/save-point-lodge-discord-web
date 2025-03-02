@@ -36,7 +36,7 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=test
       - DISCORD_AUTH_CLIENT_ID=${DISCORD_AUTH_CLIENT_ID}
       - DISCORD_AUTH_CLIENT_SECRET=${DISCORD_AUTH_CLIENT_SECRET}
       - AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET}
