@@ -116,7 +116,7 @@ const Soundboard: React.FC = () => {
             return c.id === clipId
         });
         if (clip && clip.url && readyState === ReadyState.OPEN) {
-            sendJsonMessage({ type: 'play_sound', sound: clip.url });
+            sendJsonMessage({ type: 'play_sound', sound: clip.url, caller: user.id });
         }
     };
 
