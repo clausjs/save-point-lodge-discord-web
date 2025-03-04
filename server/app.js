@@ -31,7 +31,8 @@ if (!devMode) {
 
 const app = express();
 
-const port = process.env.PORT || 3000;
+const portIdentifier = process.env.NODE_ENV === 'test' ? 'DEV_PORT' : 'PORT';
+const port = process.env[portIdentifier] || 3000;
 
 db.authenticate();
 app.use(compression());
