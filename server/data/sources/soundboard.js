@@ -36,10 +36,11 @@ class Soundboard extends DataSource {
     }
     add = async (opts) => {
         const { db } = this;
-        const { name, description, tags, uploadedBy } = opts;
+        const { url, name, description, tags, uploadedBy } = opts;
         
         const clip = {
             id: `URL-${uuid()}`,
+            url,
             name,
             description,
             tags,
