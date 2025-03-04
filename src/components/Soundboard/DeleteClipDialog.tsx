@@ -28,7 +28,7 @@ const DeleteClipDialog: React.FC<DeleteClipDialogProps> = ({ open, onClose, onDe
         <Dialog className='delete-dialog' open={open} onClose={onClose} fullWidth>
             <DialogTitle>Are you sure you want to delete this clip?</DialogTitle>
             <DialogContent>
-                <span>{`This will permenantly remove ${clip?.name} and all of its metadata. Are you sure you want to proceed?`}</span>
+                <span>This will permenantly remove <b>{clip?.name}</b> and all of its metadata. Are you sure you want to proceed?`</span>
                 <div className='actions'>
                     <Button onClick={onClose}>Cancel</Button>
                     <Stack direction="row" spacing={2}>

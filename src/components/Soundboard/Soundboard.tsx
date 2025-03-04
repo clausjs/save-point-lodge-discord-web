@@ -32,6 +32,7 @@ const Soundboard: React.FC = () => {
 
     const openDialog = () => setDialogOpen(true);
     const closeDialog = () => {
+        setDeletingClip(null);
         setEditingClip(null);
         setDialogOpen(false);
     }
@@ -44,7 +45,7 @@ const Soundboard: React.FC = () => {
 
     const connectionStatus = {
         [ReadyState.CONNECTING]: 'Connecting',
-        [ReadyState.OPEN]: 'Open',
+        [ReadyState.OPEN]: 'Connected',
         [ReadyState.CLOSING]: 'Closing',
         [ReadyState.CLOSED]: 'Closed',
         [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
@@ -159,7 +160,7 @@ const Soundboard: React.FC = () => {
         <>
             {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
             {user && user.isSoundboardUser && <div className='soundboard'>
-                <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={() => setDeletingClip(null)} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
+                <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
                 <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
                 <div className='grid-actions'>
                     <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
