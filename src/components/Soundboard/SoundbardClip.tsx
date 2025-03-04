@@ -49,7 +49,7 @@ const SoundboardClip: React.FC<Clip & {
                     ))}
                 </div>
                 <div className='actions'>
-                    <PlayArrow onClick={playAudio} />
+                    <PlayArrow onClick={(e) => { e.stopPropagation(); playAudio(); }} />
                     <Favorite className={`${isFavorite ? 'favorited' : ''}`} onClick={onFavorite.bind(this, id)} />
                     <Edit onClick={onEdit.bind(this, id)} />
                     {username === uploadedBy && <Delete onClick={onDelete.bind(this, id)} />}
