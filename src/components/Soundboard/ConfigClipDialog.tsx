@@ -9,6 +9,7 @@ import { apiState, Clip } from '../../types';
 import { Save } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../state/store';
+import toastr from '../../utils/toastr';
 
 import './ConfigClipDialog.scss';
 
@@ -62,15 +63,20 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
         onSave({ ...clipData, tags });
     };
 
+    const _close = () => {
+        onClose();
+        setSubmitted(null);
+    }
+
     useEffect(() => {
         if (submitted) {
             if ((submitted === 'add' && addApiState === 'fulfilled') ||
                 (submitted === 'edit' && editApiState === 'fulfilled')) {
-                onClose();
-                setSubmitted(null);
+                _close();
             } else if ((submitted === 'add' && addApiState === 'rejected') ||
                 (submitted === 'edit' && editApiState === 'rejected')) {
-                // Handle error
+                toastr.error(`Failed to ${submitted === 'add' ? 'add' : 'edit'} clip`);
+                _close();
             }
         }
     }, [submitted, addApiState, editApiState]);
@@ -112,6 +118,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                             name="url"
                             value={clipData.url}
                             onChange={handleInputChange}
+                            required
                         />
                     )}
                     <TextField
@@ -120,6 +127,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                         name="name"
                         value={clipData.name}
                         onChange={handleInputChange}
+                        required
                     />
                     <TextField
                         fullWidth
