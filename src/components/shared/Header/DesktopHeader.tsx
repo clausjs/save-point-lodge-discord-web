@@ -43,21 +43,12 @@ interface TabProps {
 }
 
 const DefaultHeader: React.FC<HeaderProps> = () => {
-    const dispatch = useDispatch<AppDispatch>();
     const [ tabs, setTabs ] = useState<TabProps[]>([]);
     const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element)>(null);
     const history = useNavigate();
     const authMenuOpen: boolean = Boolean(authAnchorEl);
 
     const user: User | undefined = useSelector((state: RootState) => state.user.user);
-
-    useEffect(() => {
-        if (!user) {
-            dispatch(fetchUser());
-            dispatch(fetchPlanetExpressStatus());
-            dispatch(fetchSoundboarderStatus());
-        }
-    }, []);
 
     useEffect(() => {
         const _tabs = [];

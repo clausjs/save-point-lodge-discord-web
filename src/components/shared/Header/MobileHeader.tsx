@@ -49,12 +49,10 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
     const [ links, setLinks ] = useState<React.ReactNode[]>([]);
     const [ navMenuOpen, setNavMenuOpen ] = useState<boolean>(false);
     const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element) | null>(null);
-    const userState: UserState = useSelector((state: RootState) => state.user);
+    const user: User | null = useSelector((state: RootState) => state.user.user);
     const authMenuOpen: boolean = Boolean(authAnchorEl);
     const history = useNavigate();
     const currentLoc: string = useLocation().pathname;
-
-    const { user  } = userState;
 
     useEffect(() => {
         dispatch(fetchUser());
@@ -70,70 +68,68 @@ const MobileHeader: React.FC<HeaderProps> = (props) => {
     }, [view]);
 
     useEffect(() => {
-        const links: React.ReactNode[] = [];
+        const links: React.ReactNode[] = [
+            <ListItem
+            key={-1}
+            className='list-item label'
+            onClick={(event) => {}}
+            >
+                <div className='account-section'>
+                    <div onClick={(e) => handleNavigation(e, 0)}><img src='/img/logo.png' /></div>
+                    {user !== null && (
+                            <div className='acct'>
+                                <IconButton
+                                    className='icon-btn'
+                                    aria-label={`${user.username}'s Account'`}
+                                    aria-controls="menu-appbar"
+                                    aria-haspopup="true"
+                                    color="inherit"
+                                    onClick={handleAuthMenu}
+                                >
+                                    {user && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                    {user && user.avatar === null && <AccountCircle />}
+                                </IconButton>
+                            </div>
+                        )}
+                        {user === null && (
+                            <div className='acct'>
+                                <Button
+                                    className='btn'
+                                    size='small'
+                                    variant="contained"
+                                    href="/login"
+                                >Login</Button>
+                            </div>
+                        )}
+                </div>
+            </ListItem>
+        ];
+
         for (let i = 0; i < Object.keys(views).length; i++) {
             const viewName = Object.keys(views)[i];
             const view: MobilePageLink = views[viewName] as MobilePageLink;
             if (view.requiresAuth && user === null) continue;
+            if (view.requiresSoundboarder && !user?.isSoundboardUser) continue;
 
-            if (view.label) {
-                links.push(
-                    <ListItem
+            links.push(
+                <ListItem
                     key={i}
-                    className='list-item label'
-                    onClick={(event) => {}}
-                    >
-                        <div className='account-section'>
-                            <div onClick={(e) => handleNavigation(e, i)}>{view.label}</div>
-                            {user !== null && (
-                                    <div className='acct'>
-                                        <IconButton
-                                            className='icon-btn'
-                                            aria-label={`${user.username}'s Account'`}
-                                            aria-controls="menu-appbar"
-                                            aria-haspopup="true"
-                                            color="inherit"
-                                            onClick={handleAuthMenu}
-                                        >
-                                            {user && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
-                                            {user && user.avatar === null && <AccountCircle />}
-                                        </IconButton>
-                                    </div>
-                                )}
-                                {user === null && (
-                                    <div className='acct'>
-                                        <Button
-                                            className='btn'
-                                            size='small'
-                                            variant="contained"
-                                            href="/login"
-                                        >Login</Button>
-                                    </div>
-                                )}
-                        </div>
-                    </ListItem>
-                )
-            } else {
-                links.push(
-                    <ListItem
-                        key={i}
-                        // selected={view.to === currentLoc}
-                        className='list-item'
-                        onClick={(event: React.MouseEvent) => {
-                            if (view.externalSite) {
-                                window.open(view.to, "_blank");
-                            } else handleNavigation(event, i)
-                        }}
-                    >
-                        <ListItemIcon style={{ color: 'inherit' }}>
-                            {view.icon}
-                        </ListItemIcon>
-                        {view.externalSite ? <ListItemText>
-                            <span className='external-site-link'>{viewName}<Launch className='external-launch-ico' /></span>
-                        </ListItemText> : <ListItemText primary={viewName} />}
-                    </ListItem>
-                )
-            }
+                    // selected={view.to === currentLoc}
+                    className='list-item'
+                    onClick={(event: React.MouseEvent) => {
+                        if (view.externalSite) {
+                            window.open(view.to, "_blank");
+                        } else handleNavigation(event, i)
+                    }}
+                >
+                    <ListItemIcon style={{ color: 'inherit' }}>
+                        {view.icon}
+                    </ListItemIcon>
+                    {view.externalSite ? <ListItemText>
+                        <span className='external-site-link'>{viewName}<Launch className='external-launch-ico' /></span>
+                    </ListItemText> : <ListItemText primary={viewName} />}
+                </ListItem>
+            );
         }
         setLinks(links);
     }, [user]);
