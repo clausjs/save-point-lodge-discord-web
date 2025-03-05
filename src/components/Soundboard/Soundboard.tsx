@@ -8,7 +8,7 @@ import DeleteClipDialog from './DeleteClipDialog';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../state/store';
 import { Clip, User } from '../../types';
-import SoundboardClip from './SoundbardClip';
+import SoundboardClip from './SoundboardClip';
 import toastr from '../../utils/toastr';
 
 import { Search } from '@mui/icons-material';

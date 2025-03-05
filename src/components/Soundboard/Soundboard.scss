@@ -162,6 +162,17 @@ body.light {
                         background-color: $color-pallette-light-blue;
                     }
 
+                    .mobile-actions {
+                        width: 100%;
+                        display: flex;
+                        justify-content: space-evenly;
+
+                        svg {
+                            max-height: 15px;
+                            margin: 0 2px;
+                        }
+                    }
+
                     .actions {
                         display: flex;
                         flex-direction: row;
