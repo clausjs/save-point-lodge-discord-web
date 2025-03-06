@@ -169,9 +169,9 @@ const Soundboard: React.FC = () => {
             case SortType.TITLE_DEC:
                 return b.name.localeCompare(a.name);
             case SortType.CREATED_ASC:
-                return a.createdAt?.getTime() - b.createdAt?.getTime();
+                return new Date(a.createdAt)?.getTime() - new Date(b.createdAt)?.getTime();
             case SortType.CREATED_DEC:
-                return b.createdAt?.getTime() - a.createdAt?.getTime();
+                return new Date(b.createdAt)?.getTime() - new Date(a.createdAt)?.getTime();
             case SortType.UPLOADER_ASC:
                 return a.uploadedBy.localeCompare(b.uploadedBy);
             case SortType.UPLOADER_DEC:
