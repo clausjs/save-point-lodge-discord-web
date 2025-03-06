@@ -66,6 +66,8 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
     const _close = () => {
         onClose();
         setSubmitted(null);
+        setClipData(EMPTY_CLIP);
+        setTags([]);
     }
 
     useEffect(() => {
