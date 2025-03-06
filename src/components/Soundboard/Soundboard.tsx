@@ -162,7 +162,6 @@ const Soundboard: React.FC = () => {
     }
 
     const filteredClips = Array.from(clips).sort((a: Clip, b: Clip) => {
-        console.log("Sort type:", sortType, a, b);
         switch (sortType) {
             case SortType.TITLE_ASC:
                 return a.name.localeCompare(b.name);
