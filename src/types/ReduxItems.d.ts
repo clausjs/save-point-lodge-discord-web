@@ -108,6 +108,8 @@ export interface Clip {
     fileName?: string;
     url?: string;
     favoritedBy?: string[];
+    updatedAt?: Date;
+    createdAt?: Date;
 }
 
 export type apiState = 'pending' | 'fulfilled' | 'rejected';

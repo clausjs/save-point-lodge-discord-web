@@ -1,5 +1,5 @@
 const uuid = require("uuid").v4;
-
+const Timestamp = require('firebase').firestore.Timestamp;
 const DataSource = require("./dataSource");
 
 const logErr = (err) => {
@@ -18,9 +18,11 @@ class Soundboard extends DataSource {
         const soundboardItems = [];
         getSoundboardItemsResponse.forEach(res => {
             const clipData = res.data();
-            soundboardItems.push({ id: res.id, ...clipData });
+            const clip = { id: res.id, ...clipData };
+            clip.createdAt = clipData.createdAt ? clipData.createdAt.toDate() : new Date();
+            clip.updatedAt = clipData.updatedAt ? clipData.updatedAt.toDate() : new Date();
+            soundboardItems.push(clip);
         });
-
         return soundboardItems;
     }
     getById = async (id) => {
@@ -37,6 +39,7 @@ class Soundboard extends DataSource {
     add = async (opts) => {
         const { db } = this;
         const { url, name, description, tags, uploadedBy } = opts;
+        const transactionDate = Timestamp.fromDate(new Date());
         
         const clip = {
             id: `URL-${uuid()}`,
@@ -45,7 +48,9 @@ class Soundboard extends DataSource {
             description,
             tags,
             uploadedBy,
-            favoritedBy: []
+            favoritedBy: [],
+            createdAt: transactionDate,
+            updatedAt: transactionDate
         };
         
         try {
@@ -60,7 +65,7 @@ class Soundboard extends DataSource {
         const { db } = this;
 
         try {
-            await db.collection(this.collectionName).doc(clip.id).set(clip);
+            await db.collection(this.collectionName).doc(clip.id).set({ ...clip, createdAt: Timestamp.fromDate(new Date(clip.createdAt)), updatedAt: Timestamp.fromDate(new Date()) });
             return clip;
         } catch (err) {
             logErr(err);
