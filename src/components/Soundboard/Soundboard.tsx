@@ -52,7 +52,16 @@ const Soundboard: React.FC = () => {
     const user: User = useSelector((state: RootState) => state.user.user);
     const clips: Clip[] = useSelector((state: RootState) => state.soundboard.clips);
 
-    const { sendJsonMessage, lastMessage, readyState } = useWebSocket(socketUrl, { shouldReconnect: (closeEvent) => true });
+    const { sendJsonMessage, lastMessage, readyState } = useWebSocket(socketUrl, { 
+        shouldReconnect: (closeEvent) => {
+            // console.log("closeEvent: ", closeEvent);
+            return true;
+        },
+        heartbeat: {
+            interval: 5000,
+            message: 'ping'
+        }
+    });
 
     const connectionStatus = {
         [ReadyState.CONNECTING]: 'Connecting',
