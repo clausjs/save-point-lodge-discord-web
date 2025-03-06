@@ -35,66 +35,64 @@ const SoundboardClip: React.FC<Clip & {
         audioFile.current.play();
     }
 
-    const getBottomContent = () => {
-        if (useMenuBasedButtons) {
-            if (showMenu) {
-                return (
-                    <div className='mobile-actions'>
-                        <PlayArrow onClick={(e) => { e.stopPropagation(); playAudio(); }} />
-                        <Favorite className={`${isFavorite ? 'favorited' : ''}`} onClick={onFavorite.bind(this, id)} />
-                        <Edit onClick={onEdit.bind(this, id)} />
-                        {username === uploadedBy && <Delete onClick={onDelete.bind(this, id)} />}
-                        <Close onClick={() => setShowMenu(false)} />
-                    </div>
-                );
-            } else {
-                return (
-                    <>
-                        <div className='tags'>
-                            {tags.map((tag, index) => (
-                                <Chip
-                                    key={index}
-                                    label={tag}
-                                    style={{ margin: '2px' }}
-                                />
-                            ))}
-                        </div>
-                        <div className='actions'>
-                            <MoreHoriz onClick={() => setShowMenu(true)} />
-                        </div>
-                    </>
-                )
-            }
-        } else {
-            return (
-                <>
-                    <div className='tags'>
-                        {tags.map((tag, index) => (
-                            <Chip
-                                key={index}
-                                label={tag}
-                                style={{ margin: '2px' }}
-                            />
-                        ))}
-                    </div>
-                    <div className='actions'>
-                        <PlayArrow onClick={(e) => { e.stopPropagation(); playAudio(); }} />
-                        <Favorite className={`${isFavorite ? 'favorited' : ''}`} onClick={onFavorite.bind(this, id)} />
-                        <Edit onClick={onEdit.bind(this, id)} />
-                        {username === uploadedBy && <Delete onClick={onDelete.bind(this, id)} />}
-                    </div>
-                </>
-            )
-        }
+    const onAction = (action: Function) => {
+        setShowMenu(false);
+        action(id);
+    }
+
+    const _onFavorite = () => {
+        onFavorite(id);
+    }
+
+    const _onEdit = () => {
+        onAction(onEdit);
+    }
+
+    const _onDelete = () => {
+        onAction(onDelete);
     }
 
     return (
-        <Paper className={`clip-card ${!useMenuBasedButtons && expanded ? 'highlighted' : ''}`} style={{ padding: 10 }} onClick={() => onClick(id)} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
+        <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`.trim()} style={{ padding: 10 }} onClick={() => onAction(onClick)} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
             <Typography className='clip-name' variant="body1">{name}</Typography>
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
-            <Typography className={`clip-description ${((!useMenuBasedButtons && expanded) || showMenu) ? 'show' : ''}`} variant="body2">{description}</Typography>
+            <Typography className={`clip-description ${expanded ? 'show' : ''}`.trim()} variant="body2">{description}</Typography>
             <div className='clip-footer'>
-                {getBottomContent()}
+                <div className='tags'>
+                    {tags.map((tag, index) => (
+                        <Chip
+                            key={index}
+                            label={tag}
+                            style={{ margin: '2px' }}
+                            title={tag}
+                        />
+                    ))}
+                </div>
+                <div className='actions'>
+                    {!useMenuBasedButtons ? <>
+                        <PlayArrow onClick={(e) => { e.stopPropagation(); playAudio(); }} />
+                        <Favorite className={`${isFavorite ? 'favorited' : ''}`.trim()} onClick={_onFavorite} />
+                        <Edit onClick={_onEdit} />
+                        {username === uploadedBy && <Delete onClick={_onDelete} />}
+                    </> : <>
+                        <MoreHoriz onClick={(e) => { e.stopPropagation(); setShowMenu(true); }} />
+                    </>}
+                </div>
+                {useMenuBasedButtons && <div className={`mobile-actions ${showMenu ? 'show' : 'hide'}`.trim()}>
+                    <div className='buttons'>
+                        <div>
+                            <PlayArrow onClick={(e) => { e.stopPropagation(); playAudio(); }} />
+                            <Favorite className={`${isFavorite ? 'favorited' : ''}`.trim()} onClick={_onFavorite} />
+                        </div>   
+                        <div className='close'>
+                            <Close onClick={() => setShowMenu(false)} />
+                        </div>
+                        <div>    
+                            <Edit onClick={_onEdit} />
+                            {username === uploadedBy && <Delete onClick={_onDelete} />}
+                        </div>
+                    </div>
+                </div>}
             </div>
             <audio className='clip-audio' ref={audioFile} src={url} />
         </Paper>

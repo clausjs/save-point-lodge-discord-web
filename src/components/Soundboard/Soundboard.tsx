@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { Button, Grid, Input } from '@mui/material';
+import { Button, FormControl, Grid, Input, InputLabel, MenuItem, Select } from '@mui/material';
 import { GridLoader } from 'react-spinners';
 
 import ConfigClipDialog from './ConfigClipDialog';
@@ -16,6 +16,16 @@ import { fetchSoundboardClips, addClip, editClip, deleteClip } from '../../state
 
 import './Soundboard.scss';
 
+enum SortType {
+    DEFAULT = "Default",
+    TITLE_ASC = "Title (Ascending)",
+    TITLE_DEC = "Title (Descending)",
+    CREATED_ASC = "Created (Ascending)",
+    CREATED_DEC = "Created (Descending)",
+    UPLOADER_ASC = "Uploader (Ascending)",
+    UPLOADER_DEC = "Uploader (Descending)",
+}
+
 const devMode = process.env.NODE_ENV === 'development' ? true : false;
 
 const Soundboard: React.FC = () => {
@@ -29,6 +39,7 @@ const Soundboard: React.FC = () => {
     const [ dialogOpen, setDialogOpen ] = useState(false);
     const [ editingClip, setEditingClip ] = useState<Clip | null>(null);
     const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
+    const [ sortType, setSortType ] = useState<SortType>(SortType.DEFAULT);
 
     const openDialog = () => setDialogOpen(true);
     const closeDialog = () => {
@@ -150,11 +161,30 @@ const Soundboard: React.FC = () => {
         }
     }
 
-    const filteredClips = searchTerm === "" ? clips : clips.filter(clip =>
-        clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        clip.tags.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
-        clip.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredClips = Array.from(clips).sort((a: Clip, b: Clip) => {
+        console.log("Sort type:", sortType, a, b);
+        switch (sortType) {
+            case SortType.TITLE_ASC:
+                return a.name.localeCompare(b.name);
+            case SortType.TITLE_DEC:
+                return b.name.localeCompare(a.name);
+            case SortType.CREATED_ASC:
+                return a.createdAt?.getTime() - b.createdAt?.getTime();
+            case SortType.CREATED_DEC:
+                return b.createdAt?.getTime() - a.createdAt?.getTime();
+            case SortType.UPLOADER_ASC:
+                return a.uploadedBy.localeCompare(b.uploadedBy);
+            case SortType.UPLOADER_DEC:
+                return b.uploadedBy.localeCompare(a.uploadedBy);
+            default:
+                return a.id.localeCompare(b.id);
+        }
+    }).filter(clip => {
+        if (!searchTerm) return true;
+        return (clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                clip.tags.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
+                clip.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
 
     return (
         <>
@@ -168,6 +198,22 @@ const Soundboard: React.FC = () => {
                         <div className='circle small-button-background'></div>
                         <button onClick={() => console.log("Load my instants")} />
                     </div> */}
+                    <div className='sort-control'>    
+                        <FormControl variant="standard" fullWidth>
+                            <InputLabel id='sort-label' sx={{ color: 'inherit' }}>Sort by:</InputLabel>
+                            <Select
+                                labelId="sort-label"
+                                value={sortType}
+                                onChange={(e) => setSortType(e.target.value as SortType)}
+                                label="Sort by:"
+                                sx={{ color: 'inherit' }}
+                            >
+                                {Object.values(SortType).map((sortType, i) => {
+                                    return <MenuItem key={i} value={sortType}>{sortType}</MenuItem>
+                                })}
+                            </Select>
+                        </FormControl>
+                    </div>
                     <div className='button-grp'>
                         <Button className='grid-action' variant="contained" onClick={openDialog}>Add Clip</Button>
                         <Button className='grid-action' variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
