@@ -16,3 +16,7 @@ Different env can be `docker-composed`'ed with:
 2. Install node modules with `npm i`
 3. Run the project with `npm run start`, this will webpack the directories and run the server
 4. Browser your server at `http://localhost:3000`
+
+# Self-signed certs for testing
+`mkdir certs`
+`openssl req -x509 -newkey rsa:4096 -keyout certs/savepointlodge.com.key -out certs/savepointlodge.com.pem -sha256 -days 365 -nodes`

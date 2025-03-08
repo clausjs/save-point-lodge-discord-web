@@ -1,7 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Clip, SoundboardState } from "../../types";
+import toastr from "../../utils/toastr";
 
 const initialState: SoundboardState = {
+    isMyInstants: false,
     clips: []
 };
 
@@ -9,6 +11,38 @@ export const fetchSoundboardClips = createAsyncThunk(
     'soundboard/fetchSoundboardClips',
     async () => {
         const response = await fetch('/api/soundboard');
+        return response.json();
+    }
+)
+
+export const fetchMyInstantsTrending = createAsyncThunk(
+    'soundboard/fetchMyInstantsTrending',
+    async () => {
+        const response = await fetch('/api/soundboard/myinstants');
+        return response.json();
+    }
+)
+
+export const fetchMyInstantsRecent = createAsyncThunk(
+    'soundboard/fetchMyInstantsRecent',
+    async () => {
+        const response = await fetch('/api/soundboard/myinstants/recent');
+        return response.json();
+    }
+)
+
+export const fetchMyInstantsByCategory = createAsyncThunk(
+    'soundboard/fetchMyInstantsByCategory',
+    async (category: string) => {
+        const response = await fetch(`/api/soundboard/myinstants/${encodeURIComponent(category.toLowerCase())}`);
+        return response.json();
+    }
+)
+
+export const searchMyInstants = createAsyncThunk(
+    'soundboard/searchMyInstants',
+    async (search: string) => {
+        const response = await fetch(`/api/soundboard/myinstants/search?query=${encodeURIComponent(search)}`);
         return response.json();
     }
 )
@@ -68,6 +102,51 @@ const soundboard = createSlice({
                 .addCase(fetchSoundboardClips.fulfilled, (state, action: PayloadAction<Clip[]>) => {
                     state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
+                    state.isMyInstants = false;
+                })
+                .addCase(fetchMyInstantsTrending.pending, (state) => {
+                    state.clipFetchState = 'pending';
+                })
+                .addCase(fetchMyInstantsTrending.rejected, (state) => {
+                    state.clipFetchState = 'rejected';
+                })
+                .addCase(fetchMyInstantsTrending.fulfilled, (state, action: PayloadAction<Clip[]>) => {
+                    state.clips = action.payload;
+                    state.clipFetchState = 'fulfilled';
+                    state.isMyInstants = true;
+                })
+                .addCase(fetchMyInstantsRecent.pending, (state) => {
+                    state.clipFetchState = 'pending';
+                })
+                .addCase(fetchMyInstantsRecent.rejected, (state) => {
+                    state.clipFetchState = 'rejected';
+                })
+                .addCase(fetchMyInstantsRecent.fulfilled, (state, action: PayloadAction<Clip[]>) => {
+                    state.clips = action.payload;
+                    state.clipFetchState = 'fulfilled';
+                    state.isMyInstants = true;
+                })
+                .addCase(fetchMyInstantsByCategory.pending, (state) => {
+                    state.clipFetchState = 'pending';
+                })
+                .addCase(fetchMyInstantsByCategory.rejected, (state) => {
+                    state.clipFetchState = 'rejected';
+                })
+                .addCase(fetchMyInstantsByCategory.fulfilled, (state, action: PayloadAction<Clip[]>) => {
+                    state.clips = action.payload;
+                    state.clipFetchState = 'fulfilled';
+                    state.isMyInstants = true;
+                })
+                .addCase(searchMyInstants.pending, (state) => {
+                    state.clipFetchState = 'pending';
+                })
+                .addCase(searchMyInstants.rejected, (state) => {
+                    state.clipFetchState = 'rejected';
+                })
+                .addCase(searchMyInstants.fulfilled, (state, action: PayloadAction<Clip[]>) => {
+                    state.clips = action.payload;
+                    state.clipFetchState = 'fulfilled';
+                    state.isMyInstants = true;
                 })
                 .addCase(addClip.pending, (state) => {
                     state.clipAddState = 'pending';
@@ -78,6 +157,7 @@ const soundboard = createSlice({
                 .addCase(addClip.fulfilled, (state, action: PayloadAction<Clip>) => {
                     state.clips.push(action.payload);
                     state.clipAddState = 'fulfilled';
+                    toastr.success('Clip added!');
                 })
                 .addCase(editClip.pending, (state) => {
                     state.clipEditState = 'pending';

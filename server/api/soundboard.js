@@ -1,8 +1,8 @@
 const dotenv = require('dotenv').config;
 dotenv();
 const router = require('express').Router();
-const uuid = require('uuid').v4();
 
+const { getTrending, getRecent, getByCategory, search, getUploadedByUser, getFavoritedByUser } = require('./myinstants');
 
 const clips = require('./testData').clips;
 
@@ -19,16 +19,57 @@ router.get('/', async function(req, res) {
     }
 });
 
-router.get('/:id', async function(req, res) {
-    if (req.isTesting) {
-        return res.status(200).send(clips.find(clip => clip.id === req.params.id));
-    }
+// router.get('/:id', async function(req, res) {
+//     if (req.isTesting) {
+//         return res.status(200).send(clips.find(clip => clip.id === req.params.id));
+//     }
 
+//     try {
+//         const soundboardItem = await req.db.firebase.soundboard.getById(req.params.id);
+//         return res.status(200).send(soundboardItem);
+//     } catch (e) {
+//         return res.status(500).send(e);
+//     }
+// });
+
+router.get('/myinstants', async function(req, res) {
     try {
-        const soundboardItem = await req.db.firebase.soundboard.getById(req.params.id);
-        return res.status(200).send(soundboardItem);
-    } catch (e) {
-        return res.status(500).send(e);
+        const lang = req.query.lang;
+        const countryCode = req.query.cc;
+        const myinstantsRes = await getTrending(lang, countryCode);
+        return res.status(200).send(myinstantsRes);
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+});
+
+router.get('/myinstants/recent', async function(req, res) {
+    try {
+        const lang = req.query.lang;
+        const myinstantsRes = await getRecent(lang);
+        return res.status(200).send(myinstantsRes);
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+});
+
+router.get('/myinstants/search', async function(req, res) {
+    try {
+        const lang = req.query.lang;
+        const myinstantsRes = await search(lang, req.query.query);
+        return res.status(200).send(myinstantsRes);
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+});
+
+router.get('/myinstants/:category', async function(req, res) {
+    try {
+        const lang = req.query.lang;
+        const myinstantsRes = await getByCategory(lang, req.params.category);
+        return res.status(200).send(myinstantsRes);
+    } catch (err) {
+        return res.status(500).send(err);
     }
 });
 

@@ -30,6 +30,19 @@ const theme = createTheme({
                 }
             }
         },
+        MuiLink: {
+            styleOverrides: {
+                root: {
+                    color: '#FFFFFF',
+                    '&:hover': {
+                        color: 'gray'
+                    },
+                    '&:visited': {
+                        color: 'gray'
+                    }
+                }
+            }
+        }
     }
 });
 

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { Button, FormControl, Grid, Input, InputLabel, MenuItem, Select } from '@mui/material';
+import { Button, FormControl, Grid, Input, InputLabel, Link, Menu, MenuItem, Select } from '@mui/material';
 import { GridLoader } from 'react-spinners';
 
 import ConfigClipDialog from './ConfigClipDialog';
@@ -11,27 +11,54 @@ import { Clip, User } from '../../types';
 import SoundboardClip from './SoundboardClip';
 import toastr from '../../utils/toastr';
 
-import { Search } from '@mui/icons-material';
-import { fetchSoundboardClips, addClip, editClip, deleteClip } from '../../state/reducers/soundboard';
+import { Close, ExpandMore, Search } from '@mui/icons-material';
+import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
 
 enum SortType {
     DEFAULT = "Default",
-    TITLE_ASC = "Title (Ascending)",
-    TITLE_DEC = "Title (Descending)",
-    CREATED_ASC = "Created (Ascending)",
-    CREATED_DEC = "Created (Descending)",
-    UPLOADER_ASC = "Uploader (Ascending)",
-    UPLOADER_DEC = "Uploader (Descending)",
+    TITLE_ASC = "Title ▼",
+    TITLE_DEC = "Title ▲",
+    CREATED_ASC = "Created ▼",
+    CREATED_DEC = "Created ▲",
+    UPLOADER_ASC = "Uploader ▼",
+    UPLOADER_DEC = "Uploader ▲",
 }
 
+const MYINSTANTS_UNSORTABLE = [
+    SortType.CREATED_ASC,
+    SortType.CREATED_DEC,
+    SortType.UPLOADER_ASC,
+    SortType.UPLOADER_DEC
+]
+
+enum MyInstantsCategory {
+    ANIME = "Anime & Menga",
+    GAMES = "Games",
+    MEMES = "Memes",
+    MOVIES = "Movies",
+    MUSIC = "Music",
+    POLITICS = "Politics",
+    PRANKS = "Pranks",
+    REACTIONS = "Reactions",
+    SOUND_EFFECTS = "Sound Effects",
+    SPORTS = "Sports",
+    TELEVISION = "Television",
+    TIKTOK_TRENDS = "TikTok Trends",
+    VIRAL = "Viral"
+}
+
+type ClipType = 'saved' | 'trending' | 'recent' | MyInstantsCategory;
+
 const devMode = process.env.NODE_ENV === 'development' ? true : false;
+const DEFAULT_SOCKET_URL = devMode ? 'ws://localhost:8080/soundboard' : 'wss://joebotdiscord.com/soundboard';
+
 
 const Soundboard: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-    //Public API that will echo messages sent to it back to the client
     const [ socketUrl, setSocketUrl ] = useState<string | null>(null);
+    const [ connectionAttempts, setConnectionAttempts ] = useState<number>(0);
     const [ hasBeenConnected, setHasBeenConnected ] = useState<boolean>(false);
     const [ messageHistory, setMessageHistory ] = useState<MessageEvent<{ type: string, sound?: string }>[]>([]);
     const [ fetchingClips, setFetchingClips ] = useState<boolean>(false);
@@ -39,7 +66,15 @@ const Soundboard: React.FC = () => {
     const [ dialogOpen, setDialogOpen ] = useState(false);
     const [ editingClip, setEditingClip ] = useState<Clip | null>(null);
     const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
+    const [ clipType, setClipType ] = useState<ClipType>('saved');
     const [ sortType, setSortType ] = useState<SortType>(SortType.DEFAULT);
+    const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
+
+    const [ menuAnchorEl, setMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
+    const menuOpen = Boolean(menuAnchorEl);
+
+    const [ subMenuAnchorEl, setSubMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
+    const subMenuOpen = Boolean(subMenuAnchorEl);
 
     const openDialog = () => setDialogOpen(true);
     const closeDialog = () => {
@@ -51,9 +86,16 @@ const Soundboard: React.FC = () => {
     const lightMode: boolean = useSelector((state: RootState) => state.theme.lightMode);
     const user: User = useSelector((state: RootState) => state.user.user);
     const clips: Clip[] = useSelector((state: RootState) => state.soundboard.clips);
+    const isMyInstants: boolean = useSelector((state: RootState) => state.soundboard.isMyInstants);
 
     const { sendJsonMessage, lastMessage, readyState } = useWebSocket(socketUrl, { 
         shouldReconnect: (closeEvent) => {
+            setConnectionAttempts(connectionAttempts + 1);
+
+            if (connectionAttempts > 5) {
+                toastr.error("Can't establish connection to Joe_Bot. Please try again later.");
+                return false;
+            }
             // console.log("closeEvent: ", closeEvent);
             return true;
         },
@@ -98,11 +140,7 @@ const Soundboard: React.FC = () => {
     useEffect(() => {
         if (user && user.isSoundboardUser) {
             if (clips.length) setFetchingClips(false);
-            if (devMode) {
-                setSocketUrl('ws://localhost:8080/soundboard/');
-            } else {
-                setSocketUrl('wss://joebotdiscord.com/soundboard/');
-            }
+            if (!socketUrl) setSocketUrl(socketUrlInput || DEFAULT_SOCKET_URL);
         }
     }, [clips]);
 
@@ -131,6 +169,10 @@ const Soundboard: React.FC = () => {
             setMessageHistory((prev) => prev.concat(lastMessage));
         }
     }, [lastMessage]);
+
+    useEffect(() => {
+        setSortType(SortType.DEFAULT);
+    }, [isMyInstants])
 
     const playClip = (clipId: string) => {
         const clip: Clip | undefined = clips.find(c => {
@@ -188,11 +230,37 @@ const Soundboard: React.FC = () => {
                 return a.id.localeCompare(b.id);
         }
     }).filter(clip => {
-        if (!searchTerm) return true;
+        if (!searchTerm || isMyInstants) return true;
         return (clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 clip.tags.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
                 clip.description.toLowerCase().includes(searchTerm.toLowerCase()));
     });
+
+    const getClips = (type: ClipType) => {
+        if (clipType !== type) setClipType(type);
+        switch (type) {
+            case 'saved':
+                dispatch(fetchSoundboardClips());
+                break;
+            case 'trending':
+                dispatch(fetchMyInstantsTrending());
+                break;
+            case 'recent':
+                dispatch(fetchMyInstantsRecent());
+                break;
+            default:
+                dispatch(fetchMyInstantsByCategory(type));
+                break;
+        }
+
+        setMenuAnchorEl(null);
+        setSubMenuAnchorEl(null);
+    }
+
+    const clearMyInstantsSearch = () => {
+        setSearchTerm('');
+        getClips(clipType);
+    }
 
     return (
         <>
@@ -200,12 +268,79 @@ const Soundboard: React.FC = () => {
             {user && user.isSoundboardUser && <div className='soundboard'>
                 <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
                 <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
+                <div className='info-header'>
+                    <div className='header-text'><h1>Joe_Bot Soundboard</h1></div>    
+                    <div className='my-instants-link'>
+                        <span>
+                            Looking for more sounds or a place to host sounds? <Link target="_blank" href='https://www.myinstants.com/en/index/us/'>Click here!</Link>
+                        </span>
+                    </div>
+                </div>
                 <div className='grid-actions'>
-                    <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
-                    {/* <div className='my-instants-button'>
+                    <div className='status-section'>
+                        <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
+                        {devMode && <div className='websocket-setup'>
+                            <Input
+                                className='websocket-input'
+                                placeholder='WebSocket URL'
+                                value={socketUrlInput}
+                                onChange={(e) => setSocketUrlInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && socketUrlInput) {
+                                        setSocketUrl(socketUrlInput);
+                                        setSocketUrlInput(null);
+                                        setConnectionAttempts(0);
+                                        setMessageHistory([]);
+                                    }
+                                }}
+                            />
+                        </div>}
+                    </div>
+                    <div className='my-instants-button'>
                         <div className='circle small-button-background'></div>
-                        <button onClick={() => console.log("Load my instants")} />
-                    </div> */}
+                        <button id='my-instants-button' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => setMenuAnchorEl(e.currentTarget)} />
+                    </div>
+                    <Menu
+                        aria-labelledby="my-instants-button"
+                        anchorEl={menuAnchorEl}
+                        open={menuOpen}
+                        onClose={() => setMenuAnchorEl(null)}
+                        anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left',
+                        }}
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left',
+                        }}
+                    >
+                        <MenuItem disabled={!isMyInstants} onClick={() => getClips('saved')}>Saved Clips</MenuItem>
+                        <MenuItem onClick={() => getClips('trending')}>Get Trending</MenuItem>
+                        <MenuItem onClick={() => getClips('recent')}>Get Newest</MenuItem>
+                        <MenuItem id='my-instants-get-by-category' onMouseEnter={(e: React.MouseEvent<HTMLLIElement, MouseEvent>) => setSubMenuAnchorEl(e.currentTarget)}>Get by category <ExpandMore /></MenuItem>
+                    </Menu>
+                    <Menu
+                        aria-labelledby='my-instants-get-by-category'
+                        anchorEl={subMenuAnchorEl}
+                        open={subMenuOpen}
+                        onClose={() => {
+                            setMenuAnchorEl(null)
+                            setSubMenuAnchorEl(null)
+                        }}
+                        anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left',
+                        }}
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left',
+                        }}
+                        onMouseLeave={() => setSubMenuAnchorEl(null)}
+                    >
+                        {Object.values(MyInstantsCategory).map((category, i) => {
+                            return <MenuItem key={i} onClick={() => getClips(category)}>{category}</MenuItem>
+                        })}
+                    </Menu>
                     <div className='sort-control'>    
                         <FormControl variant="standard" fullWidth>
                             <InputLabel id='sort-label' sx={{ color: 'inherit' }}>Sort by:</InputLabel>
@@ -216,7 +351,28 @@ const Soundboard: React.FC = () => {
                                 label="Sort by:"
                                 sx={{ color: 'inherit' }}
                             >
-                                {Object.values(SortType).map((sortType, i) => {
+                                {Object.values(SortType).filter((sortType, i) => {
+                                    switch (sortType) {
+                                        case SortType.DEFAULT:
+                                            return true;
+                                        case SortType.TITLE_ASC:
+                                            return true;
+                                        case SortType.TITLE_DEC:
+                                            return true;
+                                        case SortType.CREATED_ASC:
+                                            if (isMyInstants) return false;
+                                            return true;
+                                        case SortType.CREATED_DEC:
+                                            if (isMyInstants) return false;
+                                            return true;
+                                        case SortType.UPLOADER_ASC:
+                                            if (isMyInstants) return false;
+                                            return true;
+                                        case SortType.UPLOADER_DEC:
+                                            if (isMyInstants) return false;
+                                            return true;
+                                    }
+                                }).map((sortType, i) => {
                                     return <MenuItem key={i} value={sortType}>{sortType}</MenuItem>
                                 })}
                             </Select>
@@ -230,10 +386,25 @@ const Soundboard: React.FC = () => {
                 <Input
                     name='clip-search'
                     className='search-bar'
-                    placeholder="Search sounds..."
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(event.target.value)}
+                    placeholder={isMyInstants ? "Search MyInstants" : "Search sounds..."}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                        const newValue = event.target.value;
+
+                        if (newValue === '') {
+                            getClips(clipType);
+                        }
+
+                        setSearchTerm(event.target.value)
+                    }}
+                    onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                        if (!isMyInstants) return;
+
+                        if (event.key === 'Enter') {
+                            dispatch(searchMyInstants(searchTerm));
+                        }
+                    }}
                     value={searchTerm}
-                    endAdornment={<Search />}
+                    endAdornment={isMyInstants ? <Close onClick={clearMyInstantsSearch} /> : <Search />}
                 />
                 {fetchingClips && <div className='loading'><GridLoader color={lightMode ? 'black' : 'white'} loading={fetchingClips} size={50} margin='auto' /></div>}
                 {!fetchingClips && clips.length && <Grid className='soundboard-items' container spacing={2} style={{ marginTop: 20 }}>
@@ -246,6 +417,7 @@ const Soundboard: React.FC = () => {
                                 onFavorite={favoriteClip}
                                 onEdit={openClipEdit}
                                 onDelete={_deleteClip}
+                                isMyInstant={isMyInstants}
                             />
                         </Grid>
                     ))}

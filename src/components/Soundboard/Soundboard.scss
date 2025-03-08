@@ -7,8 +7,12 @@ body.light {
         }
     }
 
-    .small-button-background.circle {
-        background-color: black;
+    .my-instants-button {
+        .small-button-background {
+            &.circle {
+                background-color: black;
+            }
+        }
     }
 }
 
@@ -46,6 +50,21 @@ body.light {
     padding: 1rem;
     width: auto;
     height: auto;
+    color: white;
+
+    
+    .info-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    #my-instants-get-by-category {
+        svg {
+            transform: rotate(90deg);
+        }
+    }
 
     .loading {
         display: flex;
@@ -54,6 +73,7 @@ body.light {
         height: 100%;
         width: 100%;
     }
+
 
     .search-bar {
         width: auto;
@@ -74,7 +94,7 @@ body.light {
         .my-instants-button {
             width: 25px;
             height: 25px;
-            padding-right: 10px;
+            margin: 0 25px;
             display: flex;
             align-self: center;
     
@@ -112,28 +132,31 @@ body.light {
         .sort-control {
             width: auto;
             min-width: 150px;
+            align-self: center;
         }
 
         button.grid-action {
             margin: 0 5px;
         }
 
-        .status {
-            color: white;
+        .status-section {
             flex: 1;
-
-            .success {
-                color: green;
-            }
-
-            .error {
-                color: red;
-            }
-
-            .unknown {
-                color: yellow;
+            
+            .status {
+                .success {
+                    color: green;
+                }
+    
+                .error {
+                    color: red;
+                }
+    
+                .unknown {
+                    color: yellow;
+                }
             }
         }
+
 
         .button-grp {
             display: flex;
@@ -153,14 +176,24 @@ body.light {
                 cursor: pointer;
                 @include background-opacity($color-pallette-dark-background-2, 0.5);
                 margin: 0 auto;
-                color: white;
+                color: inherit;
                 position: relative;
+
+                .MuiIconButton-root {
+                    padding: unset;
+                }
                 
                 &:hover {
                     border: 2px solid addOpacity($color-pallette-light-blue, 0.5);
                 }
 
+                .clip-action-button {
+                    color: inherit;
+                }
+
                 .clip-name {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                     text-decoration: solid;
                 }
 

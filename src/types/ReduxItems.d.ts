@@ -104,8 +104,7 @@ export interface Clip {
     tags: string[];
     description: string;
     uploadedBy: string;
-    playCount: number;
-    fileName?: string;
+    playCount?: number;
     url?: string;
     favoritedBy?: string[];
     updatedAt?: Date;
@@ -116,6 +115,7 @@ export type apiState = 'pending' | 'fulfilled' | 'rejected';
 
 export interface SoundboardState {
     clips: Clip[];
+    isMyInstants: boolean;
     clipFetchState?: apiState;
     clipAddState?: apiState;
     clipEditState?: apiState;

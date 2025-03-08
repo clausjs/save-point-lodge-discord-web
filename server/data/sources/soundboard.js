@@ -38,7 +38,7 @@ class Soundboard extends DataSource {
     }
     add = async (opts) => {
         const { db } = this;
-        const { url, name, description, tags, uploadedBy } = opts;
+        const { url, name, description = "", tags = [], uploadedBy = "" } = opts;
         const transactionDate = Timestamp.fromDate(new Date());
         
         const clip = {
