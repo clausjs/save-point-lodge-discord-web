@@ -16,7 +16,7 @@ body.light {
     }
 }
 
-@keyframes smooth-appear {
+@keyframes actions-smooth-appear {
     from {
         height: 0;
         width: 0;
@@ -31,6 +31,21 @@ body.light {
         top: 0;
         bottom: 0;
         left: 0;
+        display: block;
+    }
+}
+
+@keyframes volume-smooth-appear {
+    from {
+        height: 0;
+        width: 0;
+        top: 50%;
+        display: none;
+    }
+
+    to {
+        height: auto;
+        width: 100%;
         display: block;
     }
 }
@@ -227,6 +242,25 @@ body.light {
                         }
                     }
 
+                    .volume-controls {
+                        background-color: $color-pallette-dark-background-2;
+                        position: absolute;
+                        z-index: 999;
+                        height: auto;
+                        width: 100%;
+                        bottom: 0;
+                        left: 0;
+                        margin-bottom: 5px;
+                        border-radius: 25px;
+                        display: block;
+                        animation: volume-smooth-appear 0.1s forwards;
+
+                        &.hide {
+                            display: none;
+                            animation: volume-smooth-appear 0.1s forwards reverse;
+                        }
+                    }
+
                     .mobile-actions {
                         @include background-opacity($color-pallette-dark-background-2, 0.95);
                         position: absolute;
@@ -237,11 +271,11 @@ body.light {
                         bottom: 0;
                         left: 0;
                         display: block;
-                        animation: smooth-appear 0.1s forwards;
+                        animation: actions-smooth-appear 0.1s forwards;
 
                         &.hide {
                             display: none;
-                            animation: smooth-appear 0.1s forwards reverse;
+                            animation: actions-smooth-appear 0.1s forwards reverse;
                         }
 
                         .buttons {

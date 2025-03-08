@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { Chip, IconButton, Paper, Typography, useMediaQuery } from "@mui/material";
+import React, { useEffect, useRef, useState } from 'react';
+import { Chip, IconButton, Paper, Slider, Stack, Typography, useMediaQuery } from "@mui/material";
 import { Clip, User } from '../../types';
-import { Close, Delete, Edit, Favorite, MoreHoriz, PlayArrow, Save } from '@mui/icons-material';
+import { Close, Delete, Edit, Favorite, MoreHoriz, PlayArrow, Save, Speaker, Stop, VolumeDown, VolumeUp } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../state/store';
 import { useDispatch } from 'react-redux';
@@ -39,20 +39,42 @@ const SoundboardClip: React.FC<Clip & {
     const audioFile = useRef(null);
     const [ expanded, setExpanded ] = useState(false);
     const [ showMenu, setShowMenu ] = useState(false);
+    const [ showVolumeSlider, setShowVolumeSlider ] = useState<boolean>(false);
+    const [ volume, setVolume ] = useState<number>(50);
 
     const username: string = useSelector((state: RootState) => state.user.user.username);
 
-    const playAudio = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+    const controlAudio = (e: React.MouseEvent<SVGSVGElement, MouseEvent>, action: 'play' | 'stop' | 'volume') => {
         e.stopPropagation();
-        audioFile.current.play();
+        switch (action) {
+            case 'play':
+                audioFile.current.currentTime = 0;
+                audioFile.current.play();
+                audioFile.current.volume = volume / 100;
+                break;
+            case 'stop':
+                audioFile.current.pause();
+                break;
+            case 'volume':
+                setShowVolumeSlider(!showVolumeSlider);
+                break;
+            default:
+                break;
+        }
     }
+
+    useEffect(() => {
+        if (audioFile.current) {
+            audioFile.current.volume = volume / 100;
+        }
+    }, [volume])
 
     const getActionButtonSection = (section: ACTION_BUTTON_SECTIONS) => {
         switch (section) {
             case ACTION_BUTTON_SECTIONS.TOP:
                 return (
                     <React.Fragment>
-                        <ClipActionButton onClick={playAudio} title='play' Icon={PlayArrow} />
+                        <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='play' Icon={PlayArrow} />
                         <ClipActionButton disabled={isMyInstant} classes={`${isFavorite ? 'favorited' : ''}`.trim()} onClick={_onFavorite} title='favorite' Icon={Favorite} />
                     </React.Fragment>
                 );
@@ -86,12 +108,18 @@ const SoundboardClip: React.FC<Clip & {
         }
     }
 
+    const _addClip = (e: React.MouseEvent<any, any>) => {
+        e.stopPropagation();
+        dispatch(addClip({ id, name, tags, description, url, uploadedBy: username }));
+    }
+
     const getClipActions = () => {
         if (isMyInstant) {
             return (
                 <React.Fragment>
-                    <ClipActionButton onClick={playAudio} title='play' Icon={PlayArrow} />
-                    <ClipActionButton onClick={() => dispatch(addClip({ id, name, tags, description, url, uploadedBy: username }))} title='save' Icon={Save} />
+                    <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='play' Icon={PlayArrow} />
+                    <ClipActionButton onClick={(e) => controlAudio(e, 'stop')} title='stop' Icon={Stop} />
+                    <ClipActionButton onClick={_addClip} title='save' Icon={Save} />
                 </React.Fragment>
             );
         } else if (!useMenuBasedButtons) {
@@ -133,7 +161,7 @@ const SoundboardClip: React.FC<Clip & {
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
             <Typography className={`clip-description ${expanded ? 'show' : ''}`.trim()} variant="body2">{description}</Typography>
             <div className='clip-footer'>
-                <div className='tags'>
+                {!isMyInstant && <div className='tags'>
                     {tags.map((tag, index) => (
                         <Chip
                             key={index}
@@ -142,7 +170,8 @@ const SoundboardClip: React.FC<Clip & {
                             title={tag}
                         />
                     ))}
-                </div>
+                </div>}
+                {isMyInstant && <ClipActionButton onMouseOver={(e) => controlAudio(e, 'volume')} onClick={(e) => controlAudio(e, 'volume')} title='volume' Icon={VolumeUp} />}
                 <div className='actions'>
                     {getClipActions()}
                 </div>
@@ -159,6 +188,13 @@ const SoundboardClip: React.FC<Clip & {
                         </div>
                     </div>
                 </div>}
+                {isMyInstant && <div className={`volume-controls ${showVolumeSlider ? 'show' : 'hide'}`.trim()} onMouseLeave={(e) => setShowVolumeSlider(false)}>
+                    <Stack spacing={2} direction="row" sx={{ alignItems: 'center' }}>
+                        <VolumeDown />
+                            <Slider aria-label="Volume" value={volume} onChange={(e, newValue) => setVolume(newValue as number)} onChangeCommitted={() => setShowVolumeSlider(false)} />
+                        <VolumeUp />
+                    </Stack>    
+                </div>}
             </div>
             <audio className='clip-audio' ref={audioFile} src={url} />
         </Paper>
@@ -169,13 +205,14 @@ interface ClipActionButtonProps {
     onClick: (e: React.MouseEvent<any, any>) => void;
     title: string;
     Icon: React.ElementType;
+    onMouseOver?: (e: React.MouseEvent<any, any>) => void;
     classes?: string;
     disabled?: boolean;
 }
 
-const ClipActionButton: React.FC<ClipActionButtonProps> = ({ classes, onClick, title, Icon, disabled }) => {
+const ClipActionButton: React.FC<ClipActionButtonProps> = ({ classes, onMouseOver, onClick, title, Icon, disabled }) => {
     return (
-        <IconButton className={`clip-action-button ${classes ?? ''}`} onClick={onClick} title={title} aria-label={title} disabled={disabled}>
+        <IconButton onMouseOver={onMouseOver} className={`clip-action-button ${classes ?? ''}`} onClick={onClick} title={title} aria-label={title} disabled={disabled}>
             <Icon />
         </IconButton>
     );
