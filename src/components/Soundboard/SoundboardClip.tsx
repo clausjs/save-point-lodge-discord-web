@@ -7,6 +7,7 @@ import { AppDispatch, RootState } from '../../state/store';
 import { addClip } from '../../state/reducers/soundboard';
 
 import ClipActionButton from './ClipActionButton';
+import { DialogClip } from './Soundboard';
 
 enum ACTION_BUTTON_SECTIONS {
     TOP = 'top',
@@ -18,9 +19,9 @@ const SoundboardClip: React.FC<Clip & {
     isFavorite?: boolean, 
     isMyInstant?: boolean,
     onClick: (clipId: string) => void, 
-    onFavorite: (clipId: string) => void 
-    onEdit: (clipId: string) => void
-    onDelete: (clipId: string) => void
+    onFavorite: (clip: DialogClip) => void 
+    onEdit: (clip: DialogClip) => void
+    onDelete: (clip: DialogClip) => void
 }> = ({
     id,
     name, 
@@ -110,9 +111,13 @@ const SoundboardClip: React.FC<Clip & {
         }
     }
 
-    const _addClip = (e: React.MouseEvent<any, any>) => {
+    // const _addClip = (e: React.MouseEvent<any, any>) => {
+    //     e.stopPropagation();
+    //     dispatch(addClip({ id, name, tags, description, url, volume: previewVolume, uploadedBy: username }));
+    // }
+    const _addMyInstant = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
-        dispatch(addClip({ id, name, tags, description, url, volume: previewVolume, uploadedBy: username }));
+        onEdit({ id, name, tags, description, url, volume: previewVolume, uploadedBy: username, isSavingMyInstant: true });
     }
 
     const getClipActions = () => {
@@ -121,7 +126,7 @@ const SoundboardClip: React.FC<Clip & {
                 <React.Fragment>
                     <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='play' Icon={PlayArrow} />
                     <ClipActionButton onClick={(e) => controlAudio(e, 'stop')} title='stop' Icon={Stop} />
-                    <ClipActionButton onClick={_addClip} title='save' Icon={Save} />
+                    <ClipActionButton onClick={_addMyInstant} title='save' Icon={Save} />
                 </React.Fragment>
             );
         } else if (!useMenuBasedButtons) {
@@ -142,18 +147,21 @@ const SoundboardClip: React.FC<Clip & {
 
     const onAction = (action: Function) => {
         setShowMenu(false);
-        action(id);
+        action({ id, name, tags, description, url, volume, uploadedBy: username });
     }
 
-    const _onFavorite = () => {
-        onFavorite(id);
+    const _onFavorite = (e: React.MouseEvent<any, any>) => {
+        e.stopPropagation();
+        onAction(onFavorite);
     }
 
-    const _onEdit = () => {
+    const _onEdit = (e: React.MouseEvent<any, any>) => {
+        e.stopPropagation();
         onAction(onEdit);
     }
 
-    const _onDelete = () => {
+    const _onDelete = (e: React.MouseEvent<any, any>) => {
+        e.stopPropagation();
         onAction(onDelete);
     }
 

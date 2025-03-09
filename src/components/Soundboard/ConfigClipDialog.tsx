@@ -14,15 +14,16 @@ import toastr from '../../utils/toastr';
 
 import './ConfigClipDialog.scss';
 import ClipActionButton from './ClipActionButton';
+import { DialogClip } from './Soundboard';
 
 interface ConfigClipDialogProps {
-    clip?: Clip;
+    clip?: DialogClip;
     open: boolean;
     onClose: () => void;
     onSave: (clip: any) => void;
 }
 
-const EMPTY_CLIP: Clip = {
+const EMPTY_CLIP: DialogClip = {
     id: '',
     name: '',
     description: '',
@@ -30,7 +31,8 @@ const EMPTY_CLIP: Clip = {
     uploadedBy: '',
     tags: [],
     playCount: 0,
-    volume: 50
+    volume: 50,
+    isSavingMyInstant: false
 }
 
 const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, open, onClose, onSave }) => {
@@ -39,7 +41,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
     const [clipType, setClipType] = useState<'local' | 'url'>('url');
     const [tags, setTags] = useState<string[]>(editClip ? editClip.tags : []);
     const [tagInput, setTagInput] = useState('');
-    const [clipData, setClipData] = useState<Clip>(editClip ?? EMPTY_CLIP);
+    const [clipData, setClipData] = useState<DialogClip>(editClip ?? EMPTY_CLIP);
     const [ volume, setVolume ] = useState<number>(editClip ? editClip.volume : EMPTY_CLIP.volume);
     const [ isPlaying, setIsPlaying ] = useState<boolean>(false);
 
@@ -84,7 +86,12 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
     }
 
     const handleSave = () => {
-        setSubmitted(editClip ? 'edit' : 'add');
+        if (!editClip || (editClip && editClip.isSavingMyInstant)) {
+            setSubmitted('add');
+        } else {
+            setSubmitted('edit');
+        }
+        
         onSave({ ...clipData, tags });
     };
 
@@ -121,7 +128,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth>
-            <DialogTitle>{`${editClip ? 'Edit' : 'Add New'} Clip`}</DialogTitle>
+            <DialogTitle>{`${editClip && !editClip.isSavingMyInstant ? 'Edit' : 'Add New'} Clip`}</DialogTitle>
             <DialogContent>
                 {/* <InputLabel id="clip-type-label">Clip Type</InputLabel> */}
                 {/* <FormControl fullWidth margin="normal">
@@ -186,7 +193,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                             <ClipActionButton onClick={toggleClipAudio} title='Play' Icon={PlayArrow} />}
                         <Stack className='volume-slider' spacing={2} direction="row" sx={{ alignItems: 'center' }}>
                             <VolumeDown />
-                                <Slider aria-label="Volume" value={clipData.volume} onChange={(e: Event, newValue: number | number[]) => setVolume(newValue as number)} onChangeCommitted={handleVolumeChange} />
+                                <Slider aria-label="Volume" value={volume} onChange={(e: Event, newValue: number | number[]) => setVolume(newValue as number)} onChangeCommitted={handleVolumeChange} />
                             <VolumeUp />
                         </Stack>   
                     </div>
@@ -205,7 +212,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                         onClick={handleSave}
                         startIcon={<Save />}
                     >
-                        {editClip ? 'Save' : 'Add Clip'}
+                        {editClip && !editClip.isSavingMyInstant ? 'Save' : 'Add Clip'}
                     </Button>
                 </Stack>
             </DialogActions>

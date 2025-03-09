@@ -50,6 +50,10 @@ enum MyInstantsCategory {
     VIRAL = "Viral"
 }
 
+export interface DialogClip extends Clip {
+    isSavingMyInstant?: boolean;
+}
+
 type ClipType = 'saved' | 'trending' | 'recent' | MyInstantsCategory;
 
 const devMode = process.env.NODE_ENV === 'development' ? true : false;
@@ -65,7 +69,7 @@ const Soundboard: React.FC = () => {
     const [ fetchingClips, setFetchingClips ] = useState<boolean>(false);
     const [ searchTerm, setSearchTerm ] = useState('');
     const [ dialogOpen, setDialogOpen ] = useState(false);
-    const [ editingClip, setEditingClip ] = useState<Clip | null>(null);
+    const [ editingClip, setEditingClip ] = useState<DialogClip | null>(null);
     const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
     const [ clipType, setClipType ] = useState<ClipType>('saved');
     const [ sortType, setSortType ] = useState<SortType>(SortType.DEFAULT);
@@ -186,15 +190,15 @@ const Soundboard: React.FC = () => {
     };
 
     const _addOrEditClip = (clip: Clip) => {
-        if (editingClip) {
+        if (editingClip && !editingClip.isSavingMyInstant) {
             dispatch(editClip(clip));
         } else {
             dispatch(addClip({ ...clip, uploadedBy: user?.username }));
         }
     }
 
-    const _deleteClip = (clipId: string) => {
-        setDeletingClip(clips.find(c => c.id === clipId) || null);
+    const _deleteClip = (clip: DialogClip) => {
+        setDeletingClip(clip);
     }
 
     const playRandomClip = () => {
@@ -202,12 +206,9 @@ const Soundboard: React.FC = () => {
         playClip(clips[randomIndex].id);
     }
 
-    const favoriteClip = (clipId: string) => {}
+    const favoriteClip = (clip: DialogClip) => {}
 
-    const openClipEdit = (clipId: string) => {
-        const clip: Clip | undefined = clips.find(c => {
-            return c.id === clipId
-        });
+    const openClipEdit = (clip: DialogClip) => {
         if (clip) {
             setEditingClip(clip);
             openDialog();
