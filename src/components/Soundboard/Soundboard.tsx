@@ -69,6 +69,7 @@ const Soundboard: React.FC = () => {
     const [ clipType, setClipType ] = useState<ClipType>('saved');
     const [ sortType, setSortType ] = useState<SortType>(SortType.DEFAULT);
     const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
+    const [ myInstantsPage, setMyInstantsPage ] = useState<number>(1);
 
     const [ menuAnchorEl, setMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
     const menuOpen = Boolean(menuAnchorEl);
@@ -243,13 +244,13 @@ const Soundboard: React.FC = () => {
                 dispatch(fetchSoundboardClips());
                 break;
             case 'trending':
-                dispatch(fetchMyInstantsTrending());
+                dispatch(fetchMyInstantsTrending(myInstantsPage));
                 break;
             case 'recent':
-                dispatch(fetchMyInstantsRecent());
+                dispatch(fetchMyInstantsRecent(myInstantsPage));
                 break;
             default:
-                dispatch(fetchMyInstantsByCategory(type));
+                dispatch(fetchMyInstantsByCategory({ category: type, page: myInstantsPage }));
                 break;
         }
 
@@ -400,7 +401,7 @@ const Soundboard: React.FC = () => {
                         if (!isMyInstants) return;
 
                         if (event.key === 'Enter') {
-                            dispatch(searchMyInstants(searchTerm));
+                            dispatch(searchMyInstants({ search: searchTerm, page: 1 }));
                         }
                     }}
                     value={searchTerm}
