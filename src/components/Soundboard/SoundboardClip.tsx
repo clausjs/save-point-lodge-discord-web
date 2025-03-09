@@ -28,6 +28,7 @@ const SoundboardClip: React.FC<Clip & {
     description,
     uploadedBy,
     url,
+    volume,
     onClick,
     onFavorite,
     onEdit,
@@ -41,7 +42,7 @@ const SoundboardClip: React.FC<Clip & {
     const [ expanded, setExpanded ] = useState(false);
     const [ showMenu, setShowMenu ] = useState(false);
     const [ showVolumeSlider, setShowVolumeSlider ] = useState<boolean>(false);
-    const [ volume, setVolume ] = useState<number>(50);
+    const [ previewVolume, setPreviewVolume ] = useState<number>(volume);
 
     const username: string = useSelector((state: RootState) => state.user.user.username);
 
@@ -66,9 +67,9 @@ const SoundboardClip: React.FC<Clip & {
 
     useEffect(() => {
         if (audioFile.current) {
-            audioFile.current.volume = volume / 100;
+            audioFile.current.volume = previewVolume / 100;
         }
-    }, [volume])
+    }, [previewVolume])
 
     const getActionButtonSection = (section: ACTION_BUTTON_SECTIONS) => {
         switch (section) {
@@ -111,7 +112,7 @@ const SoundboardClip: React.FC<Clip & {
 
     const _addClip = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
-        dispatch(addClip({ id, name, tags, description, url, uploadedBy: username }));
+        dispatch(addClip({ id, name, tags, description, url, volume: previewVolume, uploadedBy: username }));
     }
 
     const getClipActions = () => {
@@ -192,7 +193,7 @@ const SoundboardClip: React.FC<Clip & {
                 {isMyInstant && <div className={`volume-controls ${showVolumeSlider ? 'show' : 'hide'}`.trim()} onMouseLeave={(e) => setShowVolumeSlider(false)}>
                     <Stack spacing={2} direction="row" sx={{ alignItems: 'center' }}>
                         <VolumeDown />
-                            <Slider aria-label="Volume" value={volume} onChange={(e, newValue) => setVolume(newValue as number)} />
+                            <Slider aria-label="Volume" value={previewVolume} onChange={(e, newValue) => setPreviewVolume(newValue as number)} />
                         <VolumeUp />
                     </Stack>    
                 </div>}

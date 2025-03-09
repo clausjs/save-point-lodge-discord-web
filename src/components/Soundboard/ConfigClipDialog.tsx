@@ -40,7 +40,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
     const [tags, setTags] = useState<string[]>(editClip ? editClip.tags : []);
     const [tagInput, setTagInput] = useState('');
     const [clipData, setClipData] = useState<Clip>(editClip ?? EMPTY_CLIP);
-    const [ volume, setVolume ] = useState<number>(50);
+    const [ volume, setVolume ] = useState<number>(editClip ? editClip.volume : EMPTY_CLIP.volume);
     const [ isPlaying, setIsPlaying ] = useState<boolean>(false);
 
     const addApiState: apiState = useSelector((state: RootState) => state.soundboard.clipAddState);
@@ -53,7 +53,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
             setIsPlaying(false);
         } else {
             audioFile.current?.play();
-            setIsPlaying(false);
+            setIsPlaying(true);
         }
     }
 
@@ -186,11 +186,14 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                             <ClipActionButton onClick={toggleClipAudio} title='Play' Icon={PlayArrow} />}
                         <Stack className='volume-slider' spacing={2} direction="row" sx={{ alignItems: 'center' }}>
                             <VolumeDown />
-                                <Slider aria-label="Volume" value={volume} onChange={(e: Event, newValue: number | number[]) => setVolume(newValue as number)} onChangeCommitted={handleVolumeChange} />
+                                <Slider aria-label="Volume" value={clipData.volume} onChange={(e: Event, newValue: number | number[]) => setVolume(newValue as number)} onChangeCommitted={handleVolumeChange} />
                             <VolumeUp />
                         </Stack>   
                     </div>
-                    <audio className='clip-audio' ref={audioFile} src={clipData.url} />
+                    <audio className='clip-audio' ref={audioFile} src={clipData.url} onEnded={() => {
+                        setIsPlaying(false) 
+                        if (audioFile.current) audioFile.current.currentTime = 0;
+                    }} />
                 </div>
             </DialogContent>
             <DialogActions>
