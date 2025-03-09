@@ -21,6 +21,7 @@ class Soundboard extends DataSource {
             const clip = { id: res.id, ...clipData };
             clip.createdAt = clipData.createdAt ? clipData.createdAt.toDate() : new Date();
             clip.updatedAt = clipData.updatedAt ? clipData.updatedAt.toDate() : new Date();
+            if (!clip.volume) clip.volume = 50;
             soundboardItems.push(clip);
         });
         return soundboardItems;
@@ -38,7 +39,7 @@ class Soundboard extends DataSource {
     }
     add = async (opts) => {
         const { db } = this;
-        const { url, name, description = "", tags = [], uploadedBy = "" } = opts;
+        const { url, name, description = "", tags = [], uploadedBy = "", volume = 50 } = opts;
         const transactionDate = Timestamp.fromDate(new Date());
         
         const clip = {
@@ -49,6 +50,7 @@ class Soundboard extends DataSource {
             tags,
             uploadedBy,
             favoritedBy: [],
+            volume,
             createdAt: transactionDate,
             updatedAt: transactionDate
         };

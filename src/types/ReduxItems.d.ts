@@ -105,6 +105,7 @@ export interface Clip {
     description: string;
     uploadedBy: string;
     playCount?: number;
+    volume?: number;
     url?: string;
     favoritedBy?: string[];
     updatedAt?: Date;

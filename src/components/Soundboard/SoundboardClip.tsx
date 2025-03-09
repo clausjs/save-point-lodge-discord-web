@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Chip, IconButton, Paper, Slider, Stack, Typography, useMediaQuery } from "@mui/material";
-import { Clip, User } from '../../types';
+import { Chip, Paper, Slider, Stack, Typography, useMediaQuery } from "@mui/material";
 import { Close, Delete, Edit, Favorite, MoreHoriz, PlayArrow, Save, Speaker, Stop, VolumeDown, VolumeUp } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { Clip } from '../../types';
 import { AppDispatch, RootState } from '../../state/store';
-import { useDispatch } from 'react-redux';
 import { addClip } from '../../state/reducers/soundboard';
+
+import ClipActionButton from './ClipActionButton';
 
 enum ACTION_BUTTON_SECTIONS {
     TOP = 'top',
@@ -191,30 +192,13 @@ const SoundboardClip: React.FC<Clip & {
                 {isMyInstant && <div className={`volume-controls ${showVolumeSlider ? 'show' : 'hide'}`.trim()} onMouseLeave={(e) => setShowVolumeSlider(false)}>
                     <Stack spacing={2} direction="row" sx={{ alignItems: 'center' }}>
                         <VolumeDown />
-                            <Slider aria-label="Volume" value={volume} onChange={(e, newValue) => setVolume(newValue as number)} onChangeCommitted={() => setShowVolumeSlider(false)} />
+                            <Slider aria-label="Volume" value={volume} onChange={(e, newValue) => setVolume(newValue as number)} />
                         <VolumeUp />
                     </Stack>    
                 </div>}
             </div>
             <audio className='clip-audio' ref={audioFile} src={url} />
         </Paper>
-    );
-}
-
-interface ClipActionButtonProps {
-    onClick: (e: React.MouseEvent<any, any>) => void;
-    title: string;
-    Icon: React.ElementType;
-    onMouseOver?: (e: React.MouseEvent<any, any>) => void;
-    classes?: string;
-    disabled?: boolean;
-}
-
-const ClipActionButton: React.FC<ClipActionButtonProps> = ({ classes, onMouseOver, onClick, title, Icon, disabled }) => {
-    return (
-        <IconButton onMouseOver={onMouseOver} className={`clip-action-button ${classes ?? ''}`} onClick={onClick} title={title} aria-label={title} disabled={disabled}>
-            <Icon />
-        </IconButton>
     );
 }
 

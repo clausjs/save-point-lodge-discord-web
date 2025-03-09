@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
     Dialog, DialogTitle, DialogContent, DialogActions, Button, 
     TextField, MenuItem, Select, FormControl, InputLabel, Chip, 
     SelectChangeEvent,
-    Stack
+    Stack,
+    Slider
 } from '@mui/material';
 import { apiState, Clip } from '../../types';
-import { Save } from '@mui/icons-material';
+import { Pause, PlayArrow, Save, VolumeDown, VolumeUp } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../state/store';
 import toastr from '../../utils/toastr';
 
 import './ConfigClipDialog.scss';
+import ClipActionButton from './ClipActionButton';
 
 interface ConfigClipDialogProps {
     clip?: Clip;
@@ -27,18 +29,33 @@ const EMPTY_CLIP: Clip = {
     url: '',
     uploadedBy: '',
     tags: [],
-    playCount: 0
+    playCount: 0,
+    volume: 50
 }
 
 const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, open, onClose, onSave }) => {
+    const audioFile = useRef(null);
     const [ submitted, setSubmitted ] = useState<'add' | 'edit' | null>(null);
     const [clipType, setClipType] = useState<'local' | 'url'>('url');
     const [tags, setTags] = useState<string[]>(editClip ? editClip.tags : []);
     const [tagInput, setTagInput] = useState('');
     const [clipData, setClipData] = useState<Clip>(editClip ?? EMPTY_CLIP);
+    const [ volume, setVolume ] = useState<number>(50);
+    const [ isPlaying, setIsPlaying ] = useState<boolean>(false);
 
     const addApiState: apiState = useSelector((state: RootState) => state.soundboard.clipAddState);
     const editApiState: apiState = useSelector((state: RootState) => state.soundboard.clipEditState);
+
+    const toggleClipAudio = (e: React.MouseEvent<any, any>) => {
+        e.stopPropagation();
+        if (isPlaying) {
+            audioFile.current?.pause();
+            setIsPlaying(false);
+        } else {
+            audioFile.current?.play();
+            setIsPlaying(false);
+        }
+    }
 
     useEffect(() => {
         if (editClip) {
@@ -50,6 +67,10 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
         }
     }, [editClip]);
 
+    useEffect(() => {
+        if (audioFile.current) audioFile.current.volume = volume / 100;
+    }, [volume]);
+
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, files } = event.target;
         setClipData({
@@ -57,6 +78,10 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
             [name]: files ? files[0] : value,
         });
     };
+
+    const handleVolumeChange = (event: Event, newValue: number | number[]) => {
+        setClipData({ ...clipData, volume: newValue as number });
+    }
 
     const handleSave = () => {
         setSubmitted(editClip ? 'edit' : 'add');
@@ -156,6 +181,16 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                             />
                         ))}
                     </div>
+                    <div className='volume-controls'>
+                        {isPlaying ? <ClipActionButton onClick={toggleClipAudio} title='Play' Icon={Pause} /> : 
+                            <ClipActionButton onClick={toggleClipAudio} title='Play' Icon={PlayArrow} />}
+                        <Stack className='volume-slider' spacing={2} direction="row" sx={{ alignItems: 'center' }}>
+                            <VolumeDown />
+                                <Slider aria-label="Volume" value={volume} onChange={(e: Event, newValue: number | number[]) => setVolume(newValue as number)} onChangeCommitted={handleVolumeChange} />
+                            <VolumeUp />
+                        </Stack>   
+                    </div>
+                    <audio className='clip-audio' ref={audioFile} src={clipData.url} />
                 </div>
             </DialogContent>
             <DialogActions>

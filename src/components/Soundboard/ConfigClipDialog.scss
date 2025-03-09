@@ -9,3 +9,12 @@
     display: flex;
     justify-content: flex-end;
 }
+
+.volume-controls {
+    display: flex;
+    flex-direction: row;
+
+    .volume-slider {
+        flex: 1;
+    }
+}
