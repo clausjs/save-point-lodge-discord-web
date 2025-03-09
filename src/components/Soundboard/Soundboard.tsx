@@ -8,6 +8,7 @@ import DeleteClipDialog from './DeleteClipDialog';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../state/store';
 import { Clip, User } from '../../types';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import SoundboardClip from './SoundboardClip';
 import toastr from '../../utils/toastr';
 
@@ -263,6 +264,8 @@ const Soundboard: React.FC = () => {
         getClips(clipType);
     }
 
+    const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
+
     return (
         <>
             {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
@@ -408,21 +411,38 @@ const Soundboard: React.FC = () => {
                     endAdornment={isMyInstants ? <Close onClick={clearMyInstantsSearch} /> : <Search />}
                 />
                 {fetchingClips && <div className='loading'><GridLoader color={lightMode ? 'black' : 'white'} loading={fetchingClips} size={50} margin='auto' /></div>}
-                {!fetchingClips && clips.length && <Grid className='soundboard-items' container spacing={2} style={{ marginTop: 20 }}>
-                    {filteredClips.map((clip, index) => (
-                        <Grid item xs={6} sm={4} md={2} key={index} onClick={() => playClip(clip.id)}>
-                            <SoundboardClip 
-                                {...clip}
-                                isFavorite={clip.favoritedBy?.includes(user?.id)} 
-                                onClick={playClip} 
-                                onFavorite={favoriteClip}
-                                onEdit={openClipEdit}
-                                onDelete={_deleteClip}
-                                isMyInstant={isMyInstants}
-                            />
+                {!fetchingClips && clips.length && <InfiniteScroll
+                        dataLength={clips.length} //This is important field to render the next data
+                        next={() => {
+                            if (isMyInstants && clips.length <= 200) {
+                                setMyInstantsPage(myInstantsPage + 1);
+                                getClips(clipType);
+                            }
+                        }}
+                        hasMore={isMyInstants && clips.length <= 200}
+                        loader={<h4>Loading...</h4>}
+                        endMessage={
+                            <p style={{ textAlign: 'center' }}>
+                            <b>{endOfClipsString}</b>
+                            </p>
+                        }
+                    >
+                        <Grid className='soundboard-items' container spacing={2} style={{ marginTop: 20 }}>
+                            {filteredClips.map((clip, index) => (
+                                <Grid item xs={6} sm={4} md={2} key={index} onClick={() => playClip(clip.id)}>
+                                    <SoundboardClip 
+                                        {...clip}
+                                        isFavorite={clip.favoritedBy?.includes(user?.id)} 
+                                        onClick={playClip} 
+                                        onFavorite={favoriteClip}
+                                        onEdit={openClipEdit}
+                                        onDelete={_deleteClip}
+                                        isMyInstant={isMyInstants}
+                                    />
+                                </Grid>
+                            ))}
                         </Grid>
-                    ))}
-                </Grid>}
+                    </InfiniteScroll>}
             </div>}
         </>
     );
