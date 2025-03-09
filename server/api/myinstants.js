@@ -19,6 +19,7 @@ const parseButtons = async (url) => {
             tags: [],
             uploadedBy: 'myinstants.com',
             favoritedBy: [],
+            volume: 50,
             updatedAt: new Date().toISOString(),
             createdAt: new Date().toISOString()
         };
@@ -28,41 +29,41 @@ const parseButtons = async (url) => {
     return buttons;
 }
 
-const getTrending = async (language = "en", region = 'us') => {
-    const url = `${BASE_URL}/${language}/index/${region}/`;
+const getTrending = async (language = "en", region = 'us', page = 1) => {
+    const url = `${BASE_URL}/${language}/index/${region}${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 
-const getRecent = async (language = "en") => {
-    const url = `${BASE_URL}/${language}/recent`;
+const getRecent = async (language = "en", page = 1) => {
+    const url = `${BASE_URL}/${language}/recent${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 
-const getByCategory = async (language = "en", category) => {
+const getByCategory = async (language = "en", category, page = 1) => {
     if (!category) throw new Error("Category is required");
 
-    const url = `${BASE_URL}/${language}/categories/${category}/`;
+    const url = `${BASE_URL}/${language}/categories/${category}${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 
-const search = async (language = "en", query) => {
+const search = async (language = "en", query, page = 1) => {
     if (!query) throw new Error("Query is required");
 
-    const url = `${BASE_URL}/${language}/search/?name=${query}`;
+    const url = `${BASE_URL}/${language}/search/?name=${query}${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 
 const getUploadedByUser = async (language = "en", user) => {
     if (!user) throw new Error("User is required");
 
-    const url = `${BASE_URL}/${language}/profile/${user}/uploaded/`;
+    const url = `${BASE_URL}/${language}/profile/${user}/uploaded${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 
 const getFavoritedByUser = async (language = "en", user) => {
     if (!user) throw new Error("User is required");
 
-    const url = `${BASE_URL}/${language}/profile/${user}/`;
+    const url = `${BASE_URL}/${language}/profile/${user}${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 

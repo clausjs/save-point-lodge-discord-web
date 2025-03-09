@@ -17,32 +17,34 @@ export const fetchSoundboardClips = createAsyncThunk(
 
 export const fetchMyInstantsTrending = createAsyncThunk(
     'soundboard/fetchMyInstantsTrending',
-    async () => {
-        const response = await fetch('/api/soundboard/myinstants');
+    async (page: number) => {
+        const response = await fetch(`/api/soundboard/myinstants?page=${page}`);
         return response.json();
     }
 )
 
 export const fetchMyInstantsRecent = createAsyncThunk(
     'soundboard/fetchMyInstantsRecent',
-    async () => {
-        const response = await fetch('/api/soundboard/myinstants/recent');
+    async (page: number) => {
+        const response = await fetch(`/api/soundboard/myinstants/recent?page=${page}`);
         return response.json();
     }
 )
 
 export const fetchMyInstantsByCategory = createAsyncThunk(
     'soundboard/fetchMyInstantsByCategory',
-    async (category: string) => {
-        const response = await fetch(`/api/soundboard/myinstants/${encodeURIComponent(category.toLowerCase())}`);
+    async (opts: { category: string, page?: number }) => {
+        const { category, page = 1 } = opts;
+        const response = await fetch(`/api/soundboard/myinstants/${encodeURIComponent(category.toLowerCase())}?page=${page}`);
         return response.json();
     }
 )
 
 export const searchMyInstants = createAsyncThunk(
     'soundboard/searchMyInstants',
-    async (search: string) => {
-        const response = await fetch(`/api/soundboard/myinstants/search?query=${encodeURIComponent(search)}`);
+    async (opts: { search: string, page?: number }) => {
+        const {  search, page = 1 } = opts;
+        const response = await fetch(`/api/soundboard/myinstants/search?query=${encodeURIComponent(search)}?page=${page}`);
         return response.json();
     }
 )
@@ -111,7 +113,9 @@ const soundboard = createSlice({
                     state.clipFetchState = 'rejected';
                 })
                 .addCase(fetchMyInstantsTrending.fulfilled, (state, action: PayloadAction<Clip[]>) => {
-                    state.clips = action.payload;
+                    if (state.isMyInstants) {
+                        state.clips = [...state.clips, ...action.payload];
+                    } else state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
                     state.isMyInstants = true;
                 })
@@ -122,7 +126,9 @@ const soundboard = createSlice({
                     state.clipFetchState = 'rejected';
                 })
                 .addCase(fetchMyInstantsRecent.fulfilled, (state, action: PayloadAction<Clip[]>) => {
-                    state.clips = action.payload;
+                    if (state.isMyInstants) {
+                        state.clips = [...state.clips, ...action.payload];
+                    } else state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
                     state.isMyInstants = true;
                 })
@@ -133,7 +139,9 @@ const soundboard = createSlice({
                     state.clipFetchState = 'rejected';
                 })
                 .addCase(fetchMyInstantsByCategory.fulfilled, (state, action: PayloadAction<Clip[]>) => {
-                    state.clips = action.payload;
+                    if (state.isMyInstants) {
+                        state.clips = [...state.clips, ...action.payload];
+                    } else state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
                     state.isMyInstants = true;
                 })
@@ -144,7 +152,9 @@ const soundboard = createSlice({
                     state.clipFetchState = 'rejected';
                 })
                 .addCase(searchMyInstants.fulfilled, (state, action: PayloadAction<Clip[]>) => {
-                    state.clips = action.payload;
+                    if (state.isMyInstants) {
+                        state.clips = [...state.clips, ...action.payload];
+                    } else state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
                     state.isMyInstants = true;
                 })
