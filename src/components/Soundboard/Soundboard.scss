@@ -35,21 +35,6 @@ body.light {
     }
 }
 
-@keyframes volume-smooth-appear {
-    from {
-        height: 0;
-        width: 0;
-        top: 50%;
-        display: none;
-    }
-
-    to {
-        height: auto;
-        width: 100%;
-        display: block;
-    }
-}
-
 .no-soundboard-access {
     display: flex;
     justify-content: center;
@@ -253,11 +238,9 @@ body.light {
                         margin-bottom: 5px;
                         border-radius: 25px;
                         display: block;
-                        animation: volume-smooth-appear 0.1s forwards;
 
                         &.hide {
                             display: none;
-                            animation: volume-smooth-appear 0.1s forwards reverse;
                         }
                     }
 
