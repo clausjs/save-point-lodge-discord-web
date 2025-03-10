@@ -1,7 +1,5 @@
 import React from "react";
 
-import { User } from './ReduxItems';
-
 export interface PageLink {
     to: string,
     isLogo?: boolean,
@@ -9,13 +7,10 @@ export interface PageLink {
     requiresAuth?: boolean,
     requiresSoundboarder?: boolean,
     disabled?: boolean,
-    externalSite?: boolean
-}
-
-export interface MobilePageLink extends PageLink {
-    icon: React.ReactNode;
+    externalSite?: boolean,
+    icon?: React.ReactNode;
 }
 
 export interface Pages {
-    [id: string]: PageLink | MobilePageLink;
+    [id: string]: PageLink;
 }

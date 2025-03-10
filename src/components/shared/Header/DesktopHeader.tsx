@@ -42,42 +42,15 @@ interface TabProps {
     isLogo?: boolean;
 }
 
-const DefaultHeader: React.FC<HeaderProps> = () => {
-    const [ tabs, setTabs ] = useState<TabProps[]>([]);
-    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element)>(null);
-    const history = useNavigate();
+const DefaultHeader: React.FC<HeaderProps> = ({
+    classes,
+    pages,
+    handleNavigation
+}) => {
+    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element)>(null);   
     const authMenuOpen: boolean = Boolean(authAnchorEl);
 
     const user: User | undefined = useSelector((state: RootState) => state.user.user);
-
-    useEffect(() => {
-        const _tabs = [];
-        for (let i = 0; i < Object.keys(views).length; i++) {
-            const viewName = Object.keys(views)[i];
-            const page: PageLink = views[viewName];
-            if (page.requiresAuth && !user) continue;
-            if (page.requiresSoundboarder && !user?.isSoundboardUser) continue;
-
-            let label: React.ReactNode | string;
-            label = page.label ? page.label : viewName;
-
-            const { isLogo } = page;
-
-            const props: TabProps = {
-                name: viewName,
-                key: i,
-                label,
-                href: page.to,
-                disabled: page.disabled,
-                icon: page.externalSite ? <Launch /> : undefined,
-                external: page.externalSite || false,
-                isLogo
-            };
-            
-            _tabs.push(props);
-        }
-        setTabs(_tabs);
-    }, [user]);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);
@@ -85,22 +58,6 @@ const DefaultHeader: React.FC<HeaderProps> = () => {
 
     const handleAuthMenuClose = () => {
         setAuthAnchorEl(null)
-    }
-
-    const handleNavigation = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        const linkName: string = (event.target as HTMLButtonElement).name;
-
-        if (linkName) {
-            const view = tabs.find(tab => tab.name === linkName);
-            if (view) {
-                if (view.external) {
-                    window.open(view.href, "_blank");
-                } else {
-                    // setView(tabs.findIndex(tab => tab.name === linkName));
-                    history(view.href);
-                }
-            }
-        }
     }
 
     return (
@@ -115,7 +72,7 @@ const DefaultHeader: React.FC<HeaderProps> = () => {
                         </div>
                         <div className='nav-tabs-container'>
                             <div className='nav-tabs'>
-                                {tabs.map((page) => (
+                                {pages.map((page) => (
                                     <Button
                                         sx={page.isLogo ? { my: 2, alignSelf: 'flex-start' } : {}}
                                         name={page.name}
