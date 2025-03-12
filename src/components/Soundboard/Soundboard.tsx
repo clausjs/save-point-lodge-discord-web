@@ -245,6 +245,7 @@ const Soundboard: React.FC = () => {
     });
 
     const getClips = (type: ClipType) => {
+        closeAllMenus();
         if (clipType !== type) setClipType(type);
         switch (type) {
             case 'saved':
@@ -278,6 +279,11 @@ const Soundboard: React.FC = () => {
         setTagFilters(tagFilters.filter(tag => tag !== filter));
     }
 
+    const closeAllMenus = () => {
+        setMenuAnchorEl(null);
+        setSubMenuAnchorEl(null);
+    }
+
     const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
 
     return (
@@ -290,7 +296,7 @@ const Soundboard: React.FC = () => {
                     aria-labelledby="my-instants-button"
                     anchorEl={menuAnchorEl}
                     open={menuOpen}
-                    onClose={() => setMenuAnchorEl(null)}
+                    onClose={closeAllMenus}
                     anchorOrigin={{
                         vertical: 'top',
                         horizontal: 'left',
@@ -303,16 +309,13 @@ const Soundboard: React.FC = () => {
                     <MenuItem disabled={!isMyInstants} onClick={() => getClips('saved')}>Saved Clips</MenuItem>
                     <MenuItem onClick={() => getClips('trending')}>Get Trending</MenuItem>
                     <MenuItem onClick={() => getClips('recent')}>Get Newest</MenuItem>
-                    <MenuItem id='my-instants-get-by-category' onMouseEnter={(e: React.MouseEvent<HTMLLIElement, MouseEvent>) => setSubMenuAnchorEl(e.currentTarget)}>Get by category <ExpandMore /></MenuItem>
+                    <MenuItem id='my-instants-get-by-category' onMouseEnter={(e: React.MouseEvent<HTMLLIElement, MouseEvent>) => { if (menuOpen) setSubMenuAnchorEl(e.currentTarget)}}>Get by category <ExpandMore /></MenuItem>
                 </Menu>
                 <Menu
                     aria-labelledby='my-instants-get-by-category'
                     anchorEl={subMenuAnchorEl}
                     open={subMenuOpen}
-                    onClose={() => {
-                        setMenuAnchorEl(null)
-                        setSubMenuAnchorEl(null)
-                    }}
+                    onClose={closeAllMenus}
                     anchorOrigin={{
                         vertical: 'top',
                         horizontal: 'left',

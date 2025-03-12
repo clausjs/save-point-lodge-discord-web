@@ -331,6 +331,10 @@ body.light {
             overflow: hidden;
             text-overflow: ellipsis;
             text-decoration: solid;
+            white-space: nowrap;
+            width: 100%;
+            align-self: flex-start;
+            display: flex;
         }
 
         .clip-uploader {
@@ -362,6 +366,23 @@ body.light {
             }
         }
 
+    }
+
+    .volume-controls {
+        background-color: $color-pallette-dark-background-2;
+        position: absolute;
+        z-index: 999;
+        height: auto;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        margin-bottom: 5px;
+        border-radius: 25px;
+        display: block;
+
+        &.hide {
+            display: none;
+        }
     }
 
     .mobile-actions {
