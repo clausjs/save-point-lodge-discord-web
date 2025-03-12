@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { Button, FormControl, Grid, Input, InputLabel, Link, Menu, MenuItem, Select } from '@mui/material';
+import { Box, Button, FormControl, Grid2 as Grid, Input, InputLabel, Link, Menu, MenuItem, Paper, Select } from '@mui/material';
 import { GridLoader } from 'react-spinners';
 
 import ConfigClipDialog from './ConfigClipDialog';
@@ -13,9 +13,10 @@ import SoundboardClip from './SoundboardClip';
 import toastr from '../../utils/toastr';
 
 import { Close, ExpandMore, Search } from '@mui/icons-material';
-import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants } from '../../state/reducers/soundboard';
+import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants, favoriteClip } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
+import { experimentalStyled as styled } from '@mui/material/styles';
 
 enum SortType {
     DEFAULT = "Default",
@@ -59,7 +60,6 @@ type ClipType = 'saved' | 'trending' | 'recent' | MyInstantsCategory;
 const devMode = process.env.NODE_ENV === 'development' ? true : false;
 const DEFAULT_SOCKET_URL = devMode ? 'ws://localhost:8080/soundboard' : 'wss://joebotdiscord.com/soundboard';
 
-
 const Soundboard: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const [ socketUrl, setSocketUrl ] = useState<string | null>(null);
@@ -75,6 +75,7 @@ const Soundboard: React.FC = () => {
     const [ sortType, setSortType ] = useState<SortType>(SortType.DEFAULT);
     const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
     const [ myInstantsPage, setMyInstantsPage ] = useState<number>(1);
+    const [ tagFilters, setTagFilters ] = useState<string[]>([]);
 
     const [ menuAnchorEl, setMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
     const menuOpen = Boolean(menuAnchorEl);
@@ -98,7 +99,7 @@ const Soundboard: React.FC = () => {
         shouldReconnect: (closeEvent) => {
             setConnectionAttempts(connectionAttempts + 1);
 
-            if (connectionAttempts > 5) {
+            if (connectionAttempts > 5 || (devMode && connectionAttempts > 1)) {
                 toastr.error("Can't establish connection to Joe_Bot. Please try again later.");
                 return false;
             }
@@ -138,6 +139,7 @@ const Soundboard: React.FC = () => {
         if (!user) return;
         if (!user.isSoundboardUser) return;
         if (!clips.length) {
+            console.log("fetching clips");
             setFetchingClips(true);
             dispatch(fetchSoundboardClips());
         }
@@ -206,7 +208,9 @@ const Soundboard: React.FC = () => {
         playClip(clips[randomIndex].id);
     }
 
-    const favoriteClip = (clip: DialogClip) => {}
+    const _favoriteClip = (clipId: string) => {
+        dispatch(favoriteClip(clipId));
+    }
 
     const openClipEdit = (clip: DialogClip) => {
         if (clip) {
@@ -236,7 +240,8 @@ const Soundboard: React.FC = () => {
         if (!searchTerm || isMyInstants) return true;
         return (clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 clip.tags.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
-                clip.description.toLowerCase().includes(searchTerm.toLowerCase()));
+                clip.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                tagFilters.find(tf => clip.tags.map(t => t.toLowerCase()).includes(tf)) !== undefined);
     });
 
     const getClips = (type: ClipType) => {
@@ -265,14 +270,63 @@ const Soundboard: React.FC = () => {
         getClips(clipType);
     }
 
+    const addTagFilter = (filter: string) => {
+        setTagFilters([...tagFilters, filter]);
+    }
+
+    const removeTagFilter = (filter: string) => {
+        setTagFilters(tagFilters.filter(tag => tag !== filter));
+    }
+
     const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
 
     return (
         <>
             {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
-            {user && user.isSoundboardUser && <div className='soundboard'>
+            {user && user.isSoundboardUser && clips.length > 0 && <div className='soundboard'> 
                 <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
                 <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
+                <Menu
+                    aria-labelledby="my-instants-button"
+                    anchorEl={menuAnchorEl}
+                    open={menuOpen}
+                    onClose={() => setMenuAnchorEl(null)}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                >
+                    <MenuItem disabled={!isMyInstants} onClick={() => getClips('saved')}>Saved Clips</MenuItem>
+                    <MenuItem onClick={() => getClips('trending')}>Get Trending</MenuItem>
+                    <MenuItem onClick={() => getClips('recent')}>Get Newest</MenuItem>
+                    <MenuItem id='my-instants-get-by-category' onMouseEnter={(e: React.MouseEvent<HTMLLIElement, MouseEvent>) => setSubMenuAnchorEl(e.currentTarget)}>Get by category <ExpandMore /></MenuItem>
+                </Menu>
+                <Menu
+                    aria-labelledby='my-instants-get-by-category'
+                    anchorEl={subMenuAnchorEl}
+                    open={subMenuOpen}
+                    onClose={() => {
+                        setMenuAnchorEl(null)
+                        setSubMenuAnchorEl(null)
+                    }}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    onMouseLeave={() => setSubMenuAnchorEl(null)}
+                >
+                    {Object.values(MyInstantsCategory).map((category, i) => {
+                        return <MenuItem key={i} onClick={() => getClips(category)}>{category}</MenuItem>
+                    })}
+                </Menu>
                 <div className='info-header'>
                     <div className='header-text'><h1>Joe_Bot Soundboard</h1></div>    
                     <div className='my-instants-link'>
@@ -305,47 +359,6 @@ const Soundboard: React.FC = () => {
                         <div className='circle small-button-background'></div>
                         <button id='my-instants-button' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => setMenuAnchorEl(e.currentTarget)} />
                     </div>
-                    <Menu
-                        aria-labelledby="my-instants-button"
-                        anchorEl={menuAnchorEl}
-                        open={menuOpen}
-                        onClose={() => setMenuAnchorEl(null)}
-                        anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'left',
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'left',
-                        }}
-                    >
-                        <MenuItem disabled={!isMyInstants} onClick={() => getClips('saved')}>Saved Clips</MenuItem>
-                        <MenuItem onClick={() => getClips('trending')}>Get Trending</MenuItem>
-                        <MenuItem onClick={() => getClips('recent')}>Get Newest</MenuItem>
-                        <MenuItem id='my-instants-get-by-category' onMouseEnter={(e: React.MouseEvent<HTMLLIElement, MouseEvent>) => setSubMenuAnchorEl(e.currentTarget)}>Get by category <ExpandMore /></MenuItem>
-                    </Menu>
-                    <Menu
-                        aria-labelledby='my-instants-get-by-category'
-                        anchorEl={subMenuAnchorEl}
-                        open={subMenuOpen}
-                        onClose={() => {
-                            setMenuAnchorEl(null)
-                            setSubMenuAnchorEl(null)
-                        }}
-                        anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'left',
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'left',
-                        }}
-                        onMouseLeave={() => setSubMenuAnchorEl(null)}
-                    >
-                        {Object.values(MyInstantsCategory).map((category, i) => {
-                            return <MenuItem key={i} onClick={() => getClips(category)}>{category}</MenuItem>
-                        })}
-                    </Menu>
                     <div className='sort-control'>    
                         <FormControl variant="standard" fullWidth>
                             <InputLabel id='sort-label' sx={{ color: 'inherit' }}>Sort by:</InputLabel>
@@ -411,40 +424,41 @@ const Soundboard: React.FC = () => {
                     value={searchTerm}
                     endAdornment={isMyInstants ? <Close onClick={clearMyInstantsSearch} /> : <Search />}
                 />
-                {fetchingClips && <div className='loading'><GridLoader color={lightMode ? 'black' : 'white'} loading={fetchingClips} size={50} margin='auto' /></div>}
-                {!fetchingClips && clips.length && <InfiniteScroll
-                        dataLength={clips.length} //This is important field to render the next data
-                        next={() => {
-                            if (isMyInstants && clips.length <= 200) {
-                                setMyInstantsPage(myInstantsPage + 1);
-                                getClips(clipType);
-                            }
-                        }}
-                        hasMore={isMyInstants && clips.length <= 200}
-                        loader={<h4>Loading...</h4>}
-                        endMessage={
-                            <p style={{ textAlign: 'center' }}>
-                            <b>{endOfClipsString}</b>
-                            </p>
-                        }
-                    >
-                        <Grid className='soundboard-items' container spacing={2} style={{ marginTop: 20 }}>
-                            {filteredClips.map((clip, index) => (
-                                <Grid item xs={6} sm={4} md={2} key={index} onClick={() => playClip(clip.id)}>
-                                    <SoundboardClip 
-                                        {...clip}
-                                        isFavorite={clip.favoritedBy?.includes(user?.id)} 
-                                        onClick={playClip} 
-                                        onFavorite={favoriteClip}
-                                        onEdit={openClipEdit}
-                                        onDelete={_deleteClip}
-                                        isMyInstant={isMyInstants}
-                                    />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </InfiniteScroll>}
             </div>}
+            <Box sx={{ flexGrow: 1, textAlign: 'center' }}>
+                <InfiniteScroll
+                    dataLength={clips.length} //This is important field to render the next data
+                    next={() => {
+                        if (isMyInstants && clips.length <= 200) {
+                            setMyInstantsPage(myInstantsPage + 1);
+                            getClips(clipType);
+                        }
+                    }}
+                    hasMore={isMyInstants && clips.length <= 200}
+                    loader={<h4>Loading...</h4>}
+                    endMessage={
+                        <p style={{ textAlign: 'center' }}>
+                        <b>{endOfClipsString}</b>
+                        </p>
+                    }
+                >
+                    <Grid className='soundboard-items' container spacing={{ xs: 1, sm: 2 }} columns={{ xs: 2, md: 6, lg: 10 }}>
+                        <Grid className='loading' size='grow' sx={{ display: 'none' }}><GridLoader color={lightMode ? 'black' : 'white'} loading={fetchingClips} size={50} margin='auto' /></Grid>
+                        {filteredClips.length > 0 && filteredClips.map((clip, index) => (
+                            <Grid key={index} size={{ xs: 1, md: 2 }}>
+                                <SoundboardClip 
+                                    {...clip}
+                                    onClick={playClip} 
+                                    onFavorite={_favoriteClip}
+                                    onEdit={openClipEdit}
+                                    onDelete={_deleteClip}
+                                    isMyInstant={isMyInstants}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </InfiniteScroll>
+            </Box>
         </>
     );
 };

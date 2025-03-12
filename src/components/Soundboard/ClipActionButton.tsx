@@ -10,10 +10,10 @@ export interface ClipActionButtonProps {
     disabled?: boolean;
 }
 
-const ClipActionButton: React.FC<ClipActionButtonProps> = ({ classes, onMouseOver, onClick, title, Icon, disabled }) => {
+const ClipActionButton: React.FC<ClipActionButtonProps> = ({ classes, onMouseOver, onClick, title, Icon, disabled = false }) => {
     return (
-        <IconButton onMouseOver={onMouseOver} className={`clip-action-button ${classes ?? ''}`} onClick={onClick} title={title} aria-label={title} disabled={disabled}>
-            <Icon />
+        <IconButton onMouseOver={onMouseOver} className={`clip-action-button ${classes ?? ''}`} onClick={onClick} title={title} aria-label={title} disabled={disabled} size='small' sx={{ color: 'inherit' }}>
+            <Icon fontSize='inherit' />
         </IconButton>
     );
 }

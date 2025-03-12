@@ -68,10 +68,10 @@ const userSlice = createSlice({
     extraReducers(builder) {
         builder
             .addCase(fetchSoundboarderStatus.fulfilled, (state, action: PayloadAction<boolean>) => {
-                state.user.isSoundboardUser = action.payload;
+                if (state.user) state.user.isSoundboardUser = action.payload;
             })
             .addCase(fetchPlanetExpressStatus.fulfilled, (state, action: PayloadAction<boolean>) => {
-                state.user.isPlanetExpressMember = action.payload;
+                if (state.user) state.user.isPlanetExpressMember = action.payload;
             })
             .addCase(fetchUser.fulfilled, (state, action: PayloadAction<User>) => {
                 state.user = action.payload;

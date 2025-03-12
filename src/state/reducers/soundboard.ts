@@ -49,6 +49,24 @@ export const searchMyInstants = createAsyncThunk(
     }
 )
 
+export const favoriteClip = createAsyncThunk(
+    'soundboard/favoriteClip',
+    async (clipId: string, { getState, dispatch }) => {
+        const state = (getState() as any)?.soundboard;
+        const response = await fetch(`/api/soundboard/favorite/${clipId}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user: state.user.user.id
+            })
+        });
+        return response.json();
+    }
+)
+
 export const addClip = createAsyncThunk(
     'soundboard/addClip',
     async (clip: Clip) => {
@@ -157,6 +175,10 @@ const soundboard = createSlice({
                     } else state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
                     state.isMyInstants = true;
+                })
+                .addCase(favoriteClip.fulfilled, (state, action: PayloadAction<Clip>) => {
+                    const clipIndex = state.clips.findIndex(clip => clip.id === action.payload.id);
+                    if (clipIndex !== -1) state.clips.splice(clipIndex, 1, action.payload);
                 })
                 .addCase(addClip.pending, (state) => {
                     state.clipAddState = 'pending';

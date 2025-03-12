@@ -31,7 +31,7 @@ if (!devMode) {
 
 const app = express();
 
-const portIdentifier = process.env.NODE_ENV === 'test' ? 'DEV_PORT' : 'PORT';
+const portIdentifier = ['dev', 'development', 'test'].includes(process.env.NODE_ENV) ? 'DEV_PORT' : 'PORT';
 const port = process.env[portIdentifier] || 3000;
 
 db.authenticate();

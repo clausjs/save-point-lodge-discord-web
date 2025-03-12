@@ -44,15 +44,6 @@ body.light {
 }
 
 .soundboard {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-    width: auto;
-    height: auto;
-    color: white;
-
-    
     .info-header {
         display: flex;
         flex-direction: column;
@@ -76,11 +67,11 @@ body.light {
 
 
     .search-bar {
-        width: auto;
+        color: inherit;
+        display: flex;
         justify-content: center;
-        margin: 0 auto;
-        min-width: 75%;
-        color: white !important;
+        margin: auto;
+        max-width: 75%;
     }
 
     .grid-actions {
@@ -90,6 +81,7 @@ body.light {
         width: auto;
         margin: 10px 20px;
         box-shadow: unset;
+        flex-wrap: wrap;
 
         .my-instants-button {
             width: 25px;
@@ -164,153 +156,257 @@ body.light {
         }
     }
 
-    .soundboard-items {
-        justify-content: center;
+    // .soundboard-items {
+    //     justify-content: center;
 
-        .MuiGrid-item {
-            margin: 0 10px;
+    //     .MuiGrid-item {
+    //         margin: 0 10px;
 
             
-            .clip-card {
-                border: 2px solid transparent;
-                cursor: pointer;
-                @include background-opacity($color-pallette-dark-background-2, 0.5);
-                margin: 0 auto;
-                color: inherit;
-                position: relative;
+    //         .clip-card {
+    //             border: 2px solid transparent;
+    //             cursor: pointer;
+    //             @include background-opacity($color-pallette-dark-background-2, 0.5);
+    //             margin: 0 auto;
+    //             color: inherit;
+    //             position: relative;
 
-                .MuiIconButton-root {
-                    padding: unset;
-                }
+    //             .MuiIconButton-root {
+    //                 padding: unset;
+    //             }
                 
-                &:hover {
-                    border: 2px solid addOpacity($color-pallette-light-blue, 0.5);
-                }
+    //             &:hover {
+    //                 border: 2px solid addOpacity($color-pallette-light-blue, 0.5);
+    //             }
 
-                .clip-action-button {
-                    color: inherit;
-                }
+    //             .clip-action-button {
+    //                 color: inherit;
+    //             }
 
-                .clip-name {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    text-decoration: solid;
-                }
+    //             .clip-name {
+    //                 overflow: hidden;
+    //                 text-overflow: ellipsis;
+    //                 text-decoration: solid;
+    //             }
 
-                .clip-uploader {
-                    color: $color-pallette-light-gray;
-                }
+    //             .clip-uploader {
+    //                 color: $color-pallette-light-gray;
+    //             }
 
-                .clip-description {
-                    height: auto;
-                    padding: 5px;
-                    visibility: hidden;
+    //             .clip-description {
+    //                 height: auto;
+    //                 padding: 5px;
+    //                 visibility: hidden;
 
-                    &.show {
-                        visibility: visible;
-                    }
-                }
+    //                 &.show {
+    //                     visibility: visible;
+    //                 }
+    //             }
 
-                .clip-footer {
-                    display: flex;
-                    flex-direction: row;
-                    height: auto;
+    //             .clip-footer {
+    //                 display: flex;
+    //                 flex-direction: row;
+    //                 height: auto;
 
-                    .MuiChip-root {
-                        max-height: 15px;
-                        background-color: $color-pallette-light-blue;
-                    }
+    //                 .MuiChip-root {
+    //                     max-height: 15px;
+    //                     background-color: $color-pallette-light-blue;
+    //                 }
 
+    //                 svg {
+    //                     &.favorited {
+    //                         color: addOpacity(#FF0000, 0.5);
+    //                     }
+    //                 }
+
+    //                 .volume-controls {
+    //                     background-color: $color-pallette-dark-background-2;
+    //                     position: absolute;
+    //                     z-index: 999;
+    //                     height: auto;
+    //                     width: 100%;
+    //                     bottom: 0;
+    //                     left: 0;
+    //                     margin-bottom: 5px;
+    //                     border-radius: 25px;
+    //                     display: block;
+
+    //                     &.hide {
+    //                         display: none;
+    //                     }
+    //                 }
+
+    //                 .mobile-actions {
+    //                     @include background-opacity($color-pallette-dark-background-2, 0.95);
+    //                     position: absolute;
+    //                     z-index: 999;
+    //                     height: 100%;
+    //                     width: 100%;
+    //                     top: 0;
+    //                     bottom: 0;
+    //                     left: 0;
+    //                     display: block;
+    //                     animation: actions-smooth-appear 0.1s forwards;
+
+    //                     &.hide {
+    //                         display: none;
+    //                         animation: actions-smooth-appear 0.1s forwards reverse;
+    //                     }
+
+    //                     .buttons {
+    //                         display: flex;
+    //                         flex-direction: column;
+    //                         justify-content: space-evenly;
+    //                         height: 100%;
+    //                         width: 100%;
+
+    //                         div {
+    //                             display: flex;
+    //                             justify-content: space-evenly;
+
+    //                             &.close {
+    //                                 svg {
+    //                                     max-height: 30px;
+    //                                     color: addOpacity($color-pallette-white, 0.5);
+    //                                     border: 1px solid addOpacity($color-pallette-white, 0.5);
+    //                                     border-radius: 50%;
+    //                                 }
+    //                             }
+    //                         }
+
+    //                         svg {
+    //                             max-height: 20px;
+    //                         }
+    //                     }
+
+    //                     // svg {
+    //                     //     max-height: 15px;
+    //                     //     margin: 0 2px;
+    //                     // }
+    //                 }
+
+    //                 .actions {
+    //                     display: flex;
+    //                     flex-direction: row;
+    //                     justify-content: flex-end;
+    //                     width: 100%;
+    //                     align-self: center;
+
+    //                     svg {
+    //                         max-height: 15px;
+    //                         margin: 0 2px;
+    //                     }
+    //                 }
+
+    //                 .tags {
+    //                     max-width: 50%;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+}
+
+.soundboard-items {
+    margin: 10px;
+    color: inherit;
+
+    .clip-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        border: 2px solid transparent;
+        cursor: pointer;
+        @include background-opacity($color-pallette-dark-background-2, 0.5);
+        margin: 0 auto;
+        position: relative;
+        color: inherit;
+
+        &:hover {
+            border: 2px solid addOpacity($color-pallette-light-blue, 0.5);
+        }
+
+        .clip-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-decoration: solid;
+        }
+
+        .clip-uploader {
+            color: $color-pallette-light-gray;
+        }
+
+        .clip-description {
+            height: auto;
+            padding: 5px 0;
+            visibility: hidden;
+
+            &.show {
+                visibility: visible;
+            }
+        }
+
+        .clip-footer {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .tags {
+            max-width: 50%;
+            
+            .clip-tag {
+                max-height: 15px;
+                background-color: $color-pallette-light-blue;
+            }
+        }
+
+    }
+
+    .mobile-actions {
+        @include background-opacity($color-pallette-dark-background-2, 0.95);
+        position: absolute;
+        z-index: 999;
+        height: inherit;
+        width: inherit;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: block;
+        visibility: visible;
+        animation: actions-smooth-appear 0.1s forwards;
+
+        &.hide {
+            visibility: hidden;
+            animation: actions-smooth-appear 0.1s forwards reverse;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            height: 100%;
+            width: 100%;
+
+            div {
+                display: flex;
+                justify-content: space-evenly;
+
+                &.close {
                     svg {
-                        &.favorited {
-                            color: addOpacity(#FF0000, 0.5);
-                        }
-                    }
-
-                    .volume-controls {
-                        background-color: $color-pallette-dark-background-2;
-                        position: absolute;
-                        z-index: 999;
-                        height: auto;
-                        width: 100%;
-                        bottom: 0;
-                        left: 0;
-                        margin-bottom: 5px;
-                        border-radius: 25px;
-                        display: block;
-
-                        &.hide {
-                            display: none;
-                        }
-                    }
-
-                    .mobile-actions {
-                        @include background-opacity($color-pallette-dark-background-2, 0.95);
-                        position: absolute;
-                        z-index: 999;
-                        height: 100%;
-                        width: 100%;
-                        top: 0;
-                        bottom: 0;
-                        left: 0;
-                        display: block;
-                        animation: actions-smooth-appear 0.1s forwards;
-
-                        &.hide {
-                            display: none;
-                            animation: actions-smooth-appear 0.1s forwards reverse;
-                        }
-
-                        .buttons {
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: space-evenly;
-                            height: 100%;
-                            width: 100%;
-
-                            div {
-                                display: flex;
-                                justify-content: space-evenly;
-
-                                &.close {
-                                    svg {
-                                        max-height: 30px;
-                                        color: addOpacity($color-pallette-white, 0.5);
-                                        border: 1px solid addOpacity($color-pallette-white, 0.5);
-                                        border-radius: 50%;
-                                    }
-                                }
-                            }
-
-                            svg {
-                                max-height: 20px;
-                            }
-                        }
-
-                        // svg {
-                        //     max-height: 15px;
-                        //     margin: 0 2px;
-                        // }
-                    }
-
-                    .actions {
-                        display: flex;
-                        flex-direction: row;
-                        justify-content: flex-end;
-                        width: 100%;
-                        align-self: center;
-
-                        svg {
-                            max-height: 15px;
-                            margin: 0 2px;
-                        }
-                    }
-
-                    .tags {
-                        max-width: 50%;
+                        color: addOpacity($color-pallette-white, 0.5);
+                        border: 1px solid addOpacity($color-pallette-white, 0.5);
+                        border-radius: 50%;
                     }
                 }
             }
         }
     }
+
+    // .clip-actions {
+    //     display: flex;
+    //     flex-direction: row;
+    //     flex-wrap: wrap;
+    // }
 }

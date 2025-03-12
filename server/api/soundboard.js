@@ -77,6 +77,19 @@ router.get('/myinstants/:category', async function(req, res) {
     }
 });
 
+router.post('/favorite/:id', async function(req, res) {
+    if (req.isTesting) {
+        return res.status(200).send("success");
+    }
+
+    try {
+        const clip = await req.db.firebase.soundboard.toggleFavorite(req.params.id, req.body.user);
+        return res.status(200).send(clip);
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+});
+
 router.put('/:id', async function(req, res) {
     if (req.isTesting) {
         return res.status(200).send(req.body);
@@ -86,19 +99,6 @@ router.put('/:id', async function(req, res) {
         const clip = req.body;
         await req.db.firebase.soundboard.update(clip);
         return res.status(200).send(clip);
-    } catch (err) {
-        return res.status(500).send(err);
-    }
-});
-
-router.post('/favorite/:id', async function(req, res) {
-    if (req.isTesting) {
-        return res.status(200).send("success");
-    }
-
-    try {
-        await req.db.firebase.toggleFavoriteSoundboardItem(req.params.id);
-        return res.status(200).send();
     } catch (err) {
         return res.status(500).send(err);
     }

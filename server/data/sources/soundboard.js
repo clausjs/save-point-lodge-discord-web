@@ -31,7 +31,13 @@ class Soundboard extends DataSource {
         
         try {
             const response = await db.collection(this.collectionName).doc(id).get();
-            if (response.exists) return response.data();
+            if (response.exists) {
+                const clip = { id: response.id, ...response.data() };
+                clip.createdAt = clip.createdAt ? clip.createdAt.toDate() : new Date();
+                clip.updatedAt = clip.updatedAt ? clip.updatedAt.toDate() : new Date();
+                if (!clip.volume) clip.volume = 50;
+                return clip;
+            }
         } catch (err) {
             logErr(err);
             throw err;
@@ -83,6 +89,28 @@ class Soundboard extends DataSource {
         } catch (err) {
             logErr(err);
             return false;
+        }
+    }
+    toggleFavorite = async (id, user) => {
+        const { db } = this;
+        
+        try {
+            const clip = await this.getById(id);
+            
+            if (!clip) throw new Error("Clip not found");
+            if (!clip.favoritedBy) clip.favoritedBy = [];
+
+            if (clip.favoritedBy.includes(user)) {
+                clip.favoritedBy = clip.favoritedBy.filter(u => u !== user);
+            } else {
+                clip.favoritedBy.push(user);
+            }
+
+            await this.update(clip);
+            return clip;
+        } catch (err) {
+            logErr(err);
+            throw err;
         }
     }
 }

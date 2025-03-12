@@ -30,9 +30,18 @@ $header-height: 72;
     background: rgba($color, $opacity);
 }
 
+@mixin font-color-opacity($color, $opacity: 0.3) {
+    color: $color; /* The Fallback */
+    color: rgba($color, $opacity);
+}
+
 body {
     background-color: $color-pallette-dark-background;
     color: white;
+
+    .MuiButtonBase-root:disabled {
+        @include font-color-opacity($color-pallette-light-gray, 0.5);
+    }
 
     &.light {
         background-color: $color-pallette-white;
@@ -40,13 +49,6 @@ body {
     }
 
     font-family: 'Roboto', sans-serif;
-    margin: 0;
-    width: 100%;
-    height: 100vh;
-
-    div#root {
-        height: 100%;
-    }
 }
 
 .spl-header {

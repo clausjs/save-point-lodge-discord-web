@@ -25,6 +25,7 @@ export interface User {
     id: string;
     username: string;
     avatar: string;
+    avatarUrl?: string;
     isPlanetExpressMember: boolean;
     isSoundboardUser: boolean;
 }

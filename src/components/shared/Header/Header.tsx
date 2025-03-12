@@ -40,6 +40,8 @@ interface TabProps {
     isLogo?: boolean;
 }
 
+const devMode = process.env.NODE_ENV === 'development';
+
 const Header: React.FC = () => {
     const classes = useStyles();
     const dispatch = useDispatch<AppDispatch>();
@@ -103,8 +105,8 @@ const Header: React.FC = () => {
     }
 
     return (
-        <div className={classes.root}>
-            {isMobile ? <MobileHeader classes={classes} pages={pages} handleNavigation={handleNavigation}/> : <DesktopHeader classes={classes} pages={pages} handleNavigation={handleNavigation}/>}
+         <div className={classes.root}>
+             {isMobile ? <MobileHeader classes={classes} pages={pages} handleNavigation={handleNavigation}/> : <DesktopHeader classes={classes} pages={pages} handleNavigation={handleNavigation}/>}
         </div>
     );
 }

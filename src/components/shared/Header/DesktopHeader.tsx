@@ -23,10 +23,6 @@ import {
 
 import '../../../sass/_globals.scss';
 import ThemeSwitch from './ThemeSwitch';
-
-import { AllPages as views } from './Views';
-import { useDispatch } from 'react-redux';
-import { fetchPlanetExpressStatus, fetchSoundboarderStatus, fetchUser } from '../../../state/reducers/user';
 import { HeaderProps } from './Header';
 
 interface TabProps {
@@ -81,7 +77,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
                                         // sx={{ my: 2, color: 'white', display: 'block' }}
                                         disableFocusRipple={true}
                                         disableRipple={true}
-                                        startIcon={page.icon ? page.icon : undefined}
+                                        startIcon={page.icon && page.external ? page.icon : undefined}
                                     >
                                         {page.label}
                                     </Button>
@@ -100,7 +96,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
                                         onClick={handleAuthMenu}
                                     >
                                         {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
-                                        {user && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                        {user && (user.avatar || user.avatarUrl) && <img style={user.avatarUrl ? { height: '32px', width: '32px' } : {}} className='acct-icon' src={user.avatarUrl ? user.avatarUrl : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
                                         {user && user.avatar === null && <AccountCircle />}
                                     </IconButton>
                                     <Menu

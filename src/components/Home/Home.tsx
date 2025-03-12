@@ -113,7 +113,7 @@ const Home: React.FC = () => {
                     </div>
                 </Container>
             </Container>
-            <Container className='showcase' maxWidth='md' disableGutters={isUnderSevenHundredPixels}>
+            <Container className='showcase' maxWidth='lg' disableGutters={isUnderSevenHundredPixels}>
                 <div className='showcase-header'>
                     <h3>What Save Point Lodge has to offer</h3>
                     <sub>We're proud of the community we've built. See below for some of our most notable features</sub>

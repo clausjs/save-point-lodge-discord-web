@@ -124,7 +124,7 @@ body.light {
             flex-direction: row;
             justify-content: space-evenly;
             align-items: center;
-            min-height: 800px;
+            margin: 50px 0;
             flex-wrap: wrap;
 
             .logo-join {
@@ -292,7 +292,6 @@ body.light {
     flex-direction: column;
     justify-content: center;
     color: white;
-    max-width: 50%;
 
     .showcase-header {
         display: flex;
