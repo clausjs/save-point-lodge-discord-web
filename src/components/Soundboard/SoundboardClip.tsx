@@ -199,6 +199,7 @@ const SoundboardClip: React.FC<Clip & {
                             />
                         ))}
                     </>}
+                    {isMyInstant && <ClipActionButton onMouseOver={(e) => controlAudio(e, 'volume')} onClick={(e) => controlAudio(e, 'volume')} title='volume' Icon={VolumeUp} />}
                 </Box>
                 <Stack className='clip-actions' spacing={{ sm: 0.5, md: 1 }} direction='row'>
                     {!isMyInstant && !newUseMediaQuery && <>
