@@ -281,6 +281,7 @@ const Soundboard: React.FC = () => {
     }
 
     const addTagFilter = (filter: string) => {
+        if (tagFilters.includes(filter)) return;
         setTagFilters([...tagFilters, filter]);
     }
 
@@ -312,7 +313,7 @@ const Soundboard: React.FC = () => {
     }
 
     const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
-    console.log("exclusionRules: ", exclusionRules);
+    
     return (
         <>
             {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
