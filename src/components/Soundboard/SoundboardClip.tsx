@@ -19,6 +19,7 @@ enum ACTION_BUTTON_SECTIONS {
 
 const SoundboardClip: React.FC<Clip & { 
     isMyInstant?: boolean,
+    filterByTag: (tag: string) => void,
     onClick: (clipId: string) => void, 
     onFavorite: (clipId: string) => void 
     onEdit: (clip: DialogClip) => void
@@ -32,6 +33,7 @@ const SoundboardClip: React.FC<Clip & {
     url,
     volume = 50,
     favoritedBy,
+    filterByTag,
     onClick,
     onFavorite,
     onEdit,
@@ -179,19 +181,6 @@ const SoundboardClip: React.FC<Clip & {
             <Typography className='clip-name' variant="body1" title={name}>{name}</Typography>
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
             <Typography className={`clip-description ${expanded ? 'show' : ''}`.trim()} variant="body2">{description}</Typography>
-            {newUseMediaQuery && <div className={`mobile-actions ${showMenu ? 'show' : 'hide'}`.trim()}>
-                <div className='buttons'>
-                    <div>
-                        {getActionButtonSection(ACTION_BUTTON_SECTIONS.TOP)}
-                    </div>   
-                    <div className='close'>
-                        {getActionButtonSection(ACTION_BUTTON_SECTIONS.MIDDLE)}
-                    </div>
-                    <div>    
-                        {getActionButtonSection(ACTION_BUTTON_SECTIONS.BOTTOM)}
-                    </div>
-                </div>
-            </div>}
             <Box className='clip-footer' sx={{ width: '100%' }}>
                 <Box className='tags'>
                     {!isMyInstant && tags.length > 0 && <>
@@ -202,6 +191,7 @@ const SoundboardClip: React.FC<Clip & {
                                 label={tag}
                                 sx={{ margin: '2px' }}
                                 title={tag}
+                                onClick={() => filterByTag(tag)}
                             />
                         ))}
                     </>}
@@ -214,7 +204,8 @@ const SoundboardClip: React.FC<Clip & {
                         <ClipActionButton onClick={_onEdit} title='edit' Icon={Edit} />
                         <ClipActionButton disabled={isMyInstant || uploadedBy !== username} onClick={_onDelete} title='delete' Icon={Delete} />
                     </>}
-                    {!isMyInstant && newUseMediaQuery && <MobileClipActionMenu 
+                    {!isMyInstant && newUseMediaQuery && <MobileClipActionMenu
+                        isFavorite={isFavorite} 
                         onPlay={(e) => controlAudio(e, 'play')}
                         onFavorite={_onFavorite}
                         onEdit={_onEdit}

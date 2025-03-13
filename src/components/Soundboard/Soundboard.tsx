@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { Box, Button, FormControl, Grid2 as Grid, Input, InputLabel, Link, Menu, MenuItem, Paper, Select } from '@mui/material';
+import { Box, Button, Chip, Container, FormControl, Grid2 as Grid, IconButton, Input, InputLabel, Link, Menu, MenuItem, Paper, Select } from '@mui/material';
 import { GridLoader } from 'react-spinners';
 
 import ConfigClipDialog from './ConfigClipDialog';
@@ -12,14 +12,13 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import SoundboardClip from './SoundboardClip';
 import toastr from '../../utils/toastr';
 
-import { Close, ExpandMore, Search } from '@mui/icons-material';
+import { Close, ExpandMore, Filter, FilterAlt, FilterAltOff, Search } from '@mui/icons-material';
 import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants, favoriteClip } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
 import { experimentalStyled as styled } from '@mui/material/styles';
 
 enum SortType {
-    DEFAULT = "Default",
     TITLE_ASC = "Title ▼",
     TITLE_DEC = "Title ▲",
     CREATED_ASC = "Created ▼",
@@ -72,9 +71,11 @@ const Soundboard: React.FC = () => {
     const [ editingClip, setEditingClip ] = useState<DialogClip | null>(null);
     const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
     const [ clipType, setClipType ] = useState<ClipType>('saved');
-    const [ sortType, setSortType ] = useState<SortType>(SortType.DEFAULT);
+    const [ sortType, setSortType ] = useState<SortType>(SortType.TITLE_ASC);
     const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
     const [ myInstantsPage, setMyInstantsPage ] = useState<number>(1);
+    const [ favoritesOnly, setFavoritesOnly ] = useState<boolean>(false);
+    const [ exclusionRules, setExclusionRules ] = useState<('all' | 'favorites' | 'created')[]>(['all']);
     const [ tagFilters, setTagFilters ] = useState<string[]>([]);
 
     const [ menuAnchorEl, setMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
@@ -82,6 +83,9 @@ const Soundboard: React.FC = () => {
 
     const [ subMenuAnchorEl, setSubMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
     const subMenuOpen = Boolean(subMenuAnchorEl);
+
+    const [ filterMenuAnchorEl, setFilterMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
+    const filterMenuOpen = Boolean(filterMenuAnchorEl);
 
     const openDialog = () => setDialogOpen(true);
     const closeDialog = () => {
@@ -179,7 +183,7 @@ const Soundboard: React.FC = () => {
     }, [lastMessage]);
 
     useEffect(() => {
-        setSortType(SortType.DEFAULT);
+        setSortType(SortType.TITLE_ASC);
     }, [isMyInstants])
 
     const playClip = (clipId: string) => {
@@ -219,7 +223,14 @@ const Soundboard: React.FC = () => {
         }
     }
 
-    const filteredClips = Array.from(clips).sort((a: Clip, b: Clip) => {
+    const filteredClips = Array.from(clips).filter(clip => {
+        let included: boolean = true;
+        if (exclusionRules.includes('all')) return included;
+        if (exclusionRules.includes('favorites') && !clip.favoritedBy.includes(user.id)) included = false;
+        if (exclusionRules.includes('created') && clip.uploadedBy.trim() !== user.username.trim()) included = false;
+        
+        return included;
+    }).sort((a: Clip, b: Clip) => {
         switch (sortType) {
             case SortType.TITLE_ASC:
                 return a.name.localeCompare(b.name);
@@ -233,15 +244,13 @@ const Soundboard: React.FC = () => {
                 return a.uploadedBy.localeCompare(b.uploadedBy);
             case SortType.UPLOADER_DEC:
                 return b.uploadedBy.localeCompare(a.uploadedBy);
-            default:
-                return a.id.localeCompare(b.id);
         }
     }).filter(clip => {
         if (!searchTerm || isMyInstants) return true;
         return (clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 clip.tags.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
                 clip.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                tagFilters.find(tf => clip.tags.map(t => t.toLowerCase()).includes(tf)) !== undefined);
+                tagFilters.find(tf => clip.tags.includes(tf)) !== undefined);
     });
 
     const getClips = (type: ClipType) => {
@@ -282,10 +291,28 @@ const Soundboard: React.FC = () => {
     const closeAllMenus = () => {
         setMenuAnchorEl(null);
         setSubMenuAnchorEl(null);
+        setFilterMenuAnchorEl(null);
+    }
+
+    const _setExclusionRules = (rule: 'all' | 'favorites' | 'created') => {
+        setFilterMenuAnchorEl(null);
+        if (rule === 'all') {
+            setExclusionRules(['all']);
+        } else {
+            if (exclusionRules.includes('all')) {
+                setExclusionRules([rule]);
+            } else if (exclusionRules.includes(rule)) {
+                const newRules = exclusionRules.filter(r => r !== rule);
+                if (!newRules.length) newRules.push('all');
+                setExclusionRules(newRules);
+            } else {
+                setExclusionRules([...exclusionRules, rule]);
+            }
+        }
     }
 
     const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
-
+    console.log("exclusionRules: ", exclusionRules);
     return (
         <>
             {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
@@ -330,6 +357,23 @@ const Soundboard: React.FC = () => {
                         return <MenuItem key={i} onClick={() => getClips(category)}>{category}</MenuItem>
                     })}
                 </Menu>
+                <Menu
+                    anchorEl={filterMenuAnchorEl}
+                    open={filterMenuOpen}
+                    onClose={closeAllMenus}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                >
+                    <MenuItem selected={exclusionRules.length === 1 && exclusionRules[0] === 'all'} onClick={() => _setExclusionRules('all')}>All</MenuItem>
+                    <MenuItem selected={exclusionRules.includes('favorites')} onClick={() => _setExclusionRules('favorites')}>Favorites</MenuItem>
+                    <MenuItem selected={exclusionRules.includes('created')} onClick={() => _setExclusionRules('created')}>Created By Me</MenuItem>
+                </Menu>
                 <div className='info-header'>
                     <div className='header-text'><h1>Joe_Bot Soundboard</h1></div>    
                     <div className='my-instants-link'>
@@ -348,9 +392,13 @@ const Soundboard: React.FC = () => {
                                 value={socketUrlInput}
                                 onChange={(e) => setSocketUrlInput(e.target.value)}
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && socketUrlInput) {
-                                        setSocketUrl(socketUrlInput);
-                                        setSocketUrlInput(null);
+                                    if (e.key === 'Enter') {
+                                        if (socketUrlInput !== '') {
+                                            setSocketUrl(socketUrlInput);
+                                        } else {
+                                            setSocketUrl(null);
+                                        }
+
                                         setConnectionAttempts(0);
                                         setMessageHistory([]);
                                     }
@@ -374,8 +422,6 @@ const Soundboard: React.FC = () => {
                             >
                                 {Object.values(SortType).filter((sortType, i) => {
                                     switch (sortType) {
-                                        case SortType.DEFAULT:
-                                            return true;
                                         case SortType.TITLE_ASC:
                                             return true;
                                         case SortType.TITLE_DEC:
@@ -404,29 +450,46 @@ const Soundboard: React.FC = () => {
                         <Button className='grid-action' variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
                     </div>
                 </div>
-                <Input
-                    name='clip-search'
-                    className='search-bar'
-                    placeholder={isMyInstants ? "Search MyInstants" : "Search sounds..."}
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                        const newValue = event.target.value;
+                <Container className='active-tag-search-section'>
+                    {tagFilters.map((tag, i) => {
+                        return (
+                            <Chip 
+                                key={i} 
+                                label={tag} 
+                                onDelete={() => removeTagFilter(tag)} 
+                            />
+                        );
+                    })}
+                </Container>
+                <Container className='search-section'>
+                    <Input
+                        sx={{ color: 'inherit' }}
+                        name='clip-search'
+                        className='search-bar'
+                        placeholder={isMyInstants ? "Search MyInstants" : "Search sounds..."}
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            const newValue = event.target.value;
 
-                        if (newValue === '') {
-                            getClips(clipType);
-                        }
+                            if (newValue === '') {
+                                getClips(clipType);
+                            }
 
-                        setSearchTerm(event.target.value)
-                    }}
-                    onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
-                        if (!isMyInstants) return;
+                            setSearchTerm(event.target.value)
+                        }}
+                        onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                            if (!isMyInstants) return;
 
-                        if (event.key === 'Enter') {
-                            dispatch(searchMyInstants({ search: searchTerm, page: 1 }));
-                        }
-                    }}
-                    value={searchTerm}
-                    endAdornment={isMyInstants ? <Close onClick={clearMyInstantsSearch} /> : <Search />}
-                />
+                            if (event.key === 'Enter') {
+                                dispatch(searchMyInstants({ search: searchTerm, page: 1 }));
+                            }
+                        }}
+                        value={searchTerm}
+                        endAdornment={isMyInstants ? <Close onClick={clearMyInstantsSearch} /> : <Search />}
+                    />
+                    <IconButton sx={{ color: 'inherit' }} onClick={(e) => setFilterMenuAnchorEl(e.currentTarget)}>
+                        {exclusionRules.length === 1 && exclusionRules[0] === 'all' ? <FilterAltOff /> : <FilterAlt />}
+                    </IconButton>
+                </Container>
             </div>}
             <Box sx={{ flexGrow: 1, textAlign: 'center' }}>
                 <InfiniteScroll
@@ -451,6 +514,7 @@ const Soundboard: React.FC = () => {
                             <Grid key={index} size={{ xs: 1, md: 2 }}>
                                 <SoundboardClip 
                                     {...clip}
+                                    filterByTag={addTagFilter}
                                     onClick={playClip} 
                                     onFavorite={_favoriteClip}
                                     onEdit={openClipEdit}

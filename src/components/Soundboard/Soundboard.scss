@@ -65,14 +65,18 @@ body.light {
         width: 100%;
     }
 
-
-    .search-bar {
-        color: inherit;
+    .search-section {
         display: flex;
         justify-content: center;
-        margin: auto;
-        max-width: 75%;
+        width: 100%;
+        color: inherit;
+        
+        .search-bar {
+            margin: auto;
+            width: 100%;
+        }
     }
+
 
     .grid-actions {
         display: flex;
@@ -153,6 +157,19 @@ body.light {
         .button-grp {
             display: flex;
             align-items: center;
+        }
+    }
+
+    .active-tag-search-section {
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        min-height: 42px;
+        margin: 25px auto;
+
+        .MuiChip-root {
+            margin: 5px 10px;
+            background-color: $color-pallette-light-blue;
         }
     }
 
@@ -365,7 +382,6 @@ body.light {
                 background-color: $color-pallette-light-blue;
             }
         }
-
     }
 
     .volume-controls {
@@ -385,49 +401,55 @@ body.light {
         }
     }
 
-    .mobile-actions {
-        @include background-opacity($color-pallette-dark-background-2, 0.95);
-        position: absolute;
-        z-index: 999;
-        height: inherit;
-        width: inherit;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        display: block;
-        visibility: visible;
-        animation: actions-smooth-appear 0.1s forwards;
+    // .mobile-actions {
+    //     @include background-opacity($color-pallette-dark-background-2, 0.95);
+    //     position: absolute;
+    //     z-index: 999;
+    //     height: inherit;
+    //     width: inherit;
+    //     top: 0;
+    //     bottom: 0;
+    //     left: 0;
+    //     display: block;
+    //     visibility: visible;
+    //     animation: actions-smooth-appear 0.1s forwards;
 
-        &.hide {
-            visibility: hidden;
-            animation: actions-smooth-appear 0.1s forwards reverse;
-        }
+    //     &.hide {
+    //         visibility: hidden;
+    //         animation: actions-smooth-appear 0.1s forwards reverse;
+    //     }
 
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            height: 100%;
-            width: 100%;
+    //     .buttons {
+    //         display: flex;
+    //         flex-direction: column;
+    //         justify-content: space-evenly;
+    //         height: 100%;
+    //         width: 100%;
 
-            div {
-                display: flex;
-                justify-content: space-evenly;
+    //         div {
+    //             display: flex;
+    //             justify-content: space-evenly;
 
-                &.close {
-                    svg {
-                        color: addOpacity($color-pallette-white, 0.5);
-                        border: 1px solid addOpacity($color-pallette-white, 0.5);
-                        border-radius: 50%;
-                    }
-                }
-            }
-        }
-    }
+    //             &.close {
+    //                 svg {
+    //                     color: addOpacity($color-pallette-white, 0.5);
+    //                     border: 1px solid addOpacity($color-pallette-white, 0.5);
+    //                     border-radius: 50%;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     // .clip-actions {
     //     display: flex;
     //     flex-direction: row;
     //     flex-wrap: wrap;
     // }
+}
+
+button {
+    &.favorited {
+        color: $color-pallette-orange;
+    }
 }
