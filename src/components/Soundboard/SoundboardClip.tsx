@@ -150,6 +150,12 @@ const SoundboardClip: React.FC<Clip & {
         action({ id, name, tags, description, url, volume, uploadedBy, favoritedBy });
     }
 
+    const _onPlay = (e: React.MouseEvent<any, any>) => {
+        e.stopPropagation();
+        setShowMenu(false);
+        onClick(id);
+    }
+
     const _onFavorite = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
         setShowMenu(false);
@@ -169,7 +175,7 @@ const SoundboardClip: React.FC<Clip & {
     }
 
     return (
-        <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`.trim()} style={{ padding: 10 }} onClick={() => onAction(onClick)} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
+        <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`.trim()} style={{ padding: 10 }} onClick={_onPlay} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
             <Typography className='clip-name' variant="body1" title={name}>{name}</Typography>
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
             <Typography className={`clip-description ${expanded ? 'show' : ''}`.trim()} variant="body2">{description}</Typography>
