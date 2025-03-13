@@ -74,7 +74,6 @@ const Soundboard: React.FC = () => {
     const [ sortType, setSortType ] = useState<SortType>(SortType.TITLE_ASC);
     const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
     const [ myInstantsPage, setMyInstantsPage ] = useState<number>(1);
-    const [ favoritesOnly, setFavoritesOnly ] = useState<boolean>(false);
     const [ exclusionRules, setExclusionRules ] = useState<('all' | 'favorites' | 'created')[]>(['all']);
     const [ tagFilters, setTagFilters ] = useState<string[]>([]);
 
@@ -186,12 +185,12 @@ const Soundboard: React.FC = () => {
         setSortType(SortType.TITLE_ASC);
     }, [isMyInstants])
 
-    const playClip = (clipId: string) => {
+    const playClip = (clipId: string, volumeOverride?: number) => {
         const clip: Clip | undefined = clips.find(c => {
             return c.id === clipId
         });
         if (clip && clip.url && readyState === ReadyState.OPEN) {
-            sendJsonMessage({ type: 'play_sound', sound: clip.url, volume: clip.volume ?? 50, caller: user.id });
+            sendJsonMessage({ type: 'play_sound', sound: clip.url, volume: volumeOverride ?? clip.volume ?? 50, caller: user.id });
         }
     };
 

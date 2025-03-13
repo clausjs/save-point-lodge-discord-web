@@ -20,7 +20,7 @@ enum ACTION_BUTTON_SECTIONS {
 const SoundboardClip: React.FC<Clip & { 
     isMyInstant?: boolean,
     filterByTag: (tag: string) => void,
-    onClick: (clipId: string) => void, 
+    onClick: (clipId: string, volumeOverride?: number) => void, 
     onFavorite: (clipId: string) => void 
     onEdit: (clip: DialogClip) => void
     onDelete: (clip: DialogClip) => void
@@ -155,7 +155,8 @@ const SoundboardClip: React.FC<Clip & {
     const _onPlay = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
         setShowMenu(false);
-        onClick(id);
+        if (isMyInstant) onClick(id, previewVolume);
+        else onClick(id);
     }
 
     const _onFavorite = (e: React.MouseEvent<any, any>) => {
@@ -219,9 +220,12 @@ const SoundboardClip: React.FC<Clip & {
                 </Stack>
             </Box> 
             {isMyInstant && <div className={`volume-controls ${showVolumeSlider ? 'show' : 'hide'}`.trim()} onMouseLeave={(e) => setShowVolumeSlider(false)}>
-                <Stack spacing={2} direction="row" sx={{ alignItems: 'center' }}>
+                <Stack spacing={2} direction="row" sx={{ alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
                     <VolumeDown />
-                        <Slider aria-label="Volume" value={previewVolume} onChange={(e, newValue) => setPreviewVolume(newValue as number)} />
+                        <Slider aria-label="Volume" value={previewVolume} onChange={(e, newValue) => {
+                            e.stopImmediatePropagation();
+                            setPreviewVolume(newValue as number);
+                        }} />
                     <VolumeUp />
                 </Stack>    
             </div>}
