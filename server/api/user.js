@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 router.get('/', function(req, res) {
-    if (req.isTesting) {
+    if (req.fakeAuth) {
         const simplifiedUser = {
             id: process.env.OWNER_ID,
             username: 'testUser',
@@ -42,7 +42,7 @@ router.post('/opts', async function(req, res) {
 });
 
 router.get('/soundboarder', function(req, res) {
-    if (req.isTesting) return res.status(200).send(true);
+    if (req.isTesting || req.fakeAuth) return res.status(200).send(true);
     
     if (req.isAuthenticated() && req.user) {
         return res.status(200).send(req.user.isSoundboardUser);

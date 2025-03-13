@@ -79,7 +79,7 @@ router.get('/myinstants/:category', async function(req, res) {
 
 router.post('/favorite/:id', async function(req, res) {
     if (req.isTesting) {
-        return res.status(200).send("success");
+        return res.status(200).send({ id: req.params.id, favoritedBy: [req.body.user] });
     }
 
     try {
