@@ -61,7 +61,7 @@ const MobileClipActionMenu: React.FC<MobileClipActionMenuProps> = ({
                     horizontal: 'left',
                 }}
             >
-                <MenuItem><ClipActionButton onClick={_onPlay} title='play' Icon={PlayArrow} /></MenuItem>
+                <MenuItem><ClipActionButton onClick={_onPlay} title='preview' Icon={PlayArrow} /></MenuItem>
                 <MenuItem><ClipActionButton classes={isFavorite ? 'favorited' : ''} onClick={_onFavorite} title='favorite' Icon={Favorite} /></MenuItem>
                 <MenuItem><ClipActionButton onClick={_onEdit} title='edit' Icon={Edit} /></MenuItem>
                 <MenuItem><ClipActionButton onClick={_onDelete} title='delete' Icon={Delete} /></MenuItem>

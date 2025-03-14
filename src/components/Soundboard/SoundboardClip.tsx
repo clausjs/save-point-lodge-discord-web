@@ -200,7 +200,7 @@ const SoundboardClip: React.FC<Clip & {
                 </Box>
                 <Stack className='clip-actions' spacing={{ sm: 0.5, md: 1 }} direction='row'>
                     {!isMyInstant && !newUseMediaQuery && <>
-                        <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='play' Icon={PlayArrow} />
+                        <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='preview' Icon={PlayArrow} />
                         <ClipActionButton classes={`${isFavorite ? 'favorited' : ''}`.trim()} onClick={_onFavorite} title='favorite' Icon={Favorite} />
                         <ClipActionButton onClick={_onEdit} title='edit' Icon={Edit} />
                         <ClipActionButton disabled={isMyInstant || uploadedBy !== username} onClick={_onDelete} title='delete' Icon={Delete} />
@@ -213,7 +213,7 @@ const SoundboardClip: React.FC<Clip & {
                         onDelete={_onDelete}
                     />}
                     {isMyInstant && <>
-                        <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='play' Icon={PlayArrow} />
+                        <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='preview' Icon={PlayArrow} />
                         <ClipActionButton onClick={(e) => controlAudio(e, 'stop')} title='stop' Icon={Stop} />
                         <ClipActionButton onClick={_addMyInstant} title='save' Icon={Save} />
                     </>}
