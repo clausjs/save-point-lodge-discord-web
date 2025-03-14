@@ -142,7 +142,6 @@ const Soundboard: React.FC = () => {
         if (!user) return;
         if (!user.isSoundboardUser) return;
         if (!clips.length) {
-            console.log("fetching clips");
             setFetchingClips(true);
             dispatch(fetchSoundboardClips());
         }
@@ -224,6 +223,14 @@ const Soundboard: React.FC = () => {
 
     const filteredClips = Array.from(clips).filter(clip => {
         let included: boolean = true;
+
+        if (tagFilters.length) {
+            included = tagFilters.some(tag => clip.tags.includes(tag));
+        }
+
+        return included;
+    }).filter(clip => {
+        let included: boolean = true;
         if (exclusionRules.includes('all')) return included;
         if (exclusionRules.includes('favorites') && !clip.favoritedBy.includes(user.id)) included = false;
         if (exclusionRules.includes('created') && clip.uploadedBy.trim() !== user.username.trim()) included = false;
@@ -248,8 +255,7 @@ const Soundboard: React.FC = () => {
         if (!searchTerm || isMyInstants) return true;
         return (clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 clip.tags.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
-                clip.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                tagFilters.find(tf => clip.tags.includes(tf)) !== undefined);
+                clip.description.toLowerCase().includes(searchTerm.toLowerCase()));
     });
 
     const getClips = (type: ClipType) => {
@@ -269,9 +275,6 @@ const Soundboard: React.FC = () => {
                 dispatch(fetchMyInstantsByCategory({ category: type, page: myInstantsPage }));
                 break;
         }
-
-        setMenuAnchorEl(null);
-        setSubMenuAnchorEl(null);
     }
 
     const clearMyInstantsSearch = () => {
@@ -501,7 +504,7 @@ const Soundboard: React.FC = () => {
                         }
                     }}
                     hasMore={isMyInstants && clips.length <= 200}
-                    loader={<h4>Loading...</h4>}
+                    loader={clips.length ? <h4>Loading...</h4> : null}
                     endMessage={
                         <p style={{ textAlign: 'center' }}>
                         <b>{endOfClipsString}</b>
