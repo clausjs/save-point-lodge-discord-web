@@ -7,7 +7,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { Clip, User } from '../../types';
 import { AppDispatch, RootState } from '../../state/store';
 
-import ClipActionButton from './ClipActionButton';
+import ClipActionButton, { ClipPreviewButton } from './ClipActionButton';
 import { DialogClip } from './Soundboard';
 import MobileClipActionMenu from './MobileActionMenu';
 
@@ -48,6 +48,7 @@ const SoundboardClip: React.FC<Clip & {
     const audioFile = useRef(null);
     const [ expanded, setExpanded ] = useState(false);
     const [ showMenu, setShowMenu ] = useState(false);
+    const [ isPlaying, setIsPlaying ] = useState<boolean>(false);
     const [ showVolumeSlider, setShowVolumeSlider ] = useState<boolean>(false);
     const [ previewVolume, setPreviewVolume ] = useState<number>(volume);
 
@@ -62,9 +63,11 @@ const SoundboardClip: React.FC<Clip & {
                 audioFile.current.currentTime = 0;
                 audioFile.current.play();
                 audioFile.current.volume = previewVolume / 100;
+                setIsPlaying(true);
                 break;
             case 'stop':
                 audioFile.current.pause();
+                setIsPlaying(false);
                 break;
             case 'volume':
                 setShowVolumeSlider(!showVolumeSlider);
@@ -147,11 +150,6 @@ const SoundboardClip: React.FC<Clip & {
         }
     }
 
-    const onAction = (action: Function) => {
-        setShowMenu(false);
-        action({ id, name, tags, description, url, volume, uploadedBy, favoritedBy });
-    }
-
     const _onPlay = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
         setShowMenu(false);
@@ -200,21 +198,21 @@ const SoundboardClip: React.FC<Clip & {
                 </Box>
                 <Stack className='clip-actions' spacing={{ sm: 0.5, md: 1 }} direction='row'>
                     {!isMyInstant && !newUseMediaQuery && <>
-                        <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='preview' Icon={PlayArrow} />
+                        <ClipPreviewButton play={(e) => controlAudio(e, 'play')} stop={(e) => controlAudio(e, 'stop')} isPlaying={isPlaying} />
                         <ClipActionButton classes={`${isFavorite ? 'favorited' : ''}`.trim()} onClick={_onFavorite} title='favorite' Icon={Favorite} />
                         <ClipActionButton onClick={_onEdit} title='edit' Icon={Edit} />
                         <ClipActionButton disabled={isMyInstant || uploadedBy !== username} onClick={_onDelete} title='delete' Icon={Delete} />
                     </>}
                     {!isMyInstant && newUseMediaQuery && <MobileClipActionMenu
-                        isFavorite={isFavorite} 
-                        onPlay={(e) => controlAudio(e, 'play')}
+                        isFavorite={isFavorite}
+                        isPlaying={isPlaying} 
+                        onPlay={(e) => controlAudio(e, isPlaying ? 'stop' : 'play')}
                         onFavorite={_onFavorite}
                         onEdit={_onEdit}
                         onDelete={_onDelete}
                     />}
                     {isMyInstant && <>
-                        <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='preview' Icon={PlayArrow} />
-                        <ClipActionButton onClick={(e) => controlAudio(e, 'stop')} title='stop' Icon={Stop} />
+                        <ClipPreviewButton play={(e) => controlAudio(e, 'play')} stop={(e) => controlAudio(e, 'stop')} isPlaying={isPlaying} />
                         <ClipActionButton onClick={_addMyInstant} title='save' Icon={Save} />
                     </>}
                 </Stack>

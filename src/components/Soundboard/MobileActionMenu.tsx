@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Button, IconButton, Menu, MenuItem } from '@mui/material';
 import { Delete, Edit, Favorite, MoreHoriz, PlayArrow } from '@mui/icons-material';
-import ClipActionButton from './ClipActionButton';
+import ClipActionButton, { ClipPreviewButton } from './ClipActionButton';
 
 export interface MobileClipActionMenuProps {
     isFavorite?: boolean,
+    isPlaying?: boolean,
     onPlay: (e: React.MouseEvent<any, any>) => void;
     onFavorite: (e: React.MouseEvent<any, any>) => void;
     onEdit: (e: React.MouseEvent<any, any>) => void;
@@ -13,6 +14,7 @@ export interface MobileClipActionMenuProps {
 
 const MobileClipActionMenu: React.FC<MobileClipActionMenuProps> = ({
     isFavorite = false,
+    isPlaying = false,
     onPlay,
     onFavorite,
     onEdit,
@@ -61,7 +63,7 @@ const MobileClipActionMenu: React.FC<MobileClipActionMenuProps> = ({
                     horizontal: 'left',
                 }}
             >
-                <MenuItem><ClipActionButton onClick={_onPlay} title='preview' Icon={PlayArrow} /></MenuItem>
+                <MenuItem><ClipPreviewButton play={_onPlay} stop={_onPlay} isPlaying={isPlaying} /></MenuItem>
                 <MenuItem><ClipActionButton classes={isFavorite ? 'favorited' : ''} onClick={_onFavorite} title='favorite' Icon={Favorite} /></MenuItem>
                 <MenuItem><ClipActionButton onClick={_onEdit} title='edit' Icon={Edit} /></MenuItem>
                 <MenuItem><ClipActionButton onClick={_onDelete} title='delete' Icon={Delete} /></MenuItem>
