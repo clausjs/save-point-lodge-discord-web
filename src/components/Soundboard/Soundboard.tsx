@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { Box, Button, Chip, Container, FormControl, Grid2 as Grid, IconButton, Input, InputLabel, Link, Menu, MenuItem, Paper, Select } from '@mui/material';
+import { Box, Button, Chip, Checkbox, Container, FormControl, Grid2 as Grid, IconButton, Input, InputLabel, Link, Menu, MenuItem, Paper, Select } from '@mui/material';
 import { GridLoader } from 'react-spinners';
 
 import ConfigClipDialog from './ConfigClipDialog';
@@ -279,6 +279,7 @@ const Soundboard: React.FC = () => {
 
     const clearMyInstantsSearch = () => {
         setSearchTerm('');
+        setMyInstantsPage(1);
         getClips(clipType);
     }
 
@@ -373,9 +374,9 @@ const Soundboard: React.FC = () => {
                         horizontal: 'left',
                     }}
                 >
-                    <MenuItem selected={exclusionRules.length === 1 && exclusionRules[0] === 'all'} onClick={() => _setExclusionRules('all')}>All</MenuItem>
-                    <MenuItem selected={exclusionRules.includes('favorites')} onClick={() => _setExclusionRules('favorites')}>Favorites</MenuItem>
-                    <MenuItem selected={exclusionRules.includes('created')} onClick={() => _setExclusionRules('created')}>Created By Me</MenuItem>
+                    <MenuItem><Checkbox checked={exclusionRules.length === 1} onChange={() => _setExclusionRules('all')} />All</MenuItem>
+                    <MenuItem><Checkbox checked={exclusionRules.includes('favorites')} onChange={() => _setExclusionRules('favorites')} />Favorites</MenuItem>
+                    <MenuItem><Checkbox checked={exclusionRules.includes('created')} onChange={() => _setExclusionRules('created')} />Created By Me</MenuItem>
                 </Menu>
                 <div className='info-header'>
                     <div className='header-text'><h1>Joe_Bot Soundboard</h1></div>    
@@ -487,7 +488,11 @@ const Soundboard: React.FC = () => {
                             }
                         }}
                         value={searchTerm}
-                        endAdornment={isMyInstants ? <Close onClick={clearMyInstantsSearch} /> : <Search />}
+                        startAdornment={<Search />}
+                        endAdornment={<Close onClick={(e) => {
+                            clearMyInstantsSearch();
+                            setSearchTerm('');
+                        }} />}
                     />
                     <IconButton sx={{ color: 'inherit' }} onClick={(e) => setFilterMenuAnchorEl(e.currentTarget)}>
                         {exclusionRules.length === 1 && exclusionRules[0] === 'all' ? <FilterAltOff /> : <FilterAlt />}
