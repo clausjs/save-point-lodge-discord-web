@@ -13,7 +13,7 @@ import SoundboardClip from './SoundboardClip';
 import toastr from '../../utils/toastr';
 
 import { Close, ExpandMore, Filter, FilterAlt, FilterAltOff, Search } from '@mui/icons-material';
-import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants, favoriteClip } from '../../state/reducers/soundboard';
+import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants, favoriteClip, resetClips } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
 import { experimentalStyled as styled } from '@mui/material/styles';
@@ -71,6 +71,7 @@ const Soundboard: React.FC = () => {
     const [ editingClip, setEditingClip ] = useState<DialogClip | null>(null);
     const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
     const [ clipType, setClipType ] = useState<ClipType>('saved');
+    const [ isSearching, setIsSearching ] = useState<boolean>(false);
     const [ sortType, setSortType ] = useState<SortType>(SortType.TITLE_ASC);
     const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
     const [ myInstantsPage, setMyInstantsPage ] = useState<number>(1);
@@ -97,6 +98,7 @@ const Soundboard: React.FC = () => {
     const user: User = useSelector((state: RootState) => state.user.user);
     const clips: Clip[] = useSelector((state: RootState) => state.soundboard.clips);
     const isMyInstants: boolean = useSelector((state: RootState) => state.soundboard.isMyInstants);
+    const isLastResults: boolean = useSelector((state: RootState) => state.soundboard.lastResults);
 
     const { sendJsonMessage, lastMessage, readyState } = useWebSocket(socketUrl, { 
         shouldReconnect: (closeEvent) => {
@@ -232,7 +234,7 @@ const Soundboard: React.FC = () => {
     }).filter(clip => {
         let included: boolean = true;
         if (exclusionRules.includes('all')) return included;
-        if (exclusionRules.includes('favorites') && !clip.favoritedBy.includes(user.id)) included = false;
+        if (exclusionRules.includes('favorites') && !clip.favoritedBy?.includes(user.id)) included = false;
         if (exclusionRules.includes('created') && clip.uploadedBy.trim() !== user.username.trim()) included = false;
         
         return included;
@@ -258,29 +260,43 @@ const Soundboard: React.FC = () => {
                 clip.description.toLowerCase().includes(searchTerm.toLowerCase()));
     });
 
-    const getClips = (type: ClipType) => {
+    const closeAllMenus = () => {
+        setMenuAnchorEl(null);
+        setSubMenuAnchorEl(null);
+        setFilterMenuAnchorEl(null);
+    }
+
+    const getClips = (type: ClipType, page?: number) => {
         closeAllMenus();
-        if (clipType !== type) setClipType(type);
+        if (clipType !== type) {
+            setClipType(type);
+            dispatch(resetClips());
+        }
+
         switch (type) {
             case 'saved':
                 dispatch(fetchSoundboardClips());
                 break;
             case 'trending':
-                dispatch(fetchMyInstantsTrending(myInstantsPage));
+                dispatch(fetchMyInstantsTrending(page));
                 break;
             case 'recent':
-                dispatch(fetchMyInstantsRecent(myInstantsPage));
+                dispatch(fetchMyInstantsRecent(page));
                 break;
             default:
-                dispatch(fetchMyInstantsByCategory({ category: type, page: myInstantsPage }));
+                dispatch(fetchMyInstantsByCategory({ category: type, page }));
                 break;
         }
     }
 
     const clearMyInstantsSearch = () => {
         setSearchTerm('');
-        setMyInstantsPage(1);
-        getClips(clipType);
+        if (isSearching) {
+            dispatch(resetClips());
+            setIsSearching(false);
+            setMyInstantsPage(1);
+            getClips(clipType, 1);
+        }
     }
 
     const addTagFilter = (filter: string) => {
@@ -290,12 +306,6 @@ const Soundboard: React.FC = () => {
 
     const removeTagFilter = (filter: string) => {
         setTagFilters(tagFilters.filter(tag => tag !== filter));
-    }
-
-    const closeAllMenus = () => {
-        setMenuAnchorEl(null);
-        setSubMenuAnchorEl(null);
-        setFilterMenuAnchorEl(null);
     }
 
     const _setExclusionRules = (rule: 'all' | 'favorites' | 'created') => {
@@ -316,76 +326,89 @@ const Soundboard: React.FC = () => {
     }
 
     const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
-    
+    const disableControls: boolean = !clips.length;
+
     return (
         <>
-            {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
-            {user && user.isSoundboardUser && clips.length > 0 && <div className='soundboard'> 
-                <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
-                <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
-                <Menu
-                    aria-labelledby="my-instants-button"
-                    anchorEl={menuAnchorEl}
-                    open={menuOpen}
-                    onClose={closeAllMenus}
-                    anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                >
-                    <MenuItem disabled={!isMyInstants} onClick={() => getClips('saved')}>Saved Clips</MenuItem>
-                    <MenuItem onClick={() => getClips('trending')}>Get Trending</MenuItem>
-                    <MenuItem onClick={() => getClips('recent')}>Get Newest</MenuItem>
-                    <MenuItem id='my-instants-get-by-category' onMouseEnter={(e: React.MouseEvent<HTMLLIElement, MouseEvent>) => { if (menuOpen) setSubMenuAnchorEl(e.currentTarget)}}>Get by category <ExpandMore /></MenuItem>
-                </Menu>
-                <Menu
-                    aria-labelledby='my-instants-get-by-category'
-                    anchorEl={subMenuAnchorEl}
-                    open={subMenuOpen}
-                    onClose={closeAllMenus}
-                    anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                    onMouseLeave={() => setSubMenuAnchorEl(null)}
-                >
-                    {Object.values(MyInstantsCategory).map((category, i) => {
-                        return <MenuItem key={i} onClick={() => getClips(category)}>{category}</MenuItem>
-                    })}
-                </Menu>
-                <Menu
-                    anchorEl={filterMenuAnchorEl}
-                    open={filterMenuOpen}
-                    onClose={closeAllMenus}
-                    anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                >
-                    <MenuItem><Checkbox checked={exclusionRules.length === 1} onChange={() => _setExclusionRules('all')} />All</MenuItem>
-                    <MenuItem><Checkbox checked={exclusionRules.includes('favorites')} onChange={() => _setExclusionRules('favorites')} />Favorites</MenuItem>
-                    <MenuItem><Checkbox checked={exclusionRules.includes('created')} onChange={() => _setExclusionRules('created')} />Created By Me</MenuItem>
-                </Menu>
-                <div className='info-header'>
-                    <div className='header-text'><h1>Joe_Bot Soundboard</h1></div>    
-                    <div className='my-instants-link'>
-                        <span>
-                            Looking for more sounds or a place to host sounds? <Link target="_blank" href='https://www.myinstants.com/en/index/us/'>Click here!</Link>
-                        </span>
-                    </div>
+            <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
+            <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
+            <Menu
+                aria-labelledby="my-instants-button"
+                anchorEl={menuAnchorEl}
+                open={menuOpen}
+                onClose={closeAllMenus}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+            >
+                <MenuItem disabled={!isMyInstants} onClick={() => {
+                    setMyInstantsPage(1);
+                    getClips('saved');
+                }}>Saved Clips</MenuItem>
+                <MenuItem onClick={() => {
+                    setMyInstantsPage(1);
+                    getClips('trending', 1);
+                }}>Get Trending</MenuItem>
+                <MenuItem onClick={() => {
+                    setMyInstantsPage(1);
+                    getClips('recent', 1);
+                }}>Get Newest</MenuItem>
+                <MenuItem id='my-instants-get-by-category' onMouseEnter={(e: React.MouseEvent<HTMLLIElement, MouseEvent>) => { if (menuOpen) setSubMenuAnchorEl(e.currentTarget)}}>Get by category <ExpandMore /></MenuItem>
+            </Menu>
+            <Menu
+                aria-labelledby='my-instants-get-by-category'
+                anchorEl={subMenuAnchorEl}
+                open={subMenuOpen}
+                onClose={closeAllMenus}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+                onMouseLeave={() => setSubMenuAnchorEl(null)}
+            >
+                {Object.values(MyInstantsCategory).map((category, i) => {
+                    return <MenuItem key={i} onClick={() => {
+                        setMyInstantsPage(1);
+                        getClips(category, 1);
+                    }}>{category}</MenuItem>
+                })}
+            </Menu>
+            <Menu
+                anchorEl={filterMenuAnchorEl}
+                open={filterMenuOpen}
+                onClose={closeAllMenus}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+            >
+                <MenuItem><Checkbox checked={exclusionRules.length === 1 && exclusionRules[0] === 'all'} onChange={() => _setExclusionRules('all')} />All</MenuItem>
+                <MenuItem><Checkbox checked={exclusionRules.includes('favorites')} onChange={() => _setExclusionRules('favorites')} />Favorites</MenuItem>
+                <MenuItem><Checkbox checked={exclusionRules.includes('created')} onChange={() => _setExclusionRules('created')} />Created By Me</MenuItem>
+            </Menu>
+            <div className='info-header'>
+                <div className='header-text'><h1>Joe_Bot Soundboard</h1></div>    
+                <div className='my-instants-link'>
+                    <span>
+                        Looking for more sounds or a place to host sounds? <Link target="_blank" href='https://www.myinstants.com/en/index/us/'>Click here!</Link>
+                    </span>
                 </div>
+            </div>
+            {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
+            {user && user.isSoundboardUser && <div className='soundboard'> 
                 <div className='grid-actions'>
                     <div className='status-section'>
                         <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
@@ -412,10 +435,10 @@ const Soundboard: React.FC = () => {
                     </div>
                     <div className='my-instants-button'>
                         <div className='circle small-button-background'></div>
-                        <button id='my-instants-button' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => setMenuAnchorEl(e.currentTarget)} />
+                        <button disabled={disableControls} id='my-instants-button' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => setMenuAnchorEl(e.currentTarget)} />
                     </div>
                     <div className='sort-control'>    
-                        <FormControl variant="standard" fullWidth>
+                        <FormControl disabled={disableControls} variant="standard" fullWidth>
                             <InputLabel id='sort-label' sx={{ color: 'inherit' }}>Sort by:</InputLabel>
                             <Select
                                 labelId="sort-label"
@@ -450,8 +473,8 @@ const Soundboard: React.FC = () => {
                         </FormControl>
                     </div>
                     <div className='button-grp'>
-                        <Button className='grid-action' variant="contained" onClick={openDialog}>Add Clip</Button>
-                        <Button className='grid-action' variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
+                        <Button disabled={!user.isSoundboardUser} className='grid-action' variant="contained" onClick={openDialog}>Add Clip</Button>
+                        <Button disabled={disableControls} className='grid-action' variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
                     </div>
                 </div>
                 <Container className='active-tag-search-section'>
@@ -468,6 +491,7 @@ const Soundboard: React.FC = () => {
                 <Container className='search-section'>
                     <Input
                         sx={{ color: 'inherit' }}
+                        disabled={disableControls}
                         name='clip-search'
                         className='search-bar'
                         placeholder={isMyInstants ? "Search MyInstants" : "Search sounds..."}
@@ -475,7 +499,7 @@ const Soundboard: React.FC = () => {
                             const newValue = event.target.value;
 
                             if (newValue === '') {
-                                getClips(clipType);
+                                clearMyInstantsSearch();
                             }
 
                             setSearchTerm(event.target.value)
@@ -484,6 +508,9 @@ const Soundboard: React.FC = () => {
                             if (!isMyInstants) return;
 
                             if (event.key === 'Enter') {
+                                setMyInstantsPage(1);
+                                setIsSearching(true);
+                                dispatch(resetClips());
                                 dispatch(searchMyInstants({ search: searchTerm, page: 1 }));
                             }
                         }}
@@ -491,24 +518,28 @@ const Soundboard: React.FC = () => {
                         startAdornment={<Search />}
                         endAdornment={<Close onClick={(e) => {
                             clearMyInstantsSearch();
-                            setSearchTerm('');
                         }} />}
                     />
-                    <IconButton sx={{ color: 'inherit' }} onClick={(e) => setFilterMenuAnchorEl(e.currentTarget)}>
+                    <IconButton disabled={disableControls || isMyInstants} sx={{ color: 'inherit' }} onClick={(e) => setFilterMenuAnchorEl(e.currentTarget)}>
                         {exclusionRules.length === 1 && exclusionRules[0] === 'all' ? <FilterAltOff /> : <FilterAlt />}
                     </IconButton>
                 </Container>
             </div>}
             <Box sx={{ flexGrow: 1, textAlign: 'center' }}>
                 <InfiniteScroll
-                    dataLength={clips.length} //This is important field to render the next data
+                    dataLength={filteredClips.length} //This is important field to render the next data
                     next={() => {
                         if (isMyInstants && clips.length <= 200) {
-                            setMyInstantsPage(myInstantsPage + 1);
-                            getClips(clipType);
+                            const page = myInstantsPage + 1;
+                            setMyInstantsPage(page);
+                            if (isSearching) {
+                                dispatch(searchMyInstants({ search: searchTerm, page }));
+                            } else {
+                                getClips(clipType, page);
+                            }
                         }
                     }}
-                    hasMore={isMyInstants && clips.length <= 200}
+                    hasMore={isMyInstants && (clips.length <= 200 && !isLastResults)}
                     loader={clips.length ? <h4>Loading...</h4> : null}
                     endMessage={
                         <p style={{ textAlign: 'center' }}>
@@ -517,7 +548,7 @@ const Soundboard: React.FC = () => {
                     }
                 >
                     <Grid className='soundboard-items' container spacing={{ xs: 1, sm: 2 }} columns={{ xs: 2, md: 6, lg: 10 }}>
-                        <Grid className='loading' size='grow' sx={{ display: 'none' }}><GridLoader color={lightMode ? 'black' : 'white'} loading={fetchingClips} size={50} margin='auto' /></Grid>
+                        {clips.length === 0 && fetchingClips && <Grid className='loading' size='grow'><GridLoader color={lightMode ? 'black' : 'white'} loading={fetchingClips} size={50} margin='auto' /></Grid>}
                         {filteredClips.length > 0 && filteredClips.map((clip, index) => (
                             <Grid key={index} size={{ xs: 1, md: 2 }}>
                                 <SoundboardClip 

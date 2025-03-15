@@ -4,7 +4,13 @@ import toastr from "../../utils/toastr";
 
 const initialState: SoundboardState = {
     isMyInstants: false,
-    clips: []
+    lastResults: false,
+    clips: [],
+    clipFetchState: 'idle',
+    clipSearchState: 'idle',
+    clipAddState: 'idle',
+    clipEditState: 'idle',
+    clipDeleteState: 'idle'
 };
 
 export const fetchSoundboardClips = createAsyncThunk(
@@ -44,7 +50,7 @@ export const searchMyInstants = createAsyncThunk(
     'soundboard/searchMyInstants',
     async (opts: { search: string, page?: number }) => {
         const {  search, page = 1 } = opts;
-        const response = await fetch(`/api/soundboard/myinstants/search?query=${encodeURIComponent(search)}?page=${page}`);
+        const response = await fetch(`/api/soundboard/myinstants/search?query=${encodeURIComponent(search)}&page=${page}`);
         return response.json();
     }
 )
@@ -106,10 +112,20 @@ export const deleteClip = createAsyncThunk(
     }
 )
 
+const disableSearch = (state: SoundboardState) => {
+    state.clipSearchState = 'idle';
+    state.lastResults = false;
+}
+
 const soundboard = createSlice({
     name: 'soundboard',
     initialState,
-    reducers: {},
+    reducers: {
+        resetClips: (state) => {
+            state.clips = [];
+        },
+
+    },
     extraReducers(builder) {
             builder
                 .addCase(fetchSoundboardClips.pending, (state) => {
@@ -121,6 +137,7 @@ const soundboard = createSlice({
                 .addCase(fetchSoundboardClips.fulfilled, (state, action: PayloadAction<Clip[]>) => {
                     state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
+                    disableSearch(state);
                     state.isMyInstants = false;
                 })
                 .addCase(fetchMyInstantsTrending.pending, (state) => {
@@ -134,6 +151,7 @@ const soundboard = createSlice({
                         state.clips = [...state.clips, ...action.payload];
                     } else state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
+                    disableSearch(state);
                     state.isMyInstants = true;
                 })
                 .addCase(fetchMyInstantsRecent.pending, (state) => {
@@ -147,6 +165,7 @@ const soundboard = createSlice({
                         state.clips = [...state.clips, ...action.payload];
                     } else state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
+                    disableSearch(state);
                     state.isMyInstants = true;
                 })
                 .addCase(fetchMyInstantsByCategory.pending, (state) => {
@@ -160,20 +179,21 @@ const soundboard = createSlice({
                         state.clips = [...state.clips, ...action.payload];
                     } else state.clips = action.payload;
                     state.clipFetchState = 'fulfilled';
+                    disableSearch(state);
                     state.isMyInstants = true;
                 })
                 .addCase(searchMyInstants.pending, (state) => {
-                    state.clipFetchState = 'pending';
+                    state.clipSearchState = 'pending';
                 })
                 .addCase(searchMyInstants.rejected, (state) => {
-                    state.clipFetchState = 'rejected';
+                    state.clipSearchState = 'rejected';
                 })
                 .addCase(searchMyInstants.fulfilled, (state, action: PayloadAction<Clip[]>) => {
-                    if (state.isMyInstants) {
-                        state.clips = action.payload;
+                    state.clipSearchState = 'fulfilled';
+                    if (state.isMyInstants && state.clipSearchState === 'fulfilled') {
+                        if (action.payload.length === 0) state.lastResults = true;
+                        else state.clips = [...state.clips, ...action.payload];
                     } else state.clips = action.payload;
-                    state.clipFetchState = 'fulfilled';
-                    state.isMyInstants = true;
                 })
                 .addCase(favoriteClip.fulfilled, (state, action: PayloadAction<Clip>) => {
                     const clipIndex = state.clips.findIndex(clip => clip.id === action.payload.id);
@@ -216,4 +236,5 @@ const soundboard = createSlice({
         }
 });
 
+export const { resetClips } = soundboard.actions;
 export default soundboard.reducer;

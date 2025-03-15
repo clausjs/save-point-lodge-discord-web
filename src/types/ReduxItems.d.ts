@@ -113,15 +113,17 @@ export interface Clip {
     createdAt?: Date;
 }
 
-export type apiState = 'pending' | 'fulfilled' | 'rejected';
+export type apiState = 'idle' | 'pending' | 'fulfilled' | 'rejected';
 
 export interface SoundboardState {
     clips: Clip[];
     isMyInstants: boolean;
+    lastResults: boolean;
     clipFetchState?: apiState;
     clipAddState?: apiState;
     clipEditState?: apiState;
     clipDeleteState?: apiState;
+    clipSearchState?: apiState;
 }
 
 export interface Action {
