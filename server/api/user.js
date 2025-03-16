@@ -1,20 +1,12 @@
 const router = require('express').Router();
 
 router.get('/', function(req, res) {
-    if (req.fakeAuth) {
-        const simplifiedUser = {
-            id: process.env.OWNER_ID,
-            username: 'testUser',
-            avatarUrl: 'https://cdn-icons-png.freepik.com/512/147/147142.png'
-        }
-        return res.status(200).json(simplifiedUser);
-    }
-
     if (req.isAuthenticated() && req.user) {
         const simplifiedUser = {
             id: req.user.id,
             username: req.user.username,
-            avatar: req.user.avatar
+            avatar: req.user.avatar,
+            avatarUrl: req.user.avatarUrl,
         }
         return res.status(200).json(simplifiedUser);
     }
@@ -26,6 +18,15 @@ router.get('/opts', async function(req, res) {
     try {
         const userOpts = await req.db.firebase.userOpts.get(req.user.id);
         res.status(200).send(userOpts);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+router.get('/soundboard/opts', async function(req, res) {
+    try {
+        const soundboardOpts = await req.db.firebase.soundboardOpts.get(req.user.id);
+        res.status(200).send(soundboardOpts);
     } catch (err) {
         res.status(500).send(err);
     }

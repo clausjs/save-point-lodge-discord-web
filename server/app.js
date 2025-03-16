@@ -11,6 +11,7 @@ const passport = require('passport');
 const history = require('connect-history-api-fallback');
 const cors = require('cors');
 const Strategy = require('./auth/Strategy');
+const LocalStrategy = require('passport-local').Strategy;
 const db = require('./data');
 
 const BUILD_DIR = path.join(__dirname, '../build');
@@ -82,6 +83,13 @@ const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amaz
 const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
 const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+        const profile = { id: process.env.OWNER_ID, username: 'testUser', avatarUrl: 'https://cdn-icons-png.freepik.com/512/147/147142.png' }
+        return done(null, profile);
+    }
+));
+
 passport.use(new Strategy({
     authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
     clientID: process.env.DISCORD_AUTH_CLIENT_ID,
@@ -116,7 +124,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
+const authMiddleware =  devMode ? passport.authenticate('local', { failureRedirect: '/' }) : function(req, res) {
+    if (devMode) return res.status(401).send('Not found');
+    else return res.status(200).send({ redirect: '/login-discord' });
+}
+
+app.post('/login', authMiddleware, function(req, res) {
+    if (res.status !== 200) res.status(200).send(req.user);
+});
+app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
 app.get('/login-redirect',
     passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/') } // auth success
 );
