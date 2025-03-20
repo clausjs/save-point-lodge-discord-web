@@ -44,9 +44,19 @@ interface UserOptDescription {
     alt: string;
 }
 
+interface SoundboardOpt {
+    description: string;
+    enabled?: boolean;
+}
+
+export interface SoundboardOptions {
+    [id: string]: SoundboardOpt;
+}
+
 export interface UserState {
     user: User | null;
     opts: UserOptions | {};
+    soundboardOpts: SoundboardOptions | {};
 }
 
 export interface VotableMovie {

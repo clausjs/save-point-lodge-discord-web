@@ -42,6 +42,16 @@ router.post('/opts', async function(req, res) {
     }
 });
 
+router.post('/soundboard/opts', async function(req, res) {
+    try {
+        await req.db.firebase.soundboardOpts.set(req.user.id, req.body);
+        res.status(200).send(req.body);
+    } catch (err) {
+        console.error("err: ", err);
+        res.status(500).send(err);
+    }
+}); 
+
 router.get('/soundboarder', function(req, res) {
     if (req.isTesting || req.fakeAuth) return res.status(200).send(true);
     

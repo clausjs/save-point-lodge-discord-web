@@ -18,6 +18,7 @@ const firebaseData = Firebase(db);
 async function authenticate() {
     const { FIREBASE_CLIENT_EMAIL: email, FIREBASE_CLIENT_PASSWORD: pass } = process.env;
     await app.auth().signInWithEmailAndPassword(email, pass);
+    firebaseData.isAuthenticated();
 }
 
 async function shutdown() {

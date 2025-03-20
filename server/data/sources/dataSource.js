@@ -3,11 +3,12 @@ class DataSource {
         this.collectionName = '';
         this.db = store;
     }
-    get() {}
-    getById(id) {}
-    add(args) {}
-    update(args) {}
-    delete(id) {}
+    async _init() {}
+    async get() {}
+    async getById(args) {}
+    async add(args) {}
+    async update(args) {}
+    async delete(id) {}
 }
 
 module.exports = DataSource;

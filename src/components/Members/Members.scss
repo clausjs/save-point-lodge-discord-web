@@ -7,13 +7,18 @@ body.light {
     }
 }
 
-.member-main {
-    display: flex !important;
+.account-settings {
+    display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 25px;
-    overflow: scroll;
-    height: calc(100% - ((#{$header-height} * 1px) + (#{$copyright-height} * 1px)));
+}
+
+.member-opts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    // overflow: scroll;
+    // height: calc(100% - ((#{$header-height} * 1px) + (#{$copyright-height} * 1px)));
 
     .description-cell {
         img {
@@ -22,4 +27,10 @@ body.light {
             padding: 0 10px;
         }
     }
+}
+
+.soundboard-opts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
