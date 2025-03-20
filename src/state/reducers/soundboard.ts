@@ -63,10 +63,7 @@ export const favoriteClip = createAsyncThunk(
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                user: state.user.user.id
-            })
+            }
         });
         return response.json();
     }

@@ -79,11 +79,11 @@ router.get('/myinstants/:category', async function(req, res) {
 
 router.post('/favorite/:id', async function(req, res) {
     if (req.isTesting) {
-        return res.status(200).send({ id: req.params.id, favoritedBy: [req.body.user] });
+        return res.status(200).send({ id: req.params.id, favoritedBy: [req.user.id] });
     }
 
     try {
-        const clip = await req.db.firebase.soundboard.toggleFavorite(req.params.id, req.body.user);
+        const clip = await req.db.firebase.soundboard.toggleFavorite(req.params.id, req.user.id);
         return res.status(200).send(clip);
     } catch (err) {
         return res.status(500).send(err);
