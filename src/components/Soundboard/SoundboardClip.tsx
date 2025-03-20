@@ -83,71 +83,9 @@ const SoundboardClip: React.FC<Clip & {
         }
     }, [previewVolume])
 
-    const getActionButtonSection = (section: ACTION_BUTTON_SECTIONS): React.ReactNode => {
-        switch (section) {
-            case ACTION_BUTTON_SECTIONS.TOP:
-                return (
-                    <React.Fragment>
-                        <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='play' Icon={PlayArrow} />
-                        <ClipActionButton disabled={isMyInstant} classes={`${isFavorite ? 'favorited' : ''}`.trim()} onClick={_onFavorite} title='favorite' Icon={Favorite} />
-                    </React.Fragment>
-                );
-            case ACTION_BUTTON_SECTIONS.MIDDLE:
-                if (newUseMediaQuery) {
-                    if (showMenu) {
-                        return (
-                            <ClipActionButton onClick={(e: React.MouseEvent<any, any>) => {
-                                e.stopPropagation();
-                                setShowMenu(false);
-                            }} title='close' Icon={Close} />
-                        );
-                    } else {
-                        return (
-                            <ClipActionButton onClick={(e: React.MouseEvent<any, any>) => {
-                                e.stopPropagation();
-                                setShowMenu(true);
-                            }} title='more' Icon={MoreHoriz} />
-                        );
-                    }
-                }
-            case ACTION_BUTTON_SECTIONS.BOTTOM:
-                return (
-                    <React.Fragment>
-                        <ClipActionButton disabled={isMyInstant} onClick={_onEdit} title='more' Icon={Edit} />
-                        <ClipActionButton disabled={isMyInstant || username !== uploadedBy} onClick={_onDelete} title='more' Icon={Delete} />
-                    </React.Fragment>
-                );
-            default:
-                return null;
-        }
-    }
-
-    // const _addClip = (e: React.MouseEvent<any, any>) => {
-    //     e.stopPropagation();
-    //     dispatch(addClip({ id, name, tags, description, url, volume: previewVolume, uploadedBy: username }));
-    // }
     const _addMyInstant = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
         onEdit({ id, name, tags, description, url, volume: previewVolume, uploadedBy: username, isSavingMyInstant: true });
-    }
-
-    const getClipActions = (): React.ReactNode[] => {
-        if (isMyInstant) {
-            return [
-                <ClipActionButton onClick={(e) => controlAudio(e, 'play')} title='play' Icon={PlayArrow} />,
-                <ClipActionButton onClick={(e) => controlAudio(e, 'stop')} title='stop' Icon={Stop} />,
-                <ClipActionButton onClick={_addMyInstant} title='save' Icon={Save} />
-            ];
-        } else if (!useMenuBasedButtons) {
-            return [
-                getActionButtonSection(ACTION_BUTTON_SECTIONS.TOP),
-                getActionButtonSection(ACTION_BUTTON_SECTIONS.BOTTOM)
-            ];
-        } else {
-            return [
-                getActionButtonSection(ACTION_BUTTON_SECTIONS.MIDDLE)
-            ]
-        }
     }
 
     const _onPlay = (e: React.MouseEvent<any, any>) => {
@@ -190,7 +128,10 @@ const SoundboardClip: React.FC<Clip & {
                                 label={tag}
                                 sx={{ margin: '2px' }}
                                 title={tag}
-                                onClick={() => filterByTag(tag)}
+                                onClick={(e: React.MouseEvent<any, any>) => {
+                                    e.stopPropagation();
+                                    filterByTag(tag);
+                                }}
                             />
                         ))}
                     </>}
