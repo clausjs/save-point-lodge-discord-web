@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: any) => ({
     }
 }));
 
-interface TabProps {
+export interface TabProps {
     key: number;
     name: string;
     label: React.ReactNode | string;

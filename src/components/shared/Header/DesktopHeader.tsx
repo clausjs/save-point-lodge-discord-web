@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, Link, useNavigate } from "react-router";
 
@@ -23,27 +23,20 @@ import {
 
 import '../../../sass/_globals.scss';
 import ThemeSwitch from './ThemeSwitch';
-import { HeaderProps } from './Header';
+import { HeaderProps, TabProps } from './Header';
+import { login } from '../../../state/reducers/user';
+import { useDispatch } from 'react-redux';
 
-interface TabProps {
-    key: number;
-    name: string;
-    label: React.ReactNode | string;
-    href: string;
-    disabled?: boolean;
-    icon?: JSX.Element;
-    external?: boolean;
-    requiresAuth?: boolean;
-    requiresSoundboarder?: boolean;
-    isLogo?: boolean;
-}
+const devMode = process.env.NODE_ENV === 'development';
 
 const DefaultHeader: React.FC<HeaderProps> = ({
     classes,
     pages,
     handleNavigation
 }) => {
-    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element)>(null);   
+    const dispatch = useDispatch<AppDispatch>();
+    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element)>(null);
+    const [ accountIconUrl, setAccountIconUrl ] = useState<string | null>(null);
     const authMenuOpen: boolean = Boolean(authAnchorEl);
 
     const user: User | undefined = useSelector((state: RootState) => state.user.user);
@@ -55,6 +48,17 @@ const DefaultHeader: React.FC<HeaderProps> = ({
     const handleAuthMenuClose = () => {
         setAuthAnchorEl(null)
     }
+
+    useEffect(() => {
+        if (user) {
+            if (user.avatarUrl) {
+                setAccountIconUrl(user.avatarUrl);
+            }
+            else if (user.avatar) {
+                setAccountIconUrl(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`);
+            }
+        }
+    }, [user]);
 
     return (
         <>
@@ -96,7 +100,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
                                         onClick={handleAuthMenu}
                                     >
                                         {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
-                                        {user && (user.avatar || user.avatarUrl) && <img style={user.avatarUrl ? { height: '32px', width: '32px' } : {}} className='acct-icon' src={user.avatarUrl ? user.avatarUrl : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
+                                        {user && (user.avatar || user.avatarUrl) && <img style={user.avatarUrl ? { height: '32px', width: '32px' } : {}} className='acct-icon' src={accountIconUrl} />}
                                         {user && user.avatar === null && <AccountCircle />}
                                     </IconButton>
                                     <Menu
@@ -126,7 +130,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
                                 <div className='acct'>
                                     <Button
                                         variant="contained"
-                                        href="/login"
+                                        onClick={() => dispatch(login())}
                                         startIcon={<AccountCircle />}
                                     >Login</Button>
                                 </div>

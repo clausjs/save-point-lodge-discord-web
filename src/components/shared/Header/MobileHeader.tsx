@@ -39,7 +39,7 @@ import '../../../sass/_globals.scss';
 import { AllPages as views } from './Views';
 import { AccountCircle, Cancel, Launch } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
-import { fetchUser } from '../../../state/reducers/user';
+import { fetchUser, login } from '../../../state/reducers/user';
 import { HeaderProps } from './Header';
 
 const MobileHeader: React.FC<HeaderProps> = ({
@@ -52,22 +52,10 @@ const MobileHeader: React.FC<HeaderProps> = ({
     // const [ links, setLinks ] = useState<React.ReactNode[]>([]);
     const [ navMenuOpen, setNavMenuOpen ] = useState<boolean>(false);
     const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element) | null>(null);
-    const user: User | null = useSelector((state: RootState) => state.user.user);
+    const [ authIconUrl, setAuthIconUrl ] = useState<string | null>(null);
     const authMenuOpen: boolean = Boolean(authAnchorEl);
-    // const currentLoc: string = useLocation().pathname;
-
-    // useEffect(() => {
-    //     dispatch(fetchUser());
-    // }, []);
-
-    // useEffect(() => {
-    //     const actualView = Object.values(views).findIndex(view => view.to === currentLoc);
-    //     if (actualView === -1) {
-    //         handleNavigation(null, false);
-    //     } else if (actualView !== view) {
-    //         handleNavigation(null, actualView);
-    //     }
-    // }, [view]);
+    
+    const user: User | null = useSelector((state: RootState) => state.user.user);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);
@@ -76,6 +64,18 @@ const MobileHeader: React.FC<HeaderProps> = ({
     const handleAuthMenuClose = () => {
         setAuthAnchorEl(null)
     }
+
+    useEffect(() => {
+        if (user) {
+            console.log("user: ", user);
+            if (user.avatarUrl) {
+                setAuthIconUrl(user.avatarUrl);
+            }
+            else if (user.avatar) {
+                setAuthIconUrl(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`);
+            }
+        }
+    }, [user]);
 
     return (
         <div className={classes.root}>
@@ -146,8 +146,8 @@ const MobileHeader: React.FC<HeaderProps> = ({
                                                 color="inherit"
                                                 onClick={handleAuthMenu}
                                             >
-                                                {user && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
-                                                {user && user.avatar === null && <AccountCircle />}
+                                                {user && authIconUrl && <img style={user.avatarUrl ? { height: '32px', width: '32px' } : {} } className='acct-icon' src={authIconUrl} />}
+                                                {user && !authIconUrl && <AccountCircle />}
                                             </IconButton>
                                         </div>
                                     )}
@@ -157,7 +157,7 @@ const MobileHeader: React.FC<HeaderProps> = ({
                                                 className='btn'
                                                 size='small'
                                                 variant="contained"
-                                                href="/login"
+                                                onClick={() => dispatch(login())}
                                             >Login</Button>
                                         </div>
                                     )}
