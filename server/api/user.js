@@ -1,14 +1,10 @@
+const { reduceUser } = require('../auth/utils');
+
 const router = require('express').Router();
 
 router.get('/', function(req, res) {
     if (req.isAuthenticated() && req.user) {
-        const simplifiedUser = {
-            id: req.user.id,
-            username: req.user.username,
-            avatar: req.user.avatar,
-            avatarUrl: req.user.avatarUrl,
-        }
-        return res.status(200).json(simplifiedUser);
+        return res.status(200).json(reduceUser(req.user));
     }
 
     res.status(200).json(null);

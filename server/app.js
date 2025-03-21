@@ -13,6 +13,7 @@ const cors = require('cors');
 const Strategy = require('./auth/Strategy');
 const LocalStrategy = require('passport-local').Strategy;
 const db = require('./data');
+const { reduceUser } = require('./auth/utils');
 
 const BUILD_DIR = path.join(__dirname, '../build');
 const ASSET_DIR = path.join(__dirname, '../assets');
@@ -124,17 +125,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-const authMiddleware =  devMode ? passport.authenticate('local', { failureRedirect: '/' }) : function(req, res) {
-    if (devMode) return res.status(401).send('Not found');
-    else return res.status(200).send({ redirect: '/login-discord' });
+if (devMode) {
+    app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), function(req, res) {
+        if (req.user) {
+            return res.status(200).json(reduceUser(req.user));
+        }
+    
+        res.status(401).send('Unauthorized');
+    });
 }
-
-app.post('/login', authMiddleware, function(req, res) {
-    if (res.status !== 200) res.status(200).send(req.user);
-});
-app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
+app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
 app.get('/login-redirect',
-    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/') } // auth success
+    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/'); } // auth success
 );
 
 app.get('/logout', function(req, res) {

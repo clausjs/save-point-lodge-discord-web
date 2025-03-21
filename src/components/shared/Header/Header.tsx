@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { IconButton, ListItem, ListItemIcon, ListItemText, useMediaQuery } from '@mui/material';
 
@@ -47,15 +47,15 @@ const Header: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const history = useNavigate();
     const isMobile: boolean = useMediaQuery('(max-width: 1100px)', { noSsr: true });
-    const [ pages, setPages ] = React.useState<TabProps[]>([]);
+    const [ pages, setPages ] = useState<TabProps[]>([]);
 
     const user: User | undefined = useSelector((state: RootState) => state.user.user);
 
     useEffect(() => {
         if (!user) {
             dispatch(fetchUser());
-            dispatch(fetchPlanetExpressStatus());
             dispatch(fetchSoundboarderStatus());
+            dispatch(fetchPlanetExpressStatus());
         }
     }, []);
 

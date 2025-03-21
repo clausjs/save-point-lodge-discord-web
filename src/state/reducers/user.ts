@@ -28,7 +28,7 @@ export const login = createAsyncThunk(
             user.isSoundboardUser = await isSoundboardUserResponse.json();
             return { user };
         } else {
-            window.location.href = "/login-discord";
+            window.location.replace("/login-discord");
         }
     }
 )
@@ -115,10 +115,7 @@ const userSlice = createSlice({
     extraReducers(builder) {
         builder
             .addCase(login.fulfilled, (state, action: PayloadAction<{ user?: User, redirect?: string }>) => {
-                if (action.payload.redirect) window.location.href = action.payload.redirect;
-                if (action.payload.user) {
-                    state.user = action.payload.user;
-                }
+                if (action.payload.user) state.user = action.payload.user;
                 
                 // window.location.href = "/";
             })
