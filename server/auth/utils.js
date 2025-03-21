@@ -1,4 +1,4 @@
-export const reduceUser = (user, getElevatedStatuses = false) => {
+const reduceUser = (user, getElevatedStatuses = false) => {
     const simplifiedUser = {
         id: user.id,
         username: user.username,
@@ -12,4 +12,8 @@ export const reduceUser = (user, getElevatedStatuses = false) => {
     }
 
     return simplifiedUser;
+}
+
+module.exports = {
+    reduceUser
 }
