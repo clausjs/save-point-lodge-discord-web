@@ -33,22 +33,24 @@ class SoundboardOpts extends DataSource {
             if (optsRes.exists) {
                 opts = optsRes.data();
             }
-            
-            Object.keys(this.OPTS).forEach(optKey => {
-                if (!opts.hasOwnProperty(optKey)) {
-                    opts[optKey] = {
-                        description: this.OPTS[optKey].description,
-                        enabled: this.OPTS[optKey].default
-                    };
-                } else {
-                    opts[optKey].description = this.OPTS[optKey].description;
-                    opts[optKey].enabled = opts[optKey].enabled !== undefined ? opts[optKey].enabled : this.OPTS[optKey].default;
-                }
 
-                if (this.OPTS[optKey].admin && opts.hasOwnProperty(optKey)) {
-                    delete opts[optKey];
-                }
-            });
+            if (Object.keys(opts).length) {
+                Object.keys(this.OPTS).forEach(optKey => {
+                    if (!opts.hasOwnProperty(optKey)) {
+                        opts[optKey] = {
+                            description: this.OPTS[optKey].description,
+                            enabled: this.OPTS[optKey].default
+                        };
+                    } else {
+                        opts[optKey].description = this.OPTS[optKey].description;
+                        opts[optKey].enabled = opts[optKey].enabled !== undefined ? opts[optKey].enabled : this.OPTS[optKey].default;
+                    }
+    
+                    if (this.OPTS[optKey].admin && opts.hasOwnProperty(optKey)) {
+                        delete opts[optKey];
+                    }
+                });
+            }
 
             return opts;
         } catch (err) {
