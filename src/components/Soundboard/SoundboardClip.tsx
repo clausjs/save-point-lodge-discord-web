@@ -83,6 +83,10 @@ const SoundboardClip: React.FC<Clip & {
         }
     }, [previewVolume])
 
+    useEffect(() => {
+        
+    }, [audioFile.current]);
+
     const _addMyInstant = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
         onEdit({ id, name, tags, description, url, volume: previewVolume, uploadedBy: username, isSavingMyInstant: true });
@@ -168,7 +172,11 @@ const SoundboardClip: React.FC<Clip & {
                     <VolumeUp />
                 </Stack>    
             </div>}
-            <audio className='clip-audio' ref={audioFile} src={url} />
+            <audio className='clip-audio' ref={audioFile} src={url} onEnded={(e) => {
+                console.log("audio ended");
+                audioFile.current.pause();
+                setIsPlaying(false);
+            }} />
         </Paper>
     );
 }
