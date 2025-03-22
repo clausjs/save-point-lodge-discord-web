@@ -52,7 +52,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
     }
 
     useEffect(() => {
-        if (userFetchState === 'fulfilled') {
+        if (userFetchState === 'fulfilled' && user) {
             if (user.avatarUrl) {
                 setAccountIconUrl(user.avatarUrl);
             }
@@ -60,7 +60,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
                 setAccountIconUrl(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`);
             }
         }
-    }, [userFetchState]);
+    }, [user, userFetchState]);
 
     return (
         <>

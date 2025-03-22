@@ -17,7 +17,7 @@ const LOGIN_WINDOW_CLOSED = 'LOGIN_WINDOW_CLOSED';
 export const login = createAsyncThunk(
     'user/login',
     async () => {
-        if (false /*process.env.NODE_ENV === 'development'*/) {
+        if (process.env.NODE_ENV === 'development') {
             try {
                 const response = await fetch('/login', {
                     method: 'POST',
@@ -186,6 +186,7 @@ const userSlice = createSlice({
             .addCase(fetchUser.fulfilled, (state, action: PayloadAction<User>) => {
                 if (state.user === null) state.user = action.payload;
                 else state.user = { ...state.user, ...action.payload };
+                state.userFetchState = 'fulfilled';
             })
             .addCase(fetchUserOpts.fulfilled, (state, action: PayloadAction<UserOptions>) => {
                 state.opts = action.payload;
