@@ -12,27 +12,21 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import SoundboardClip from './SoundboardClip';
 import toastr from '../../utils/toastr';
 
-import { Close, ExpandMore, Filter, FilterAlt, FilterAltOff, Search } from '@mui/icons-material';
+import { ArrowDownward, ArrowUpward, Close, ExpandMore, Filter, FilterAlt, FilterAltOff, Search } from '@mui/icons-material';
 import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants, favoriteClip, resetClips } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
-import { experimentalStyled as styled } from '@mui/material/styles';
 
 enum SortType {
-    TITLE_ASC = "Title ▼",
-    TITLE_DEC = "Title ▲",
-    CREATED_ASC = "Created ▼",
-    CREATED_DEC = "Created ▲",
-    UPLOADER_ASC = "Uploader ▼",
-    UPLOADER_DEC = "Uploader ▲",
+    TITLE = "Title",
+    CREATED = "Created",
+    UPLOADER = "Uploader",
 }
 
-const MYINSTANTS_UNSORTABLE = [
-    SortType.CREATED_ASC,
-    SortType.CREATED_DEC,
-    SortType.UPLOADER_ASC,
-    SortType.UPLOADER_DEC
-]
+enum SortDir {
+    ASC = "asc",
+    DEC = "dec"
+}
 
 enum MyInstantsCategory {
     ANIME = "Anime & Menga",
@@ -72,7 +66,8 @@ const Soundboard: React.FC = () => {
     const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
     const [ clipType, setClipType ] = useState<ClipType>('saved');
     const [ isSearching, setIsSearching ] = useState<boolean>(false);
-    const [ sortType, setSortType ] = useState<SortType>(SortType.TITLE_ASC);
+    const [ sortType, setSortType ] = useState<SortType>(SortType.TITLE);
+    const [ sortDir, setSortDir ] = useState<SortDir>(SortDir.ASC);
     const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
     const [ myInstantsPage, setMyInstantsPage ] = useState<number>(1);
     const [ exclusionRules, setExclusionRules ] = useState<('all' | 'favorites' | 'created')[]>(['all']);
@@ -183,7 +178,8 @@ const Soundboard: React.FC = () => {
     }, [lastMessage]);
 
     useEffect(() => {
-        setSortType(SortType.TITLE_ASC);
+        setSortType(SortType.TITLE);
+        setSortDir(SortDir.ASC);
     }, [isMyInstants])
 
     const playClip = (clipId: string, volumeOverride?: number) => {
@@ -238,20 +234,29 @@ const Soundboard: React.FC = () => {
         if (exclusionRules.includes('created') && clip.uploadedBy.trim() !== user.username.trim()) included = false;
         
         return included;
-    }).sort((a: Clip, b: Clip) => {
+    }).sort((a: Clip, b: Clip) => {        
         switch (sortType) {
-            case SortType.TITLE_ASC:
-                return a.name.localeCompare(b.name);
-            case SortType.TITLE_DEC:
-                return b.name.localeCompare(a.name);
-            case SortType.CREATED_DEC:
-                return new Date(a.createdAt)?.getTime() - new Date(b.createdAt)?.getTime();
-            case SortType.CREATED_ASC:
-                return new Date(b.createdAt)?.getTime() - new Date(a.createdAt)?.getTime();
-            case SortType.UPLOADER_ASC:
-                return a.uploadedBy.localeCompare(b.uploadedBy);
-            case SortType.UPLOADER_DEC:
-                return b.uploadedBy.localeCompare(a.uploadedBy);
+            case SortType.TITLE:
+                if (sortDir === SortDir.ASC) {
+                    return a.name.localeCompare(b.name);
+                } else if (sortDir === SortDir.DEC) {
+                    return b.name.localeCompare(a.name);
+                }
+                break;
+            case SortType.CREATED:
+                if (sortDir === SortDir.ASC) {
+                    return new Date(a.createdAt)?.getTime() - new Date(b.createdAt)?.getTime();
+                } else if (sortDir === SortDir.DEC) {
+                    return new Date(b.createdAt)?.getTime() - new Date(a.createdAt)?.getTime();
+                }
+                break;
+            case SortType.UPLOADER:
+                if (sortDir === SortDir.ASC) {
+                    return a.uploadedBy.localeCompare(b.uploadedBy);
+                } else if (sortDir === SortDir.DEC) {
+                    return b.uploadedBy.localeCompare(a.uploadedBy);
+                }
+                break;
         }
     }).filter(clip => {
         if (!searchTerm || isMyInstants) return true;
@@ -322,6 +327,19 @@ const Soundboard: React.FC = () => {
             } else {
                 setExclusionRules([...exclusionRules, rule]);
             }
+        }
+    }
+
+    const onSortingChange = (type: SortType) => {
+        if (sortType === type) {
+            if (sortDir === SortDir.ASC) {
+                setSortDir(SortDir.DEC);
+            } else {
+                setSortDir(SortDir.ASC);
+            }
+        } else {
+            setSortType(type);
+            setSortDir(SortDir.ASC);
         }
     }
 
@@ -437,7 +455,7 @@ const Soundboard: React.FC = () => {
                         <div className='circle small-button-background'></div>
                         <button disabled={disableControls} id='my-instants-button' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => setMenuAnchorEl(e.currentTarget)} />
                     </div>
-                    <div className='sort-control'>    
+                    {/* <div className='sort-control'>    
                         <FormControl disabled={disableControls} variant="standard" fullWidth>
                             <InputLabel id='sort-label' sx={{ color: 'inherit' }}>Sort by:</InputLabel>
                             <Select
@@ -471,7 +489,7 @@ const Soundboard: React.FC = () => {
                                 })}
                             </Select>
                         </FormControl>
-                    </div>
+                    </div> */}
                     <div className='button-grp'>
                         <Button disabled={!user.isSoundboardUser} className='grid-action' variant="contained" onClick={openDialog}>Add Clip</Button>
                         <Button disabled={disableControls} className='grid-action' variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
@@ -523,6 +541,13 @@ const Soundboard: React.FC = () => {
                     <IconButton disabled={disableControls || isMyInstants} sx={{ color: 'inherit' }} onClick={(e) => setFilterMenuAnchorEl(e.currentTarget)}>
                         {exclusionRules.length === 1 && exclusionRules[0] === 'all' ? <FilterAltOff /> : <FilterAlt />}
                     </IconButton>
+                </Container>
+                <Container className='sort-section'>
+                    {Object.values(SortType).map((type, i) => {
+                        return (
+                            <Chip icon={type !== sortType ? undefined : sortDir === SortDir.ASC ? <ArrowUpward /> : <ArrowDownward />} key={i} label={type} variant={sortType === type ? 'filled' : 'outlined'} onClick={() => onSortingChange(type)} />
+                        );
+                    })}
                 </Container>
             </div>}
             <Box sx={{ flexGrow: 1, textAlign: 'center' }}>

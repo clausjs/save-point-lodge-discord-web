@@ -119,7 +119,10 @@ const SoundboardClip: React.FC<Clip & {
 
     return (
         <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`.trim()} style={{ padding: 10 }} onClick={_onPlay} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
-            <Typography className='clip-name' variant="body1" title={name}>{name}</Typography>
+            <Box className='clip-title-section'>
+                <Typography className='clip-name' variant="body1" title={name}>{name}</Typography>
+                <Typography className={`clip-duration ${expanded ? 'show' : ''}`.trim()} variant="caption">{Math.floor(audioFile.current?.duration).toFixed(2) || "0.00"}s</Typography>
+            </Box>
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
             <Typography className={`clip-description ${expanded ? 'show' : ''}`.trim()} variant="body2">{description}</Typography>
             <Box className='clip-footer' sx={{ width: '100%' }}>

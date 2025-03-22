@@ -77,6 +77,32 @@ body.light {
         }
     }
 
+    .sort-section {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        margin: 10px auto;
+
+        .MuiChip-root {
+            margin: 0 5px;
+            color: inherit;
+            border: 1px solid $color-pallette-light-blue;
+            
+            &.MuiChip-outlined {
+                border: 1px solid $color-pallette-dark-blue;
+            }
+            
+            &.MuiChip-filled {
+                background-color: $color-pallette-dark-2;
+            }
+            
+            svg {
+                color: inherit;
+            }
+        }
+    }
+
 
     .grid-actions {
         display: flex;
@@ -172,156 +198,6 @@ body.light {
             background-color: $color-pallette-light-blue;
         }
     }
-
-    // .soundboard-items {
-    //     justify-content: center;
-
-    //     .MuiGrid-item {
-    //         margin: 0 10px;
-
-            
-    //         .clip-card {
-    //             border: 2px solid transparent;
-    //             cursor: pointer;
-    //             @include background-opacity($color-pallette-dark-background-2, 0.5);
-    //             margin: 0 auto;
-    //             color: inherit;
-    //             position: relative;
-
-    //             .MuiIconButton-root {
-    //                 padding: unset;
-    //             }
-                
-    //             &:hover {
-    //                 border: 2px solid addOpacity($color-pallette-light-blue, 0.5);
-    //             }
-
-    //             .clip-action-button {
-    //                 color: inherit;
-    //             }
-
-    //             .clip-name {
-    //                 overflow: hidden;
-    //                 text-overflow: ellipsis;
-    //                 text-decoration: solid;
-    //             }
-
-    //             .clip-uploader {
-    //                 color: $color-pallette-light-gray;
-    //             }
-
-    //             .clip-description {
-    //                 height: auto;
-    //                 padding: 5px;
-    //                 visibility: hidden;
-
-    //                 &.show {
-    //                     visibility: visible;
-    //                 }
-    //             }
-
-    //             .clip-footer {
-    //                 display: flex;
-    //                 flex-direction: row;
-    //                 height: auto;
-
-    //                 .MuiChip-root {
-    //                     max-height: 15px;
-    //                     background-color: $color-pallette-light-blue;
-    //                 }
-
-    //                 svg {
-    //                     &.favorited {
-    //                         color: addOpacity(#FF0000, 0.5);
-    //                     }
-    //                 }
-
-    //                 .volume-controls {
-    //                     background-color: $color-pallette-dark-background-2;
-    //                     position: absolute;
-    //                     z-index: 999;
-    //                     height: auto;
-    //                     width: 100%;
-    //                     bottom: 0;
-    //                     left: 0;
-    //                     margin-bottom: 5px;
-    //                     border-radius: 25px;
-    //                     display: block;
-
-    //                     &.hide {
-    //                         display: none;
-    //                     }
-    //                 }
-
-    //                 .mobile-actions {
-    //                     @include background-opacity($color-pallette-dark-background-2, 0.95);
-    //                     position: absolute;
-    //                     z-index: 999;
-    //                     height: 100%;
-    //                     width: 100%;
-    //                     top: 0;
-    //                     bottom: 0;
-    //                     left: 0;
-    //                     display: block;
-    //                     animation: actions-smooth-appear 0.1s forwards;
-
-    //                     &.hide {
-    //                         display: none;
-    //                         animation: actions-smooth-appear 0.1s forwards reverse;
-    //                     }
-
-    //                     .buttons {
-    //                         display: flex;
-    //                         flex-direction: column;
-    //                         justify-content: space-evenly;
-    //                         height: 100%;
-    //                         width: 100%;
-
-    //                         div {
-    //                             display: flex;
-    //                             justify-content: space-evenly;
-
-    //                             &.close {
-    //                                 svg {
-    //                                     max-height: 30px;
-    //                                     color: addOpacity($color-pallette-white, 0.5);
-    //                                     border: 1px solid addOpacity($color-pallette-white, 0.5);
-    //                                     border-radius: 50%;
-    //                                 }
-    //                             }
-    //                         }
-
-    //                         svg {
-    //                             max-height: 20px;
-    //                         }
-    //                     }
-
-    //                     // svg {
-    //                     //     max-height: 15px;
-    //                     //     margin: 0 2px;
-    //                     // }
-    //                 }
-
-    //                 .actions {
-    //                     display: flex;
-    //                     flex-direction: row;
-    //                     justify-content: flex-end;
-    //                     width: 100%;
-    //                     align-self: center;
-
-    //                     svg {
-    //                         max-height: 15px;
-    //                         margin: 0 2px;
-    //                     }
-    //                 }
-
-    //                 .tags {
-    //                     max-width: 50%;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 .soundboard-items {
@@ -344,15 +220,35 @@ body.light {
             border: 2px solid addOpacity($color-pallette-light-blue, 0.5);
         }
 
-        .clip-name {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-decoration: solid;
-            white-space: nowrap;
-            width: 100%;
-            align-self: flex-start;
+        .clip-title-section {
             display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+
+            .clip-name {
+                max-width: 80%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-decoration: solid;
+                white-space: nowrap;
+                align-self: flex-start;
+                display: flex;
+            }
+
+            .clip-duration {
+                display: flex;
+                justify-content: flex-end;
+                font-size: 0.8em;
+                color: $color-pallette-light-gray;
+                visibility: hidden;
+
+                &.show {
+                    visibility: visible;
+                }
+            }
         }
+
 
         .clip-uploader {
             color: $color-pallette-light-gray;
