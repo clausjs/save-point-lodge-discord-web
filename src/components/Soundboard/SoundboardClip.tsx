@@ -172,8 +172,7 @@ const SoundboardClip: React.FC<Clip & {
                     <VolumeUp />
                 </Stack>    
             </div>}
-            <audio className='clip-audio' ref={audioFile} src={url} onEnded={(e) => {
-                console.log("audio ended");
+            <audio className='clip-audio' ref={audioFile} src={url} onEnded={() => {
                 audioFile.current.pause();
                 setIsPlaying(false);
             }} />
