@@ -46,6 +46,10 @@ body {
     &.light {
         background-color: $color-pallette-white;
         color: black;
+
+        .spl-header .MuiCircularProgress-root {
+            color: $color-pallette-dark-blue;
+        }
     }
 
     font-family: 'Roboto', sans-serif;
@@ -55,6 +59,10 @@ body {
     background-color: $color-pallette-dark-blue !important;
     color: $color-pallette-white !important;
     min-height: $header-height * 1px;
+
+    .MuiCircularProgress-root {
+        color: $color-pallette-light-blue;
+    }
 
     .spl-toolbar {
         height: 100%;
@@ -96,6 +104,7 @@ body {
         .personalization {
             display: flex;
             flex-direction: row;
+            align-items: center;
         }
     }
 

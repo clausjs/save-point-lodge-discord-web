@@ -22,6 +22,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ThemeSwitch from './ThemeSwitch';
 
 import { 
+    apiState,
     PageLink,
     User,
     UserState 
@@ -56,6 +57,7 @@ const MobileHeader: React.FC<HeaderProps> = ({
     const authMenuOpen: boolean = Boolean(authAnchorEl);
     
     const user: User | null = useSelector((state: RootState) => state.user.user);
+    const userFetchState: apiState = useSelector((state: RootState) => state.user.userFetchState);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);
@@ -66,8 +68,7 @@ const MobileHeader: React.FC<HeaderProps> = ({
     }
 
     useEffect(() => {
-        if (user) {
-            console.log("user: ", user);
+        if (userFetchState === 'fulfilled') {
             if (user.avatarUrl) {
                 setAuthIconUrl(user.avatarUrl);
             }
@@ -75,7 +76,7 @@ const MobileHeader: React.FC<HeaderProps> = ({
                 setAuthIconUrl(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`);
             }
         }
-    }, [user]);
+    }, [userFetchState]);
 
     return (
         <div className={classes.root}>
@@ -158,6 +159,7 @@ const MobileHeader: React.FC<HeaderProps> = ({
                                                 size='small'
                                                 variant="contained"
                                                 onClick={() => dispatch(login())}
+                                                loading={userFetchState === 'pending'}
                                             >Login</Button>
                                         </div>
                                     )}

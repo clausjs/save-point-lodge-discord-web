@@ -17,6 +17,7 @@ import { AccountCircle, Launch } from '@mui/icons-material';
 import { AppDispatch, RootState } from '../../../state/store';
 
 import {
+    apiState,
     PageLink,
     User
 } from '../../../types';
@@ -40,6 +41,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
     const authMenuOpen: boolean = Boolean(authAnchorEl);
 
     const user: User | undefined = useSelector((state: RootState) => state.user.user);
+    const userFetchState: apiState = useSelector((state: RootState) => state.user.userFetchState);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);
@@ -50,7 +52,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
     }
 
     useEffect(() => {
-        if (user) {
+        if (userFetchState === 'fulfilled') {
             if (user.avatarUrl) {
                 setAccountIconUrl(user.avatarUrl);
             }
@@ -58,7 +60,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
                 setAccountIconUrl(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`);
             }
         }
-    }, [user]);
+    }, [userFetchState]);
 
     return (
         <>
@@ -132,6 +134,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
                                         variant="contained"
                                         onClick={() => dispatch(login())}
                                         startIcon={<AccountCircle />}
+                                        loading={userFetchState === 'pending'}
                                     >Login</Button>
                                 </div>
                             )}

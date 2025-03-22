@@ -9,26 +9,77 @@ const initialState: UserState = {
     soundboardOpts: {}
 }
 
+const ORIGIN_PROTOCOL = window.location.protocol;
+const ORIGIN_HOST = window.location.host;
+const ORIGIN = `${ORIGIN_PROTOCOL}//${process.env.NODE_ENV === 'development' ? 'localhost:3000' : ORIGIN_HOST}`;
+const LOGIN_WINDOW_CLOSED = 'LOGIN_WINDOW_CLOSED';
 
 export const login = createAsyncThunk(
     'user/login',
     async () => {
-        if (process.env.NODE_ENV === 'development') {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'sadsad', password: 'adasdas' })
-            });
-            const responseJSON = await response.json();
-            const loginRes = JSON.parse(JSON.stringify(responseJSON));
-            let user = loginRes;
-            const isSPLMemberResponse = await fetch('/api/user/lodgeguest');
-            const isSoundboardUserResponse = await fetch('/api/user/soundboarder');
-            user.isPlanetExpressMember = await isSPLMemberResponse.json();
-            user.isSoundboardUser = await isSoundboardUserResponse.json();
-            return { user };
+        if (false /*process.env.NODE_ENV === 'development'*/) {
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'sadsad', password: 'adasdas' })
+                });
+                const responseJSON = await response.json();
+                const loginRes = JSON.parse(JSON.stringify(responseJSON));
+                let user = loginRes;
+                const isSPLMemberResponse = await fetch('/api/user/lodgeguest');
+                const isSoundboardUserResponse = await fetch('/api/user/soundboarder');
+                user.isPlanetExpressMember = await isSPLMemberResponse.json();
+                user.isSoundboardUser = await isSoundboardUserResponse.json();
+                return { user };
+            } catch (err) {
+                console.error(err);
+                throw new Error("Login failed");
+            }
         } else {
-            window.location.replace("/login-discord");
+            return new Promise(async (resolve, reject) => {
+                //@ts-ignore
+                window.windowClosed = () => console.log("Login window closed");
+                const popupParams = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no\n" +
+                                    "width=600,height=800,left=50%,top=50%";
+
+                const signInPopup = window.open("/login-discord", "Discord Auth", popupParams);
+                signInPopup?.focus();
+
+                const interval: NodeJS.Timer = setInterval(() => {
+                    if (signInPopup?.closed) {
+                        clearInterval(interval);
+                        reject(new Error(LOGIN_WINDOW_CLOSED));
+                    }
+                    const message = JSON.stringify({ type: 'discord-auth-heartbeat' });
+                    signInPopup?.postMessage(message, ORIGIN);
+                }, 500);
+
+                window.addEventListener("message", async (event) => {
+                    if (event.origin !== ORIGIN) reject(new Error('Something went wrong communicating with the login window'));
+    
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'loginResponse') {
+                            clearInterval(interval);
+                            signInPopup?.close();
+                            const response = await fetch('/api/user');
+                            const responseJSON = await response.json();
+                            const loginRes = JSON.parse(JSON.stringify(responseJSON));
+                            let user = loginRes;
+                            const isSPLMemberResponse = await fetch('/api/user/lodgeguest');
+                            const isSoundboardUserResponse = await fetch('/api/user/soundboarder');
+                            user.isPlanetExpressMember = await isSPLMemberResponse.json();
+                            user.isSoundboardUser = await isSoundboardUserResponse.json();
+                            //@ts-ignore
+                            resolve({ user });
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        reject(new Error("Login failed"));
+                    }
+                });
+            });
         }
     }
 )
@@ -114,10 +165,17 @@ const userSlice = createSlice({
     },
     extraReducers(builder) {
         builder
+            .addCase(login.pending, (state) => {
+                state.userFetchState = 'pending';
+            })
             .addCase(login.fulfilled, (state, action: PayloadAction<{ user?: User, redirect?: string }>) => {
                 if (action.payload.user) state.user = action.payload.user;
-                
-                // window.location.href = "/";
+                state.userFetchState = 'fulfilled';
+            })
+            .addCase(login.rejected, (state, action: any) => {
+                state.user = null;
+                state.userFetchState = 'rejected';
+                if (action.error.message && action.error.message === LOGIN_WINDOW_CLOSED) return;
             })
             .addCase(fetchSoundboarderStatus.fulfilled, (state, action: PayloadAction<boolean>) => {
                 if (state.user) state.user.isSoundboardUser = action.payload;

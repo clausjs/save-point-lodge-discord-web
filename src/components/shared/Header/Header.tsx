@@ -13,6 +13,7 @@ import { fetchPlanetExpressStatus, fetchSoundboarderStatus, fetchUser } from '..
 import { AccountCircle, Launch } from '@mui/icons-material';
 import { AllPages as views } from './Views';
 import { useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 
 export interface HeaderProps {
     classes?: ClassNameMap;
@@ -45,6 +46,7 @@ const devMode = process.env.NODE_ENV === 'development';
 const Header: React.FC = () => {
     const classes = useStyles();
     const dispatch = useDispatch<AppDispatch>();
+    const currentLocation = useLocation();
     const history = useNavigate();
     const isMobile: boolean = useMediaQuery('(max-width: 1100px)', { noSsr: true });
     const [ pages, setPages ] = useState<TabProps[]>([]);
@@ -103,6 +105,8 @@ const Header: React.FC = () => {
             }
         }
     }
+
+    if (currentLocation.pathname === '/postAuth') return null;
 
     return (
          <div className={classes.root}>

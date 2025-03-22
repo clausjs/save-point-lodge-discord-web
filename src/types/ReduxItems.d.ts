@@ -57,6 +57,7 @@ export interface UserState {
     user: User | null;
     opts: UserOptions | {};
     soundboardOpts: SoundboardOptions | {};
+    userFetchState?: apiState;
 }
 
 export interface VotableMovie {

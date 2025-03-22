@@ -136,7 +136,7 @@ if (devMode) {
 }
 app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
 app.get('/login-redirect',
-    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/'); } // auth success
+    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/postAuth'); } // auth success
 );
 
 app.get('/logout', function(req, res) {
