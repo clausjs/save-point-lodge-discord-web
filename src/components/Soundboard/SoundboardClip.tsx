@@ -33,6 +33,8 @@ const SoundboardClip: React.FC<Clip & {
     url,
     volume = 50,
     favoritedBy,
+    createdAt,
+    updatedAt,
     filterByTag,
     onClick,
     onFavorite,
@@ -108,7 +110,7 @@ const SoundboardClip: React.FC<Clip & {
     const _onEdit = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
         setShowMenu(false);
-        onEdit({ id, name, tags, description, url, volume, uploadedBy, favoritedBy });
+        onEdit({ id, name, tags, description, url, volume, uploadedBy, favoritedBy, createdAt, updatedAt });
     }
 
     const _onDelete = (e: React.MouseEvent<any, any>) => {
@@ -121,7 +123,7 @@ const SoundboardClip: React.FC<Clip & {
         <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`.trim()} style={{ padding: 10 }} onClick={_onPlay} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
             <Box className='clip-title-section'>
                 <Typography className='clip-name' variant="body1" title={name}>{name}</Typography>
-                <Typography className={`clip-duration ${expanded ? 'show' : ''}`.trim()} variant="caption">{Math.floor(audioFile.current?.duration).toFixed(2) || "0.00"}s</Typography>
+                <Typography className={`clip-duration ${expanded ? 'show' : ''}`.trim()} variant="caption">{audioFile.current?.duration ? `${audioFile.current?.duration.toFixed(2)}s` : ""}</Typography>
             </Box>
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
             <Typography className={`clip-description ${expanded ? 'show' : ''}`.trim()} variant="body2">{description}</Typography>

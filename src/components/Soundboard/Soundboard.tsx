@@ -16,6 +16,7 @@ import { ArrowDownward, ArrowUpward, Close, ExpandMore, Filter, FilterAlt, Filte
 import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants, favoriteClip, resetClips } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
+import SoundTypeToggle from './SoundTypeToggle';
 
 enum SortType {
     TITLE = "Title",
@@ -44,11 +45,13 @@ enum MyInstantsCategory {
     VIRAL = "Viral"
 }
 
+type MyInstantType<T extends MyInstantsCategory | undefined> = 'trending' | 'recent' | T;
+const MY_INSTANTS_CATEGORIES: MyInstantType<MyInstantsCategory | undefined>[] = ['trending', 'recent', ...Object.values(MyInstantsCategory)];
+type ClipType = 'saved' | 'myinstants';
+
 export interface DialogClip extends Clip {
     isSavingMyInstant?: boolean;
 }
-
-type ClipType = 'saved' | 'trending' | 'recent' | MyInstantsCategory;
 
 const devMode = process.env.NODE_ENV === 'development' ? true : false;
 const DEFAULT_SOCKET_URL = devMode ? 'ws://localhost:8080/soundboard' : 'wss://joebotdiscord.com/soundboard';
@@ -65,6 +68,7 @@ const Soundboard: React.FC = () => {
     const [ editingClip, setEditingClip ] = useState<DialogClip | null>(null);
     const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
     const [ clipType, setClipType ] = useState<ClipType>('saved');
+    const [ category, setCategory ] = useState<MyInstantType<MyInstantsCategory | undefined>>('trending');
     const [ isSearching, setIsSearching ] = useState<boolean>(false);
     const [ sortType, setSortType ] = useState<SortType>(SortType.TITLE);
     const [ sortDir, setSortDir ] = useState<SortDir>(SortDir.ASC);
@@ -143,6 +147,20 @@ const Soundboard: React.FC = () => {
             dispatch(fetchSoundboardClips());
         }
     }, []);
+
+    useEffect(() => {
+        if (clipType === 'saved') getClips('saved');
+        else {
+            setMyInstantsPage(1);
+            setCategory('trending');
+            getClips('myinstants');
+        }
+    }, [clipType]);
+
+    useEffect(() => {
+        dispatch(resetClips());
+        getClips(clipType);
+    }, [category]);
 
     useEffect(() => {
         if (user && user.isSoundboardUser) {
@@ -271,8 +289,9 @@ const Soundboard: React.FC = () => {
         setFilterMenuAnchorEl(null);
     }
 
-    const getClips = (type: ClipType, page?: number) => {
+    const getClips = (type: ClipType, page: number = myInstantsPage) => {
         closeAllMenus();
+        
         if (clipType !== type) {
             setClipType(type);
             dispatch(resetClips());
@@ -282,14 +301,18 @@ const Soundboard: React.FC = () => {
             case 'saved':
                 dispatch(fetchSoundboardClips());
                 break;
-            case 'trending':
-                dispatch(fetchMyInstantsTrending(page));
-                break;
-            case 'recent':
-                dispatch(fetchMyInstantsRecent(page));
-                break;
-            default:
-                dispatch(fetchMyInstantsByCategory({ category: type, page }));
+            case 'myinstants':
+                switch (category) {
+                    case 'trending':
+                        dispatch(fetchMyInstantsTrending(page));
+                        break;
+                    case 'recent':
+                        dispatch(fetchMyInstantsRecent(page));
+                        break;
+                    default:
+                        dispatch(fetchMyInstantsByCategory({ category: category, page }));
+                        break;
+                }
                 break;
         }
     }
@@ -343,6 +366,15 @@ const Soundboard: React.FC = () => {
         }
     }
 
+    const _setCategory = (newCategory: MyInstantType<MyInstantsCategory | undefined>) => {
+        if (isMyInstants) {
+            if (category !== newCategory) {
+                setMyInstantsPage(1);
+                setCategory(newCategory);
+            }
+        }
+    }
+
     const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
     const disableControls: boolean = !clips.length;
 
@@ -350,56 +382,6 @@ const Soundboard: React.FC = () => {
         <>
             <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
             <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
-            <Menu
-                aria-labelledby="my-instants-button"
-                anchorEl={menuAnchorEl}
-                open={menuOpen}
-                onClose={closeAllMenus}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-            >
-                <MenuItem disabled={!isMyInstants} onClick={() => {
-                    setMyInstantsPage(1);
-                    getClips('saved');
-                }}>Saved Clips</MenuItem>
-                <MenuItem onClick={() => {
-                    setMyInstantsPage(1);
-                    getClips('trending', 1);
-                }}>Get Trending</MenuItem>
-                <MenuItem onClick={() => {
-                    setMyInstantsPage(1);
-                    getClips('recent', 1);
-                }}>Get Newest</MenuItem>
-                <MenuItem id='my-instants-get-by-category' onMouseEnter={(e: React.MouseEvent<HTMLLIElement, MouseEvent>) => { if (menuOpen) setSubMenuAnchorEl(e.currentTarget)}}>Get by category <ExpandMore /></MenuItem>
-            </Menu>
-            <Menu
-                aria-labelledby='my-instants-get-by-category'
-                anchorEl={subMenuAnchorEl}
-                open={subMenuOpen}
-                onClose={closeAllMenus}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-                onMouseLeave={() => setSubMenuAnchorEl(null)}
-            >
-                {Object.values(MyInstantsCategory).map((category, i) => {
-                    return <MenuItem key={i} onClick={() => {
-                        setMyInstantsPage(1);
-                        getClips(category, 1);
-                    }}>{category}</MenuItem>
-                })}
-            </Menu>
             <Menu
                 anchorEl={filterMenuAnchorEl}
                 open={filterMenuOpen}
@@ -452,44 +434,36 @@ const Soundboard: React.FC = () => {
                         </div>}
                     </div>
                     <div className='my-instants-button'>
-                        <div className='circle small-button-background'></div>
-                        <button disabled={disableControls} id='my-instants-button' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => setMenuAnchorEl(e.currentTarget)} />
+                        <SoundTypeToggle 
+                            isMyInstants={isMyInstants}
+                            onToggle={(e) => {
+                                setMyInstantsPage(1);
+                                if (!isMyInstants) {
+                                    setClipType('myinstants');
+                                } else {
+                                    setClipType('saved');
+                                }
+                            }}
+                        />
                     </div>
-                    {/* <div className='sort-control'>    
-                        <FormControl disabled={disableControls} variant="standard" fullWidth>
-                            <InputLabel id='sort-label' sx={{ color: 'inherit' }}>Sort by:</InputLabel>
+                    <div className='category-select'>    
+                        <FormControl disabled={!isMyInstants} variant="standard" fullWidth>
                             <Select
-                                labelId="sort-label"
-                                value={sortType}
-                                onChange={(e) => setSortType(e.target.value as SortType)}
-                                label="Sort by:"
+                                labelId=""
+                                value={category}
+                                onChange={(e) => _setCategory(e.target.value as MyInstantType<MyInstantsCategory | undefined>)}
+                                label=""
                                 sx={{ color: 'inherit' }}
                             >
-                                {Object.values(SortType).filter((sortType, i) => {
-                                    switch (sortType) {
-                                        case SortType.TITLE_ASC:
-                                            return true;
-                                        case SortType.TITLE_DEC:
-                                            return true;
-                                        case SortType.CREATED_ASC:
-                                            if (isMyInstants) return false;
-                                            return true;
-                                        case SortType.CREATED_DEC:
-                                            if (isMyInstants) return false;
-                                            return true;
-                                        case SortType.UPLOADER_ASC:
-                                            if (isMyInstants) return false;
-                                            return true;
-                                        case SortType.UPLOADER_DEC:
-                                            if (isMyInstants) return false;
-                                            return true;
-                                    }
-                                }).map((sortType, i) => {
-                                    return <MenuItem key={i} value={sortType}>{sortType}</MenuItem>
+                                {isMyInstants && MY_INSTANTS_CATEGORIES.map((category, i) => {
+                                    return (
+                                        <MenuItem key={i} value={category}>{`${category.substring(0, 1).toUpperCase()}${category.substring(1)}`}</MenuItem>
+                                    );
                                 })}
+                                {!isMyInstants && <MenuItem key={0} value={category}>Coming Soon</MenuItem>}
                             </Select>
                         </FormControl>
-                    </div> */}
+                    </div>
                     <div className='button-grp'>
                         <Button disabled={!user.isSoundboardUser} className='grid-action' variant="contained" onClick={openDialog}>Add Clip</Button>
                         <Button disabled={disableControls} className='grid-action' variant="contained" onClick={playRandomClip}>Play Random Sound</Button>

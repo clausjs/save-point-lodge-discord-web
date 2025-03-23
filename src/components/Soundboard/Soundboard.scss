@@ -119,39 +119,23 @@ body.light {
             margin: 0 25px;
             display: flex;
             align-self: center;
-    
-            .small-button-background {
-                width: inherit;
-                height: inherit;
-                position: absolute;
-    
-                &.circle {
-                    border-radius: 50%;
-                    background-color: yellow;
-                }
-            }
-    
-            button {
-                height: inherit;
-                width: inherit;
-                display: block;
-                background: url('/img/my_instants_button.png') no-repeat;
-                background-attachment: scroll;
-                background-size: cover;
-                background-position-x: 0;
-                background-position-y: 0;
-                background-origin: border-box;
-                background-clip: border-box;
-                border: 0;
-                position: absolute;
 
-                &:active {
-                    background-position-x: 100%;
+            .MuiFormControl-root {
+                display: flex;
+                justify-content: center;;
+                
+                .MuiSwitch-thumb {
+                    background-color: $color-pallette-dark-2;
+                }
+    
+                .MuiSwitch-track {
+                    background-color: $color-pallette-light-blue;
                 }
             }
+
         }
 
-        .sort-control {
+        .category-select {
             width: auto;
             min-width: 150px;
             align-self: center;
