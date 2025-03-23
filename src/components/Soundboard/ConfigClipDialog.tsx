@@ -61,6 +61,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
 
     useEffect(() => {
         if (editClip) {
+            console.log("Edit Clip: ", editClip);
             setClipData(editClip);
             setTags(editClip.tags);
         } else {

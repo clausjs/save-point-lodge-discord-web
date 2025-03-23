@@ -72,8 +72,22 @@ class Soundboard extends DataSource {
     update = async (clip) => {
         const { db } = this;
 
+
+        // Safety check to ensure clip has an creation date. If non-existent
+        // copy the updated date or use today
+        let createTimestamp = clip.createdAt;
+        if (createTimestamp) {
+            createTimestamp = Timestamp.fromDate(new Date(createTimestamp));
+        } else {
+            if (clip.updatedAt) {
+                createTimestamp = Timestamp.fromDate(new Date(clip.updatedAt));
+            } else {
+                createTimestamp = Timestamp.fromDate(new Date());
+            }
+        }
+
         try {
-            await db.collection(this.collectionName).doc(clip.id).set({ ...clip, createdAt: Timestamp.fromDate(new Date(clip.createdAt)), updatedAt: Timestamp.fromDate(new Date()) });
+            await db.collection(this.collectionName).doc(clip.id).set({ ...clip, createdAt: createTimestamp, updatedAt: Timestamp.fromDate(new Date()) });
             return clip;
         } catch (err) {
             logErr(err);
