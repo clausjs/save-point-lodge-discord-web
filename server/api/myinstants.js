@@ -35,14 +35,14 @@ const getTrending = async (language = "en", region = 'us', page = 1) => {
 }
 
 const getRecent = async (language = "en", page = 1) => {
-    const url = `${BASE_URL}/${language}/recent${page > 1 ? `&page=${page}` : ''}`;
+    const url = `${BASE_URL}/${language}/recent${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 
 const getByCategory = async (language = "en", category, page = 1) => {
     if (!category) throw new Error("Category is required");
 
-    const url = `${BASE_URL}/${language}/categories/${category}${page > 1 ? `&page=${page}` : ''}`;
+    const url = `${BASE_URL}/${language}/categories/${category}/${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 
@@ -56,14 +56,14 @@ const search = async (language = "en", query, page = 1) => {
 const getUploadedByUser = async (language = "en", user) => {
     if (!user) throw new Error("User is required");
 
-    const url = `${BASE_URL}/${language}/profile/${user}/uploaded${page > 1 ? `&page=${page}` : ''}`;
+    const url = `${BASE_URL}/${language}/profile/${user}/uploaded${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 
 const getFavoritedByUser = async (language = "en", user) => {
     if (!user) throw new Error("User is required");
 
-    const url = `${BASE_URL}/${language}/profile/${user}${page > 1 ? `&page=${page}` : ''}`;
+    const url = `${BASE_URL}/${language}/profile/${user}${page > 1 ? `?page=${page}` : ''}`;
     return await parseButtons(url);
 }
 

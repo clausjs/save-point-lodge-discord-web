@@ -36,7 +36,7 @@ router.get('/myinstants', async function(req, res) {
     try {
         const lang = req.query.lang;
         const countryCode = req.query.cc;
-        const page = req.query.page;
+        const page = req.query.page ?? 1;
         const myinstantsRes = await getTrending(lang, countryCode, page);
         return res.status(200).send(myinstantsRes);
     } catch (err) {
@@ -47,7 +47,7 @@ router.get('/myinstants', async function(req, res) {
 router.get('/myinstants/recent', async function(req, res) {
     try {
         const lang = req.query.lang;
-        const page = req.query.page;
+        const page = req.query.page ?? 1;
         const myinstantsRes = await getRecent(lang, page);
         return res.status(200).send(myinstantsRes);
     } catch (err) {
@@ -58,7 +58,7 @@ router.get('/myinstants/recent', async function(req, res) {
 router.get('/myinstants/search', async function(req, res) {
     try {
         const lang = req.query.lang;
-        const page = req.query.page;
+        const page = req.query.page ?? 1;
         const myinstantsRes = await search(lang, req.query.query, page);
         return res.status(200).send(myinstantsRes);
     } catch (err) {
@@ -69,7 +69,7 @@ router.get('/myinstants/search', async function(req, res) {
 router.get('/myinstants/:category', async function(req, res) {
     try {
         const lang = req.query.lang;
-        const page = req.query.page;
+        const page = req.query.page ?? 1;
         const myinstantsRes = await getByCategory(lang, req.params.category, page);
         return res.status(200).send(myinstantsRes);
     } catch (err) {
