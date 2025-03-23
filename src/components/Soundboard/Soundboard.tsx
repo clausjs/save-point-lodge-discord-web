@@ -29,6 +29,8 @@ enum SortDir {
     DEC = "dec"
 }
 
+const MY_INSTANTS_DISABLED_SORT_TYPES = [SortType.CREATED, SortType.UPLOADER];
+
 enum MyInstantsCategory {
     ANIME = "Anime & Menga",
     GAMES = "Games",
@@ -519,7 +521,14 @@ const Soundboard: React.FC = () => {
                 <Container className='sort-section'>
                     {Object.values(SortType).map((type, i) => {
                         return (
-                            <Chip icon={type !== sortType ? undefined : sortDir === SortDir.ASC ? <ArrowUpward /> : <ArrowDownward />} key={i} label={type} variant={sortType === type ? 'filled' : 'outlined'} onClick={() => onSortingChange(type)} />
+                            <Chip 
+                                icon={type !== sortType ? undefined : sortDir === SortDir.ASC ? <ArrowUpward /> : <ArrowDownward />}
+                                key={i}
+                                label={type} 
+                                variant={sortType === type ? 'filled' : 'outlined'} 
+                                disabled={isMyInstants && MY_INSTANTS_DISABLED_SORT_TYPES.includes(type)} 
+                                onClick={() => onSortingChange(type)} 
+                            />
                         );
                     })}
                 </Container>
