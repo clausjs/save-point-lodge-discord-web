@@ -1,6 +1,6 @@
 {
   "name": "save-point-lodge-crew-site",
-  "version": "2.2.15",
+  "version": "2.3.0",
   "description": "A web interface for crew members to interface with Save Point Lodge specific things",
   "main": "index.js",
   "engines": {
