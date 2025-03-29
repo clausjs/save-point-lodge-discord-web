@@ -1,3 +1,5 @@
+import { ClipCategory } from "../components/Soundboard/Categories";
+
 type CommandOption = {
     name: string;
     description: string;
@@ -120,6 +122,8 @@ export interface Clip {
     volume?: number;
     url?: string;
     favoritedBy?: string[];
+    category?: ClipCategory;
+    duration?: number;
     updatedAt?: Date;
     createdAt?: Date;
 }

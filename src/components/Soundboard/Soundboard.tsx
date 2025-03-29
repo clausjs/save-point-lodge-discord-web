@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Box, Button, Chip, Checkbox, Container, FormControl, Grid2 as Grid, IconButton, Input, InputLabel, Link, Menu, MenuItem, Paper, Select } from '@mui/material';
 import { GridLoader } from 'react-spinners';
@@ -17,9 +17,11 @@ import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTre
 
 import './Soundboard.scss';
 import SoundTypeToggle from './SoundTypeToggle';
+import { ClipCategory, MyInstantsCategory } from './Categories';
 
 enum SortType {
     TITLE = "Title",
+    DURATION = "Length",
     CREATED = "Created",
     UPLOADER = "Uploader",
 }
@@ -31,24 +33,10 @@ enum SortDir {
 
 const MY_INSTANTS_DISABLED_SORT_TYPES = [SortType.CREATED, SortType.UPLOADER];
 
-enum MyInstantsCategory {
-    ANIME = "Anime & Menga",
-    GAMES = "Games",
-    MEMES = "Memes",
-    MOVIES = "Movies",
-    MUSIC = "Music",
-    POLITICS = "Politics",
-    PRANKS = "Pranks",
-    REACTIONS = "Reactions",
-    SOUND_EFFECTS = "Sound Effects",
-    SPORTS = "Sports",
-    TELEVISION = "Television",
-    TIKTOK_TRENDS = "TikTok Trends",
-    VIRAL = "Viral"
-}
-
 type MyInstantType<T extends MyInstantsCategory | undefined> = 'trending' | 'recent' | T;
 const MY_INSTANTS_CATEGORIES: MyInstantType<MyInstantsCategory | undefined>[] = ['trending', 'recent', ...Object.values(MyInstantsCategory)];
+type SavedClipCategory = 'all' | ClipCategory | undefined;
+
 type ClipType = 'saved' | 'myinstants';
 
 export interface DialogClip extends Clip {
@@ -60,6 +48,7 @@ const DEFAULT_SOCKET_URL = devMode ? 'ws://localhost:8080/soundboard' : 'wss://j
 
 const Soundboard: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const durations = useRef<{ [key: string]: number }>({});
     const [ socketUrl, setSocketUrl ] = useState<string | null>(null);
     const [ connectionAttempts, setConnectionAttempts ] = useState<number>(0);
     const [ hasBeenConnected, setHasBeenConnected ] = useState<boolean>(false);
@@ -70,20 +59,15 @@ const Soundboard: React.FC = () => {
     const [ editingClip, setEditingClip ] = useState<DialogClip | null>(null);
     const [ deletingClip, setDeletingClip ] = useState<Clip | null>(null);
     const [ clipType, setClipType ] = useState<ClipType>('saved');
-    const [ category, setCategory ] = useState<MyInstantType<MyInstantsCategory | undefined>>('trending');
+    const [ category, setCategory ] = useState<SavedClipCategory | MyInstantType<MyInstantsCategory | undefined>>('all');
     const [ isSearching, setIsSearching ] = useState<boolean>(false);
-    const [ sortType, setSortType ] = useState<SortType>(SortType.TITLE);
+    const [ sortType, setSortType ] = useState<SortType | null>(SortType.TITLE);
     const [ sortDir, setSortDir ] = useState<SortDir>(SortDir.ASC);
+    const [ disabledSortTypes, setDisabledSortTypes ] = useState<SortType[]>([]);
     const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
     const [ myInstantsPage, setMyInstantsPage ] = useState<number>(1);
     const [ exclusionRules, setExclusionRules ] = useState<('all' | 'favorites' | 'created')[]>(['all']);
     const [ tagFilters, setTagFilters ] = useState<string[]>([]);
-
-    const [ menuAnchorEl, setMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
-    const menuOpen = Boolean(menuAnchorEl);
-
-    const [ subMenuAnchorEl, setSubMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
-    const subMenuOpen = Boolean(subMenuAnchorEl);
 
     const [ filterMenuAnchorEl, setFilterMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
     const filterMenuOpen = Boolean(filterMenuAnchorEl);
@@ -141,6 +125,12 @@ const Soundboard: React.FC = () => {
         }
     }
 
+    const loadedClipDuration = (id: string, duration: number) => {
+        if (clips.find(c => c.id === id) && !durations.current[id]) {
+            durations.current = { ...durations.current, [id]: duration };
+        }
+    }
+
     useEffect(() => {
         if (!user) return;
         if (!user.isSoundboardUser) return;
@@ -151,8 +141,10 @@ const Soundboard: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (clipType === 'saved') getClips('saved');
-        else {
+        if (clipType === 'saved') {
+            getClips('saved');
+            setCategory('all');
+        } else {
             setMyInstantsPage(1);
             setCategory('trending');
             getClips('myinstants');
@@ -160,8 +152,10 @@ const Soundboard: React.FC = () => {
     }, [clipType]);
 
     useEffect(() => {
-        dispatch(resetClips());
-        getClips(clipType);
+        if (isMyInstants) {
+            dispatch(resetClips());
+            getClips(clipType);
+        }
     }, [category]);
 
     useEffect(() => {
@@ -198,9 +192,28 @@ const Soundboard: React.FC = () => {
     }, [lastMessage]);
 
     useEffect(() => {
-        setSortType(SortType.TITLE);
-        setSortDir(SortDir.ASC);
+        if (isMyInstants) {
+            if (!isLastResults) {
+                setSortType(null);
+                setDisabledSortTypes(Object.values(SortType));
+            }
+            else {
+                setSortType(SortType.TITLE);
+                setSortDir(SortDir.ASC);
+                setDisabledSortTypes(MY_INSTANTS_DISABLED_SORT_TYPES);
+            }
+        } else {
+            setSortType(SortType.TITLE);
+            setDisabledSortTypes([]);
+        }
     }, [isMyInstants])
+
+    useEffect(() => {
+        if (isMyInstants) {
+            if (isLastResults) setDisabledSortTypes(MY_INSTANTS_DISABLED_SORT_TYPES);
+            else setDisabledSortTypes(Object.values(SortType));
+        } else setDisabledSortTypes([]);
+    }, [isLastResults]);
 
     const playClip = (clipId: string, volumeOverride?: number) => {
         const clip: Clip | undefined = clips.find(c => {
@@ -224,8 +237,8 @@ const Soundboard: React.FC = () => {
     }
 
     const playRandomClip = () => {
-        const randomIndex = Math.floor(Math.random() * clips.length);
-        playClip(clips[randomIndex].id);
+        const randomIndex = Math.floor(Math.random() * filteredClips.length);
+        playClip(filteredClips[randomIndex].id);
     }
 
     const _favoriteClip = (clipId: string) => {
@@ -242,17 +255,23 @@ const Soundboard: React.FC = () => {
     const filteredClips = Array.from(clips).filter(clip => {
         let included: boolean = true;
 
+        // Tag filtering
         if (tagFilters.length) {
             included = tagFilters.some(tag => clip.tags.includes(tag));
         }
 
-        return included;
-    }).filter(clip => {
-        let included: boolean = true;
+        // Filter filtering
         if (exclusionRules.includes('all')) return included;
         if (exclusionRules.includes('favorites') && !clip.favoritedBy?.includes(user.id)) included = false;
         if (exclusionRules.includes('created') && clip.uploadedBy.trim() !== user.username.trim()) included = false;
-        
+
+        // Category filtering
+        if (!isMyInstants) {
+            if (category !== 'all' && clip.category !== category) {
+                included = false;
+            }
+        }
+
         return included;
     }).sort((a: Clip, b: Clip) => {        
         switch (sortType) {
@@ -277,6 +296,19 @@ const Soundboard: React.FC = () => {
                     return b.uploadedBy.localeCompare(a.uploadedBy);
                 }
                 break;
+            case SortType.DURATION:
+                const timeA = durations.current[a.id];
+                const timeB = durations.current[b.id];
+                if (!timeA || !timeB) return 0;
+
+                if (sortDir === SortDir.ASC) {
+                    return (timeA) - (timeB);
+                }
+                else if (sortDir === SortDir.DEC) {
+                    return (timeB) - (timeA);
+                }
+            default:
+                return 0;
         }
     }).filter(clip => {
         if (!searchTerm || isMyInstants) return true;
@@ -286,8 +318,6 @@ const Soundboard: React.FC = () => {
     });
 
     const closeAllMenus = () => {
-        setMenuAnchorEl(null);
-        setSubMenuAnchorEl(null);
         setFilterMenuAnchorEl(null);
     }
 
@@ -296,6 +326,7 @@ const Soundboard: React.FC = () => {
         
         if (clipType !== type) {
             setClipType(type);
+            durations.current = {};
             dispatch(resetClips());
         }
 
@@ -369,17 +400,17 @@ const Soundboard: React.FC = () => {
     }
 
     const _setCategory = (newCategory: MyInstantType<MyInstantsCategory | undefined>) => {
-        if (isMyInstants) {
-            if (category !== newCategory) {
-                setMyInstantsPage(1);
-                setCategory(newCategory);
-            }
+        if (category !== newCategory) {
+            setMyInstantsPage(1);
+            setCategory(newCategory);
         }
     }
 
     const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
     const disableControls: boolean = !clips.length;
 
+
+    console.log("disabledSortTypes: ", disabledSortTypes);
     return (
         <>
             <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
@@ -432,6 +463,11 @@ const Soundboard: React.FC = () => {
                                         setMessageHistory([]);
                                     }
                                 }}
+                                endAdornment={<Close onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSocketUrlInput('');
+                                    setSocketUrl(null);
+                                }} />}
                             />
                         </div>}
                     </div>
@@ -440,6 +476,7 @@ const Soundboard: React.FC = () => {
                             isMyInstants={isMyInstants}
                             onToggle={(e) => {
                                 setMyInstantsPage(1);
+                                durations.current = {};
                                 if (!isMyInstants) {
                                     setClipType('myinstants');
                                 } else {
@@ -449,7 +486,7 @@ const Soundboard: React.FC = () => {
                         />
                     </div>
                     <div className='category-select'>    
-                        <FormControl disabled={!isMyInstants} variant="standard" fullWidth>
+                        <FormControl variant="standard" fullWidth>
                             <Select
                                 labelId=""
                                 value={category}
@@ -462,7 +499,11 @@ const Soundboard: React.FC = () => {
                                         <MenuItem key={i} value={category}>{`${category.substring(0, 1).toUpperCase()}${category.substring(1)}`}</MenuItem>
                                     );
                                 })}
-                                {!isMyInstants && <MenuItem key={0} value={category}>Coming Soon</MenuItem>}
+                                {!isMyInstants && ['all', ...Object.values(ClipCategory)].map((category, i) => {
+                                    return (
+                                        <MenuItem key={i} value={category}>{`${category.substring(0, 1).toUpperCase()}${category.substring(1)}`}</MenuItem>
+                                    );
+                                })}
                             </Select>
                         </FormControl>
                     </div>
@@ -526,7 +567,7 @@ const Soundboard: React.FC = () => {
                                 key={i}
                                 label={type} 
                                 variant={sortType === type ? 'filled' : 'outlined'} 
-                                disabled={isMyInstants && MY_INSTANTS_DISABLED_SORT_TYPES.includes(type)} 
+                                disabled={disabledSortTypes.includes(type)} 
                                 onClick={() => onSortingChange(type)} 
                             />
                         );
@@ -535,9 +576,9 @@ const Soundboard: React.FC = () => {
             </div>}
             <Box sx={{ flexGrow: 1, textAlign: 'center' }}>
                 <InfiniteScroll
-                    dataLength={filteredClips.length} //This is important field to render the next data
+                    dataLength={clips.length} //This is important field to render the next data
                     next={() => {
-                        if (isMyInstants && clips.length <= 200) {
+                        if (isMyInstants) {
                             const page = myInstantsPage + 1;
                             setMyInstantsPage(page);
                             if (isSearching) {
@@ -548,10 +589,10 @@ const Soundboard: React.FC = () => {
                         }
                     }}
                     hasMore={isMyInstants && (clips.length <= 200 && !isLastResults)}
-                    loader={clips.length ? <h4>Loading...</h4> : null}
+                    loader={clips.length > 0 ? <h4>Loading...</h4> : null}
                     endMessage={
                         <p style={{ textAlign: 'center' }}>
-                        <b>{endOfClipsString}</b>
+                            <b>{endOfClipsString}</b>
                         </p>
                     }
                 >
@@ -562,6 +603,7 @@ const Soundboard: React.FC = () => {
                                 <SoundboardClip 
                                     {...clip}
                                     filterByTag={addTagFilter}
+                                    onDurationLoaded={loadedClipDuration}
                                     onClick={playClip} 
                                     onFavorite={_favoriteClip}
                                     onEdit={openClipEdit}

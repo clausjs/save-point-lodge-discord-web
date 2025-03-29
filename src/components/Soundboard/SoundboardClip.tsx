@@ -10,6 +10,7 @@ import { AppDispatch, RootState } from '../../state/store';
 import ClipActionButton, { ClipPreviewButton } from './ClipActionButton';
 import { DialogClip } from './Soundboard';
 import MobileClipActionMenu from './MobileActionMenu';
+import { ScaleLoader } from 'react-spinners';
 
 enum ACTION_BUTTON_SECTIONS {
     TOP = 'top',
@@ -20,6 +21,7 @@ enum ACTION_BUTTON_SECTIONS {
 const SoundboardClip: React.FC<Clip & { 
     isMyInstant?: boolean,
     filterByTag: (tag: string) => void,
+    onDurationLoaded: (clipId: string, duration: number) => void,
     onClick: (clipId: string, volumeOverride?: number) => void, 
     onFavorite: (clipId: string) => void 
     onEdit: (clip: DialogClip) => void
@@ -36,6 +38,7 @@ const SoundboardClip: React.FC<Clip & {
     createdAt,
     updatedAt,
     filterByTag,
+    onDurationLoaded,
     onClick,
     onFavorite,
     onEdit,
@@ -54,6 +57,7 @@ const SoundboardClip: React.FC<Clip & {
     const [ showVolumeSlider, setShowVolumeSlider ] = useState<boolean>(false);
     const [ previewVolume, setPreviewVolume ] = useState<number>(volume);
 
+    const lightMode: boolean = useSelector((state: RootState) => state.theme.lightMode);
     const user: User | undefined = useSelector((state: RootState) => state.user.user);
     const username: string = user.username;
     const isFavorite: boolean = favoritedBy?.includes(user?.id)
@@ -123,7 +127,7 @@ const SoundboardClip: React.FC<Clip & {
         <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`.trim()} style={{ padding: 10 }} onClick={_onPlay} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
             <Box className='clip-title-section'>
                 <Typography className='clip-name' variant="body1" title={name}>{name}</Typography>
-                <Typography className={`clip-duration ${expanded ? 'show' : ''}`.trim()} variant="caption">{audioFile.current?.duration ? `${audioFile.current?.duration.toFixed(2)}s` : ""}</Typography>
+                <Typography className={`clip-duration ${expanded ? 'show' : ''}`.trim()} variant="caption">{audioFile.current?.duration ? `${audioFile.current?.duration.toFixed(2)}s` : <ScaleLoader loading={true} height={5} width={3} color={lightMode ? '' : '#B2B2B2'} />}</Typography>
             </Box>
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
             <Typography className={`clip-description ${expanded ? 'show' : ''}`.trim()} variant="body2">{description}</Typography>
@@ -177,7 +181,11 @@ const SoundboardClip: React.FC<Clip & {
                     <VolumeUp />
                 </Stack>    
             </div>}
-            <audio className='clip-audio' ref={audioFile} src={url} onEnded={() => {
+            <audio preload='metadata' onLoadedMetadata={() => {
+                if (audioFile.current) {
+                    onDurationLoaded(id, audioFile.current.duration);
+                }
+            }} className='clip-audio' ref={audioFile} src={url} onEnded={() => {
                 audioFile.current.pause();
                 setIsPlaying(false);
             }} />

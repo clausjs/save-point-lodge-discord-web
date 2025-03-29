@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { 
     Dialog, DialogTitle, DialogContent, DialogActions, Button, 
     TextField, MenuItem, Select, FormControl, InputLabel, Chip, 
@@ -6,7 +6,7 @@ import {
     Stack,
     Slider
 } from '@mui/material';
-import { apiState, Clip } from '../../types';
+import { apiState } from '../../types';
 import { Pause, PlayArrow, Save, VolumeDown, VolumeUp } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../state/store';
@@ -15,6 +15,7 @@ import toastr from '../../utils/toastr';
 import './ConfigClipDialog.scss';
 import ClipActionButton from './ClipActionButton';
 import { DialogClip } from './Soundboard';
+import { ClipCategory } from './Categories';
 
 interface ConfigClipDialogProps {
     clip?: DialogClip;
@@ -30,6 +31,7 @@ const EMPTY_CLIP: DialogClip = {
     url: '',
     uploadedBy: '',
     tags: [],
+    category: ClipCategory.UNCATEGORIZED,
     playCount: 0,
     volume: 50,
     isSavingMyInstant: false
@@ -38,7 +40,6 @@ const EMPTY_CLIP: DialogClip = {
 const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, open, onClose, onSave }) => {
     const audioFile = useRef(null);
     const [ submitted, setSubmitted ] = useState<'add' | 'edit' | null>(null);
-    const [clipType, setClipType] = useState<'local' | 'url'>('url');
     const [tags, setTags] = useState<string[]>(editClip ? editClip.tags : []);
     const [tagInput, setTagInput] = useState('');
     const [clipData, setClipData] = useState<DialogClip>(editClip ?? EMPTY_CLIP);
@@ -59,11 +60,19 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
         }
     }
 
+    const validAudioSource = (): boolean => {
+        let audioIsValid: boolean = true;
+        if (!clipData.url) audioIsValid = false;
+        audioIsValid = /^(https?):\/\/(www.)?(.*?)\.(mp3|ogg|wav)$/gi.test(clipData.url);
+
+        return audioIsValid;
+    }
+
     useEffect(() => {
         if (editClip) {
-            console.log("Edit Clip: ", editClip);
             setClipData(editClip);
             setTags(editClip.tags);
+            setIsPlaying(false);
         } else {
             setClipData(EMPTY_CLIP);
             setTags([]);
@@ -71,14 +80,20 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
     }, [editClip]);
 
     useEffect(() => {
+        if (clipData.url && !validAudioSource()) {
+            toastr.error('Invalid audio source. This url does not appear to be a direct link to an .mp3, .ogg, or .wav file.');
+        }
+    }, [clipData.url]);
+
+    useEffect(() => {
         if (audioFile.current) audioFile.current.volume = volume / 100;
     }, [volume]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, files } = event.target;
+        const { name, value } = event.target;
         setClipData({
             ...clipData,
-            [name]: files ? files[0] : value,
+            [name]: value,
         });
     };
 
@@ -138,24 +153,16 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                         <MenuItem value="url">URL</MenuItem>
                     </Select>
                 </FormControl> */}
-                <div className='clip-details'>
-                    {clipType === 'local' ? (
-                        <TextField
-                            fullWidth
-                            type="file"
-                            name="file"
-                            onChange={handleInputChange}
-                        />
-                    ) : (
-                        <TextField
-                            fullWidth
-                            label="URL"
-                            name="url"
-                            value={clipData.url}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    )}
+                <FormControl className='clip-details' fullWidth margin='normal'>
+                    <TextField
+                        fullWidth
+                        label="URL"
+                        name="url"
+                        value={clipData.url}
+                        onChange={handleInputChange}
+                        error={clipData.url !== "" && !validAudioSource()}
+                        required
+                    />
                     <TextField
                         fullWidth
                         label="Name"
@@ -171,6 +178,20 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                         value={clipData.description}
                         onChange={handleInputChange}
                     />
+                    <Select
+                        labelId="category"
+                        id="category"
+                        name="category"
+                        value={clipData.category ?? ClipCategory.UNCATEGORIZED}
+                        onChange={handleInputChange}
+                        label="Category"
+                    >
+                        {Object.values(ClipCategory).map((category: ClipCategory, i: number) => {
+                            return (
+                                <MenuItem key={i} value={category}>{category}</MenuItem>
+                            )
+                        })}
+                    </Select>
                     <TextField
                         fullWidth
                         label="Tags"
@@ -191,18 +212,18 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                     </div>
                     <div className='volume-controls'>
                         {isPlaying ? <ClipActionButton onClick={toggleClipAudio} title='Play' Icon={Pause} /> : 
-                            <ClipActionButton onClick={toggleClipAudio} title='Play' Icon={PlayArrow} />}
+                            <ClipActionButton disabled={!validAudioSource()} onClick={toggleClipAudio} title='Play' Icon={PlayArrow} />}
                         <Stack className='volume-slider' spacing={2} direction="row" sx={{ alignItems: 'center' }}>
                             <VolumeDown />
-                                <Slider aria-label="Volume" value={volume} onChange={(e: Event, newValue: number | number[]) => setVolume(newValue as number)} onChangeCommitted={handleVolumeChange} />
+                                <Slider disabled={!validAudioSource()} aria-label="Volume" value={volume} onChange={(e: Event, newValue: number | number[]) => setVolume(newValue as number)} onChangeCommitted={handleVolumeChange} />
                             <VolumeUp />
                         </Stack>   
                     </div>
-                    <audio className='clip-audio' ref={audioFile} src={clipData.url} onEnded={() => {
+                    {open && validAudioSource() && <audio preload='metadata' className='clip-audio' ref={audioFile} src={clipData.url} onEnded={() => {
                         setIsPlaying(false) 
                         if (audioFile.current) audioFile.current.currentTime = 0;
-                    }} />
-                </div>
+                    }} />}
+                </FormControl>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
