@@ -8,9 +8,10 @@ import { Clip, User } from '../../types';
 import { AppDispatch, RootState } from '../../state/store';
 
 import ClipActionButton, { ClipPreviewButton } from './ClipActionButton';
-import { DialogClip } from './Soundboard';
+import { DialogClip, MyInstantType, SavedClipCategory } from './Soundboard';
 import MobileClipActionMenu from './MobileActionMenu';
 import { ScaleLoader } from 'react-spinners';
+import { MyInstantsCategory } from './Categories';
 
 enum ACTION_BUTTON_SECTIONS {
     TOP = 'top',
@@ -21,6 +22,7 @@ enum ACTION_BUTTON_SECTIONS {
 const SoundboardClip: React.FC<Clip & { 
     isMyInstant?: boolean,
     filterByTag: (tag: string) => void,
+    filterByCategory: (category: SavedClipCategory | MyInstantType<MyInstantsCategory | undefined>) => void;
     onDurationLoaded: (clipId: string, duration: number) => void,
     onClick: (clipId: string, volumeOverride?: number) => void, 
     onFavorite: (clipId: string) => void 
@@ -39,6 +41,7 @@ const SoundboardClip: React.FC<Clip & {
     createdAt,
     updatedAt,
     filterByTag,
+    filterByCategory,
     onDurationLoaded,
     onClick,
     onFavorite,
@@ -128,7 +131,13 @@ const SoundboardClip: React.FC<Clip & {
         <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`.trim()} style={{ padding: 10 }} onClick={_onPlay} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
             <Box className='clip-title-section'>
                 <Typography className='clip-name' variant="body1" title={name}>{name}</Typography>
-                <Typography className={`clip-duration ${expanded ? 'show' : ''}`.trim()} variant="caption">{audioFile.current?.duration ? `${audioFile.current?.duration.toFixed(2)}s` : <ScaleLoader loading={true} height={5} width={3} color={lightMode ? '' : '#B2B2B2'} />}</Typography>
+                <Box className={`clip-metadata ${expanded ? 'show' : ''}`.trim()}>
+                    {category && <span className='clip-category' title={category ? category : 'Uncategorized'} onClick={(e) => {
+                        e.stopPropagation();
+                        filterByCategory(category);
+                    }}><Typography variant='caption' className='category-text'>{category}</Typography></span>}
+                    <Typography className='clip-duration' variant="caption">{audioFile.current?.duration ? `${audioFile.current?.duration.toFixed(2)}s` : <ScaleLoader loading={true} height={5} width={3} color={lightMode ? '' : '#B2B2B2'} />}</Typography>
+                </Box>
             </Box>
             <Typography className='clip-uploader' variant="caption">Uploaded by {uploadedBy}</Typography>
             <Typography className={`clip-description ${expanded ? 'show' : ''}`.trim()} variant="body2">{description}</Typography>

@@ -220,17 +220,31 @@ body.light {
                 display: flex;
             }
 
-            .clip-duration {
+            .clip-metadata {
                 display: flex;
-                justify-content: flex-end;
+                flex-direction: column;
+                align-items: flex-end;
                 font-size: 0.8em;
                 color: $color-pallette-light-gray;
                 visibility: hidden;
-
+                
                 &.show {
                     visibility: visible;
                 }
+
+                .clip-category {
+                    background-color: addOpacity($color-pallette-light-blue, 0.1);
+                    border-radius: 5px;
+                    padding: 2px 5px;
+                }
+                
+                .clip-duration {
+                    display: flex;
+                    justify-content: flex-end;
+                    height: 20px;
+                }
             }
+
         }
 
 

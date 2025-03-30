@@ -33,9 +33,9 @@ enum SortDir {
 
 const MY_INSTANTS_DISABLED_SORT_TYPES = [SortType.CREATED, SortType.UPLOADER];
 
-type MyInstantType<T extends MyInstantsCategory | undefined> = 'trending' | 'recent' | T;
+export type MyInstantType<T extends MyInstantsCategory | undefined> = 'trending' | 'recent' | T;
 const MY_INSTANTS_CATEGORIES: MyInstantType<MyInstantsCategory | undefined>[] = ['trending', 'recent', ...Object.values(MyInstantsCategory)];
-type SavedClipCategory = 'all' | ClipCategory | undefined;
+export type SavedClipCategory = 'all' | ClipCategory | undefined;
 
 type ClipType = 'saved' | 'myinstants';
 
@@ -398,7 +398,7 @@ const Soundboard: React.FC = () => {
         }
     }
 
-    const _setCategory = (newCategory: MyInstantType<MyInstantsCategory | undefined>) => {
+    const _setCategory = (newCategory: SavedClipCategory | MyInstantType<MyInstantsCategory | undefined>) => {
         if (category !== newCategory) {
             setMyInstantsPage(1);
             setCategory(newCategory);
@@ -600,6 +600,7 @@ const Soundboard: React.FC = () => {
                                 <SoundboardClip 
                                     {...clip}
                                     filterByTag={addTagFilter}
+                                    filterByCategory={_setCategory}
                                     onDurationLoaded={loadedClipDuration}
                                     onClick={playClip} 
                                     onFavorite={_favoriteClip}
