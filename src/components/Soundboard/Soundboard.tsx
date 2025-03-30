@@ -261,7 +261,6 @@ const Soundboard: React.FC = () => {
         }
 
         // Filter filtering
-        if (exclusionRules.includes('all')) return included;
         if (exclusionRules.includes('favorites') && !clip.favoritedBy?.includes(user.id)) included = false;
         if (exclusionRules.includes('created') && clip.uploadedBy.trim() !== user.username.trim()) included = false;
 
@@ -409,8 +408,6 @@ const Soundboard: React.FC = () => {
     const endOfClipsString: string = isMyInstants && clips.length >= 200 ? 'You\'ve loaded the maximum amount of buttons' : 'That\s it, you\'ve loaded all the buttons!';
     const disableControls: boolean = !clips.length;
 
-
-    console.log("disabledSortTypes: ", disabledSortTypes);
     return (
         <>
             <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />

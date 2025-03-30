@@ -30,6 +30,7 @@ const SoundboardClip: React.FC<Clip & {
     id,
     name, 
     tags,
+    category,
     description,
     uploadedBy,
     url,
@@ -114,7 +115,7 @@ const SoundboardClip: React.FC<Clip & {
     const _onEdit = (e: React.MouseEvent<any, any>) => {
         e.stopPropagation();
         setShowMenu(false);
-        onEdit({ id, name, tags, description, url, volume, uploadedBy, favoritedBy, createdAt, updatedAt });
+        onEdit({ id, name, tags, category, description, url, volume, uploadedBy, favoritedBy, createdAt, updatedAt });
     }
 
     const _onDelete = (e: React.MouseEvent<any, any>) => {
