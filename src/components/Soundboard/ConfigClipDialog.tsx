@@ -118,7 +118,9 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
             setSubmitted('edit');
         }
         
-        onSave({ ...clipData, tags });
+        const newClip = { ...clipData, tags };
+        if (newClip.category === ClipCategory.UNCATEGORIZED) delete newClip.category;
+        onSave(newClip);
     };
 
     const _close = () => {

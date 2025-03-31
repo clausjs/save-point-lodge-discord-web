@@ -22,7 +22,6 @@ class Soundboard extends DataSource {
             clip.createdAt = clipData.createdAt ? clipData.createdAt.toDate() : new Date();
             clip.updatedAt = clipData.updatedAt ? clipData.updatedAt.toDate() : new Date();
             if (!clip.volume) clip.volume = 50;
-            if (!clip.category) clip.category = "Uncategorized";
             soundboardItems.push(clip);
         });
         return soundboardItems;
