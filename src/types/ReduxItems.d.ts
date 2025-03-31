@@ -132,6 +132,7 @@ export type apiState = 'idle' | 'pending' | 'fulfilled' | 'rejected';
 
 export interface SoundboardState {
     clips: Clip[];
+    allTags: string[];
     isMyInstants: boolean;
     lastResults: boolean;
     clipFetchState?: apiState;

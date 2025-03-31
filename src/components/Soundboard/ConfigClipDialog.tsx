@@ -4,7 +4,9 @@ import {
     TextField, MenuItem, Select, FormControl, InputLabel, Chip, 
     SelectChangeEvent,
     Stack,
-    Slider
+    Slider,
+    Autocomplete,
+    createFilterOptions
 } from '@mui/material';
 import { apiState } from '../../types';
 import { Pause, PlayArrow, Save, VolumeDown, VolumeUp } from '@mui/icons-material';
@@ -16,6 +18,13 @@ import './ConfigClipDialog.scss';
 import ClipActionButton from './ClipActionButton';
 import { DialogClip } from './Soundboard';
 import { ClipCategory } from './Categories';
+
+interface TagAutoCompleteOption {
+    inputValue?: string; // for custom input
+    title: string; // display value
+}
+
+const filter = createFilterOptions<TagAutoCompleteOption>();
 
 interface ConfigClipDialogProps {
     clip?: DialogClip;
@@ -41,11 +50,12 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
     const audioFile = useRef(null);
     const [ submitted, setSubmitted ] = useState<'add' | 'edit' | null>(null);
     const [tags, setTags] = useState<string[]>(editClip ? editClip.tags : []);
-    const [tagInput, setTagInput] = useState('');
+    const [ tagInput, setTagInput ] = useState<TagAutoCompleteOption>({ title: '' });
     const [clipData, setClipData] = useState<DialogClip>(editClip ?? EMPTY_CLIP);
     const [ volume, setVolume ] = useState<number>(editClip ? editClip.volume : EMPTY_CLIP.volume);
     const [ isPlaying, setIsPlaying ] = useState<boolean>(false);
 
+    const allTags = useSelector((state: RootState) => state.soundboard.allTags);
     const addApiState: apiState = useSelector((state: RootState) => state.soundboard.clipAddState);
     const editApiState: apiState = useSelector((state: RootState) => state.soundboard.clipEditState);
 
@@ -131,12 +141,22 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
         }
     }, [submitted, addApiState, editApiState]);
 
-    const handleTagKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Enter' && tagInput.trim() !== '' && !tags.includes(tagInput)) {
-            setTags([...tags, tagInput.trim()]);
-            setTagInput('');
-        }
-    };
+    const tagOptions = React.useMemo(() => {
+        // Generate tag options for the autocomplete
+        // This will return an array of objects with title for display and inputValue for custom input
+        return allTags.filter((tag) => {
+            return !clipData.tags.includes(tag)
+        }).map((tag: string) => ({
+            title: tag,
+        }));
+    }, [allTags, clipData.tags]);
+
+    // const handleTagKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    //     if (event.key === 'Enter' && tagInput.trim() !== '' && !tags.includes(tagInput)) {
+    //         setTags([...tags, tagInput.trim()]);
+    //         setTagInput('');
+    //     }
+    // };
 
     const handleDeleteTag = (tagToDelete: string) => () => {
         setTags(tags.filter(tag => tag !== tagToDelete));
@@ -192,13 +212,65 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                             )
                         })}
                     </Select>
-                    <TextField
+                    <Autocomplete
                         fullWidth
-                        label="Tags"
+                        freeSolo
+                        selectOnFocus={true}
+                        clearOnBlur={true}
+                        autoHighlight={true}
                         value={tagInput}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => setTagInput(event.target.value)}
-                        onKeyDown={handleTagKeyDown}
-                        helperText="Press Enter to add a tag"
+                        options={tagOptions}
+                        filterOptions={(options, params) => {
+                            const filtered = filter(options, params);
+                    
+                            const { inputValue } = params;
+                            // Suggest the creation of a new value
+                            const isExisting = options.some((option) => inputValue === option.title);
+                            if (inputValue !== '' && !isExisting) {
+                              filtered.unshift({
+                                title: `Add tag: ${inputValue}`, // Display value
+                                inputValue,
+                              });
+                            }
+                    
+                            return filtered;
+                        }}
+                        onInputChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event) setTagInput({ title: event.target?.value }) }}
+                        onChange={(event, newValue) => {
+                            if (typeof newValue === 'string') {
+                                setTags([ ...tags, newValue ]);
+                            //@ts-expect-error
+                            } else if (newValue && newValue.inputValue) {
+                                //@ts-expect-error
+                                setTags([ ...tags, newValue.inputValue ]);
+                            } else if (newValue && newValue.title) {
+                                setTags([ ...tags, newValue.title ]);
+                            }
+
+                            setTagInput({ title: '' });
+                        }}
+                        onBlur={(e) => {
+                            setTagInput({ title: '' });
+                        }}
+                        getOptionLabel={(option) => {
+                            // Determine the label to display for the option
+                            // This will be used to display in the input
+                            if (typeof option === 'string') {
+                                return option;
+                            } 
+                            //@ts-expect-error
+                            if (option.inputValue) {
+                                return option.title; // For custom input
+                            }
+                            return option.title; // For existing options
+                        }}
+                        renderInput={(params) => 
+                            <TextField
+                                {...params}
+                                label="Tags"
+                                helperText="Press Enter to add tag"
+                            />
+                        }
                     />
                     <div>
                         {tags.map((tag, index) => (

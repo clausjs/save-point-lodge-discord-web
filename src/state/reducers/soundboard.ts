@@ -6,6 +6,7 @@ const initialState: SoundboardState = {
     isMyInstants: false,
     lastResults: false,
     clips: [],
+    allTags: [],
     clipFetchState: 'idle',
     clipSearchState: 'idle',
     clipAddState: 'idle',
@@ -137,6 +138,12 @@ const soundboard = createSlice({
                     state.clipFetchState = 'idle';
                     state.lastResults = true;
                     state.isMyInstants = false;
+                    const allTags: string[] = [];
+                    for (const clip of action.payload) {
+                        const tags = clip.tags || [];
+                        tags.forEach(tag =>  { if (!allTags.includes(tag)) allTags.push(tag); });
+                    }
+                    state.allTags = allTags;
                 })
                 .addCase(fetchMyInstantsTrending.pending, (state) => {
                     state.clipFetchState = 'pending';
@@ -148,9 +155,7 @@ const soundboard = createSlice({
                 .addCase(fetchMyInstantsTrending.fulfilled, (state, action: PayloadAction<Clip[]>) => {
                     if (state.isMyInstants) {
                         const newClips = [ ...state.clips, ...action.payload ];
-                        console.log('newClips: ', newClips.length);
                         if (action.payload.length === 0 || newClips.length >= 200) {
-                            console.log("setting lastResults to true");
                             state.lastResults = Boolean(true);
                         }
                         state.clips = newClips;
