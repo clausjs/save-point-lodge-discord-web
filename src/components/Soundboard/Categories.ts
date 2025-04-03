@@ -13,7 +13,7 @@ export enum ClipCategory {
 }
 
 export enum MyInstantsCategory {
-    ANIME = "Anime & Menga",
+    ANIME = "Anime & Manga",
     GAMES = "Games",
     MEMES = "Memes",
     MOVIES = "Movies",
