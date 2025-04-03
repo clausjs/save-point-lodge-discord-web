@@ -274,6 +274,7 @@ body.light {
             .clip-tag {
                 max-height: 15px;
                 background-color: $color-pallette-light-blue;
+                text-transform: lowercase;
             }
         }
     }

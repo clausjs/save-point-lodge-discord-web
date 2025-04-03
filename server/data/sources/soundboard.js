@@ -54,7 +54,7 @@ class Soundboard extends DataSource {
             url,
             name,
             description,
-            tags,
+            tags: tags.map(tag => tag.toLowerCase()),
             uploadedBy,
             favoritedBy: [],
             volume,
@@ -89,7 +89,7 @@ class Soundboard extends DataSource {
         }
 
         try {
-            await db.collection(this.collectionName).doc(clip.id).set({ ...clip, createdAt: createTimestamp, updatedAt: Timestamp.fromDate(new Date()) });
+            await db.collection(this.collectionName).doc(clip.id).set({ ...clip, tags: clip.tags.map(t => t.toLowerCase()), createdAt: createTimestamp, updatedAt: Timestamp.fromDate(new Date()) });
             return clip;
         } catch (err) {
             logErr(err);

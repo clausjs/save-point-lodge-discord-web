@@ -141,7 +141,7 @@ const soundboard = createSlice({
                     const allTags: string[] = [];
                     for (const clip of action.payload) {
                         const tags = clip.tags || [];
-                        tags.forEach(tag =>  { if (!allTags.includes(tag)) allTags.push(tag); });
+                        tags.forEach(tag =>  { if (!allTags.includes(tag.toLowerCase())) allTags.push(tag.toLowerCase()); });
                     }
                     state.allTags = allTags;
                 })

@@ -153,28 +153,14 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
         }));
     }, [allTags, clipData.tags]);
 
-    // const handleTagKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    //     if (event.key === 'Enter' && tagInput.trim() !== '' && !tags.includes(tagInput)) {
-    //         setTags([...tags, tagInput.trim()]);
-    //         setTagInput('');
-    //     }
-    // };
-
     const handleDeleteTag = (tagToDelete: string) => () => {
-        setTags(tags.filter(tag => tag !== tagToDelete));
+        setTags(tags.filter(tag => tag.toLowerCase() !== tagToDelete.toLowerCase()));
     };
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth>
             <DialogTitle>{`${editClip && !editClip.isSavingMyInstant ? 'Edit' : 'Add New'} Clip`}</DialogTitle>
             <DialogContent>
-                {/* <InputLabel id="clip-type-label">Clip Type</InputLabel> */}
-                {/* <FormControl fullWidth margin="normal">
-                    <Select labelId="clip-type-label" value={clipType} onChange={handleClipTypeChange}>
-                        <MenuItem value="local" disabled>Local File - Coming Soon</MenuItem>
-                        <MenuItem value="url">URL</MenuItem>
-                    </Select>
-                </FormControl> */}
                 <FormControl className='clip-details' fullWidth margin='normal'>
                     <TextField
                         fullWidth
@@ -230,7 +216,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                             const isExisting = options.some((option) => inputValue === option.title);
                             if (inputValue !== '' && !isExisting) {
                               filtered.unshift({
-                                title: `Add tag: ${inputValue}`, // Display value
+                                title: `Add tag: ${inputValue.toLowerCase()}`, // Display value
                                 inputValue,
                               });
                             }
@@ -239,14 +225,15 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                         }}
                         onInputChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event) setTagInput({ title: event.target?.value }) }}
                         onChange={(event, newValue) => {
+                            const newTags = tags.map((tag) => tag.toLowerCase());
                             if (typeof newValue === 'string') {
-                                setTags([ ...tags, newValue ]);
+                                setTags([ ...newTags, newValue.toLowerCase() ]);
                             //@ts-expect-error
                             } else if (newValue && newValue.inputValue) {
                                 //@ts-expect-error
-                                setTags([ ...tags, newValue.inputValue ]);
+                                setTags([ ...newTags, newValue.inputValue.toLowerCase() ]);
                             } else if (newValue && newValue.title) {
-                                setTags([ ...tags, newValue.title ]);
+                                setTags([ ...newTags, newValue.title.toLowerCase() ]);
                             }
 
                             setTagInput({ title: '' });
@@ -278,7 +265,7 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                         {tags.map((tag, index) => (
                             <Chip
                                 key={index}
-                                label={tag}
+                                label={tag.toLowerCase()}
                                 onDelete={handleDeleteTag(tag)}
                                 style={{ margin: '2px' }}
                             />

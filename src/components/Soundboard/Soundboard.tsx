@@ -142,11 +142,12 @@ const Soundboard: React.FC = () => {
 
     useEffect(() => {
         if (clipType === 'saved') {
+            setSearchTerm('');
             getClips('saved');
             setCategory('all');
         } else {
-            setMyInstantsPage(1);
             setCategory('trending');
+            setMyInstantsPage(1);
             getClips('myinstants');
         }
     }, [clipType]);
@@ -320,7 +321,7 @@ const Soundboard: React.FC = () => {
         setFilterMenuAnchorEl(null);
     }
 
-    const getClips = (type: ClipType, page: number = myInstantsPage) => {
+    const getClips = useCallback((type: ClipType, page: number = myInstantsPage) => {
         closeAllMenus();
         
         if (clipType !== type) {
@@ -347,7 +348,7 @@ const Soundboard: React.FC = () => {
                 }
                 break;
         }
-    }
+    }, [clipType, category, myInstantsPage]);
 
     const clearMyInstantsSearch = () => {
         setSearchTerm('');
