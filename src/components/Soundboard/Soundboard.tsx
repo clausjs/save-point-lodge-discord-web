@@ -323,12 +323,6 @@ const Soundboard: React.FC = () => {
 
     const getClips = useCallback((type: ClipType, page: number = myInstantsPage) => {
         closeAllMenus();
-        
-        if (clipType !== type) {
-            setClipType(type);
-            durations.current = {};
-            dispatch(resetClips());
-        }
 
         switch (type) {
             case 'saved':
@@ -336,6 +330,7 @@ const Soundboard: React.FC = () => {
                 break;
             case 'myinstants':
                 switch (category) {
+                    case 'all':
                     case 'trending':
                         dispatch(fetchMyInstantsTrending(page));
                         break;
