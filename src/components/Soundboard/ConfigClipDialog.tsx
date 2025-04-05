@@ -258,6 +258,10 @@ const ConfigClipDialog: React.FC<ConfigClipDialogProps> = ({ clip: editClip, ope
                                 {...params}
                                 label="Tags"
                                 helperText="Press Enter to add tag"
+                                onPaste={(e) => {
+                                    e.preventDefault();
+                                    return false;
+                                }}
                             />
                         }
                     />
