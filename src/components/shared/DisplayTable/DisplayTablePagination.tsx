@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import {
     TablePagination
-} from '@material-ui/core';
+} from '@mui/material';
 
 import { ControlledDisplayTablePaginationProps } from '../../../types';
 

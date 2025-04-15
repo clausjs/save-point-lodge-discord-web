@@ -1,0 +1,36 @@
+@import '../../sass/_globals.scss';
+
+body.light {
+    .member-main {
+        background: $color-pallette-white;
+        color: black;
+    }
+}
+
+.account-settings {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.member-opts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    // overflow: scroll;
+    // height: calc(100% - ((#{$header-height} * 1px) + (#{$copyright-height} * 1px)));
+
+    .description-cell {
+        img {
+            max-width: 35px;
+            max-height: 35px;
+            padding: 0 10px;
+        }
+    }
+}
+
+.soundboard-opts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

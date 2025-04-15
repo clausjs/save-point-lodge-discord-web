@@ -2,14 +2,20 @@ import React, { useState, useEffect, SyntheticEvent } from 'react';
 import { Grid } from '@giphy/react-components'
 import fetch from 'node-fetch';
 
-import { OutlinedInput, IconButton, Box, Popper, Fade, TextField, InputAdornment, FormControl, InputLabel } from '@material-ui/core';
-import ArrowForwardIosOutlined from '@material-ui/icons/ArrowForwardIosOutlined';
+import { 
+    OutlinedInput, 
+    IconButton, 
+    Box, 
+    Popper, 
+    Fade, 
+    InputAdornment, 
+    FormControl 
+} from '@mui/material';
 
-import { useMediaQuery } from '../../../hooks';
 import { AnimatedIGif } from '../../../types';
 
-import '../../../sass/commands.scss';
-import { SearchOutlined } from '@material-ui/icons';
+import './Commands.scss';
+import { SearchOutlined } from '@mui/icons-material';
 
 interface GiphyGridParams {
     text?: string;

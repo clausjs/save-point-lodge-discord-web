@@ -1,0 +1,20 @@
+.clip-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.volume-controls {
+    display: flex;
+    flex-direction: row;
+
+    .volume-slider {
+        flex: 1;
+    }
+}

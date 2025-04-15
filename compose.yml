@@ -1,0 +1,93 @@
+name: savepointlodge-web
+services:
+  frontend-prod:
+    image: savepointlodge-web-frontend:latest
+    hostname: frontend
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DISCORD_AUTH_CLIENT_ID=${DISCORD_AUTH_CLIENT_ID}
+      - DISCORD_AUTH_CLIENT_SECRET=${DISCORD_AUTH_CLIENT_SECRET}
+      - AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_SENDER_ID=${FIREBASE_SENDER_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_CLIENT_PASSWORD=${FIREBASE_CLIENT_PASSWORD}
+      - DISCORD_GUILD_ID=${DISCORD_GUILD_ID}
+      - AUTHORIZED_API_KEY=${AUTHORIZED_API_KEY}
+      - GIPHY=${GIPHY}
+      - PORT=${PORT:-3000}
+      - WS_PORT=${WS_PORT:-8080}
+    depends_on:
+      redis:
+        condition: service_healthy
+    expose:
+      - "${PORT}:${PORT}"
+      - ":${WS_PORT}"
+
+  frontend-dev:
+    build:
+      context: .
+      args:
+        PORT: ${DEV_PORT:-8000}
+    hostname: dev-frontend
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=test
+      - DISCORD_AUTH_CLIENT_ID=${DISCORD_AUTH_CLIENT_ID}
+      - DISCORD_AUTH_CLIENT_SECRET=${DISCORD_AUTH_CLIENT_SECRET}
+      - AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_SENDER_ID=${FIREBASE_SENDER_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_CLIENT_PASSWORD=${FIREBASE_CLIENT_PASSWORD}
+      - DISCORD_GUILD_ID=${DISCORD_GUILD_ID}
+      - AUTHORIZED_API_KEY=${AUTHORIZED_API_KEY}
+      - GIPHY=${GIPHY}
+      - DEV_PORT=${DEV_PORT:-8000}
+      - WS_PORT=${WS_PORT:-8080}
+    depends_on:
+      redis:
+        condition: service_healthy
+    expose:
+      - "${DEV_PORT}:${DEV_PORT}"
+      - ":${WS_PORT}"
+
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - db-data:/var/lib/redis/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    expose:
+      - 6379
+
+  server:
+    image: nginx:latest
+    restart: always
+    env_file:
+      - .env
+    environment:
+      DEV_DOMAINS: ${DEV_DOMAINS:-dev.savepointlodge.com www.dev.savepointlodge.com}
+      DOMAINS: ${DOMAINS:-savepointlodge.com www.savepointlodge.com}
+      DEV_PORT: ${DEV_PORT:-8000}
+      PORT: ${PORT:-3000}
+    volumes:
+      - ./docker/savepointlodge.conf.template:/etc/nginx/templates/savepointlodge.conf.template
+      - ./docker/dev.savepointlodge.conf.template:/etc/nginx/templates/dev.savepointlodge.conf.template
+      - ./certs:/etc/letsencrypt/live/savepointlodge.com/
+    ports:
+      - 80:80
+      - 443:443
+
+volumes: 
+  db-data:

@@ -14,7 +14,7 @@ router.get('/', async function(req, res) {
                 }, 5000);
             });
         } else {
-            commands = await req.db.firebase.getCommands();
+            commands = await req.db.firebase.commands.get();
         }
         const filteredCommands = commands.filter(command => !command.private && command.type === 1);
 

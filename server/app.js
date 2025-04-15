@@ -5,25 +5,36 @@ const express = require('express');
 const compression = require('compression');
 const favicon = require('serve-favicon');
 const session  = require('express-session');
+const MemoryStore = require('memorystore')(session);
 const redis = require('redis');
 const passport = require('passport');
 const history = require('connect-history-api-fallback');
 const cors = require('cors');
 const Strategy = require('./auth/Strategy');
+const LocalStrategy = require('passport-local').Strategy;
 const db = require('./data');
+const { reduceUser } = require('./auth/utils');
 
 const BUILD_DIR = path.join(__dirname, '../build');
 const ASSET_DIR = path.join(__dirname, '../assets');
 const API_DIR = path.join(__dirname, 'api');
 
-let RedisStore = require('connect-redis')(session);
-let redisClient = redis.createClient();
+let RedisStore, redisClient;
 
-const app = express();
 const devMode = process.env.NODE_ENV === 'dev' ? true : false;
 
-const defaultPort = devMode ? 3000 : 8080;
-const port = process.env.PORT || defaultPort;
+if (!devMode) {
+    RedisStore = require('connect-redis')(session);
+    redisClient = redis.createClient({
+        host: process.env.REDIS_HOST ?? 'redis',
+        port: process.env.REDIS_PORT ?? 6379
+    });
+}
+
+const app = express();
+
+const portIdentifier = ['dev', 'development', 'test'].includes(process.env.NODE_ENV) ? 'DEV_PORT' : 'PORT';
+const port = process.env[portIdentifier] || 3000;
 
 db.authenticate();
 app.use(compression());
@@ -66,17 +77,24 @@ app.use(function(req, res, next) {
     next();
 });
 
-var scopes = ['identify', 'guilds'];
+var scopes = ['identify', 'guilds', 'guilds.members.read'];
 var prompt = 'consent';
 
 const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com" : `${process.env.NODE_ENV === 'test' ? 'dev.' : ''}savepointlodge.com`;
 const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
 const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+        const profile = { id: process.env.OWNER_ID, username: 'testUser', avatarUrl: 'https://cdn-icons-png.freepik.com/512/147/147142.png' }
+        return done(null, profile);
+    }
+));
+
 passport.use(new Strategy({
-    authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
-    clientID: process.env.DISCORD_CLIENT_ID,
-    clientSecret: process.env.PASSPORT_SECRET,
+    authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
+    clientID: process.env.DISCORD_AUTH_CLIENT_ID,
+    clientSecret: process.env.DISCORD_AUTH_CLIENT_SECRET,
     tokenURL: 'https://discord.com/api/oauth2/token',
     callbackURL,
     scope: scopes,
@@ -87,16 +105,16 @@ passport.use(new Strategy({
     });
 }));
 
-const redisStore = devMode ? new RedisStore({ client: redisClient }) : new RedisStore({
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
+const store = devMode ? new MemoryStore() : new RedisStore({ 
+    host: process.env.REDIS_HOST ?? 'redis',
+    port: process.env.REDIS_PORT ?? 6379,
     client: redisClient
 });
 
 app.use(session({
-    store: redisStore, 
+    store, 
     saveUninitialized: false,
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.AUTH_SESSION_SECRET,
     resave: false,
     secure: true,
     cookie: { maxAge: 10800000 },
@@ -107,9 +125,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/login', passport.authenticate('discord', { scope: scopes, prompt: prompt }), function(req, res) {});
+if (devMode) {
+    app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), function(req, res) {
+        if (req.user) {
+            return res.status(200).json(reduceUser(req.user));
+        }
+    
+        res.status(401).send('Unauthorized');
+    });
+}
+app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
 app.get('/login-redirect',
-    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/') } // auth success
+    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/postAuth'); } // auth success
 );
 
 app.get('/logout', function(req, res) {
@@ -148,7 +175,7 @@ passport.deserializeUser(function(obj, done) {
 });
 
 const checkHeaders = (referer, params) => {
-    const ACCEPTED_HEADERS = ['localhost:3000', 'localhost:8080', 'dev.savepointlodge.com', 'savepointlodge.com', 'ec2-54-165-53-210.compute-1.amazonaws.com'];
+    const ACCEPTED_HEADERS = ['localhost', 'dev.savepointlodge.com', 'savepointlodge.com'];
 
     let foundAcceptableHeader = false;
 
@@ -166,13 +193,12 @@ const checkHeaders = (referer, params) => {
 app.use('/api', function(req, res, next) {;
     if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     req.db = db;
-    req.isTesting = process.env.NODE_ENV === 'dev';
+    // req.isTesting = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'testing';
+    req.fakeAuth = process.env.NODE_ENV === 'dev';
     next();
 });
 
 app.use('/api/user', require(`${API_DIR}/user`));
-
-app.use('/api/movies', require(`${API_DIR}/movies`));
 
 app.use('/api/commands', require(`${API_DIR}/commands`));
 
@@ -180,12 +206,16 @@ app.use('/api/giphy', require(`${API_DIR}/giphy`));
 
 app.use('/api/status', require(`${API_DIR}/status`));
 
-if (process.env.NODE_ENV === 'dev') {
+app.use('/api/discord', require(`${API_DIR}/discord`).router);
+
+app.use('/api/soundboard', require(`${API_DIR}/soundboard`));
+
+if (devMode) {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);
     console.info("ASSET_DIR: ", ASSET_DIR);
     console.info("API_DIR: ", API_DIR);
 }
 
-app.listen(port, () => console.log(`Example app listening on port ${port} and env is ${process.env.NODE_ENV}!`));
+app.listen(port, () => console.log(`SPL Web listening on port ${port} and env is ${process.env.NODE_ENV}!`));
 

@@ -1,33 +1,22 @@
 import React, { useState, useLayoutEffect } from 'react';
-import fetch from 'node-fetch';
+import { DiscordUser, DiscordUser as User } from '../../types';
 
-type User = {
-    id: string;
-    username: string;
-    discriminator: number;
-    avatar: string;
-    status: string;
-    game?: any
-    avatar_url: string;
-}
-
-import '../../sass/widget.scss';
+import './Widget.scss';
+import { fetchDiscordMembers } from '../../state/reducers/discord';
+import { connect, useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from '../../state/store';
+import { useSelector } from 'react-redux';
 
 const DiscordWidget: React.FC = () => {
-    const [ userlist, setUserlist ] = useState<any[]>([]);
+    const dispatch = useDispatch<AppDispatch>();
     const [ fetchedUserList, setFetchedUserList ] = useState<boolean>(false);
+
+    const members: DiscordUser[] = useSelector((state: RootState) => state.discord.members);
 
     useLayoutEffect(() => {
         if (!fetchedUserList) {
-            console.log("fetching userlist");
             setFetchedUserList(true);
-            const url = new URL(process.env.DISCORD_API);
-            fetch(url).then(res => res.json()).then(data => {
-                const list = data.members.filter((user: User) => user.username !== 'BoobBot™');
-                setUserlist(list);
-            }).catch(err => {
-                console.error("Error fetching widget info", err);
-            })
+            dispatch(fetchDiscordMembers());
         }
     }, [fetchedUserList]);
 
@@ -36,7 +25,7 @@ const DiscordWidget: React.FC = () => {
             <div className='content-header'>
                 <a className='widgetLogo' href='https://discord.com' target="_blank" />
                 <span className='online-count'>
-                    <strong>{userlist.length}</strong>
+                    <strong>{members.length}</strong>
                     <> </>
                     <> Members</>
                     <> Online</>
@@ -47,7 +36,7 @@ const DiscordWidget: React.FC = () => {
                 <div className='user-list'>
                     <div className='membersOnline'>Members Online</div>
                     <div>
-                        {userlist.map((user: User, i: number) => {
+                        {members.map((user: User, i: number) => {
                             return (
                                 <div className='widget-member' key={i}>
                                     <div className='widget-avatar'>

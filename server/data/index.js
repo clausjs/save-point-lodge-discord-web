@@ -1,6 +1,6 @@
 const firebase = require('firebase');
 
-const { DB_KEY: apiKey, DB_PROJECTID: projectId, DB_SENDERID: senderId } = process.env;
+const { FIREBASE_PRIVATE_KEY: apiKey, FIREBASE_PROJECT_ID: projectId, FIREBASE_SENDER_ID: senderId } = process.env;
 const app = firebase.initializeApp({
     apiKey: apiKey,
     authDomain: `${projectId}.firebaseapp.com`,
@@ -16,8 +16,9 @@ const Firebase = require('./FirebaseData');
 const firebaseData = Firebase(db);
 
 async function authenticate() {
-    const { DB_EMAIL: email, DB_PASSWORD: pass } = process.env;
+    const { FIREBASE_CLIENT_EMAIL: email, FIREBASE_CLIENT_PASSWORD: pass } = process.env;
     await app.auth().signInWithEmailAndPassword(email, pass);
+    firebaseData.isAuthenticated();
 }
 
 async function shutdown() {

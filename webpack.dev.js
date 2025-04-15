@@ -1,10 +1,25 @@
 const { merge } = require('webpack-merge');
-const common = require('./webpack.common.js');
 
-module.exports = merge(common, {
+const commonConfig = require('./webpack.config.js');
+
+module.exports = merge(commonConfig, {
   mode: 'development',
+  devtool: 'inline-source-map',
+  watch: true,
   watchOptions: {
-    ignored: ["node_modules", "server"]
+    ignored: ['node_modules/**'],
   },
-  devtool: 'inline-source-map'
+  devServer: {
+    server: 'http',
+    host: 'localhost',
+    port: 3000,
+    historyApiFallback: true,
+    proxy: [
+      {
+        context: ['/api'],
+        target: 'http://localhost:8000/api',
+        changeOrigin: true,
+      },
+    ]
+  },
 });

@@ -1,0 +1,12 @@
+[
+    {
+        "all_clips": {
+            "description": "Description for a property",
+            "enabled": true
+        },
+        "auto_soundboard": {
+            "description": "Description for a property",
+            "enabled": false
+        }
+    }
+]

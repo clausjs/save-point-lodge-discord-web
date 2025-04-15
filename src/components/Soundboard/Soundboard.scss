@@ -1,0 +1,350 @@
+@import '../../sass/_globals';
+
+body.light {
+    .main-header {
+        .logo {
+            background: 4px $color-pallette-white;
+        }
+    }
+
+    .my-instants-button {
+        .small-button-background {
+            &.circle {
+                background-color: black;
+            }
+        }
+    }
+}
+
+@keyframes actions-smooth-appear {
+    from {
+        height: 0;
+        width: 0;
+        top: 50%;
+        left: 75%;
+        display: none;
+    }
+
+    to {
+        height: 100%;
+        width: 100%;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: block;
+    }
+}
+
+.no-soundboard-access {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.info-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.soundboard {
+    #my-instants-get-by-category {
+        svg {
+            transform: rotate(90deg);
+        }
+    }
+
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+    }
+
+    .search-section {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        color: inherit;
+        
+        .search-bar {
+            margin: auto;
+            width: 100%;
+        }
+    }
+
+    .sort-section {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        margin: 10px auto;
+
+        .MuiChip-root {
+            margin: 0 5px;
+            color: inherit;
+            border: 1px solid $color-pallette-light-blue;
+            
+            &.MuiChip-outlined {
+                border: 1px solid $color-pallette-dark-blue;
+            }
+            
+            &.MuiChip-filled {
+                background-color: $color-pallette-dark-2;
+            }
+            
+            svg {
+                color: inherit;
+            }
+        }
+    }
+
+
+    .grid-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin: auto;
+        width: auto;
+        margin: 10px 20px;
+        box-shadow: unset;
+        flex-wrap: wrap;
+
+        .my-instants-button {
+            width: 50px;
+            height: 50px;
+            margin: 0 25px;
+            display: flex;
+            align-self: center;
+
+            .MuiFormControl-root {
+                display: flex;
+                justify-content: center;;
+                
+                .MuiSwitch-thumb {
+                    background-color: $color-pallette-dark-2;
+                }
+    
+                .MuiSwitch-track {
+                    background-color: $color-pallette-light-blue;
+                }
+            }
+
+        }
+
+        .category-select {
+            width: auto;
+            min-width: 150px;
+            align-self: center;
+        }
+
+        button.grid-action {
+            margin: 0 5px;
+        }
+
+        .status-section {
+            flex: 1;
+            
+            .status {
+                .success {
+                    color: green;
+                }
+    
+                .error {
+                    color: red;
+                }
+    
+                .unknown {
+                    color: yellow;
+                }
+            }
+        }
+
+
+        .button-grp {
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .active-tag-search-section {
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        min-height: 42px;
+        margin: 25px auto;
+
+        .MuiChip-root {
+            margin: 5px 10px;
+            background-color: $color-pallette-light-blue;
+        }
+    }
+}
+
+.soundboard-items {
+    margin: 10px;
+    color: inherit;
+
+    .clip-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        border: 2px solid transparent;
+        cursor: pointer;
+        @include background-opacity($color-pallette-dark-background-2, 0.5);
+        margin: 0 auto;
+        position: relative;
+        color: inherit;
+
+        &:hover {
+            border: 2px solid addOpacity($color-pallette-light-blue, 0.5);
+        }
+
+        .clip-title-section {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+
+            .clip-name {
+                max-width: 80%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-decoration: solid;
+                white-space: nowrap;
+                align-self: flex-start;
+                display: flex;
+            }
+
+            .clip-metadata {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                font-size: 0.8em;
+                color: $color-pallette-light-gray;
+                visibility: hidden;
+                
+                &.show {
+                    visibility: visible;
+                }
+
+                .clip-category {
+                    background-color: addOpacity($color-pallette-light-blue, 0.1);
+                    border-radius: 5px;
+                    padding: 2px 5px;
+                }
+                
+                .clip-duration {
+                    display: flex;
+                    justify-content: flex-end;
+                    height: 20px;
+                }
+            }
+
+        }
+
+
+        .clip-uploader {
+            color: $color-pallette-light-gray;
+        }
+
+        .clip-description {
+            height: auto;
+            padding: 5px 0;
+            visibility: hidden;
+
+            &.show {
+                visibility: visible;
+            }
+        }
+
+        .clip-footer {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .tags {
+            max-width: 50%;
+            
+            .clip-tag {
+                max-height: 15px;
+                background-color: $color-pallette-light-blue;
+                text-transform: lowercase;
+            }
+        }
+    }
+
+    .volume-controls {
+        background-color: $color-pallette-dark-background-2;
+        position: absolute;
+        z-index: 999;
+        height: auto;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        margin-bottom: 5px;
+        border-radius: 25px;
+        display: block;
+
+        &.hide {
+            display: none;
+        }
+    }
+
+    // .mobile-actions {
+    //     @include background-opacity($color-pallette-dark-background-2, 0.95);
+    //     position: absolute;
+    //     z-index: 999;
+    //     height: inherit;
+    //     width: inherit;
+    //     top: 0;
+    //     bottom: 0;
+    //     left: 0;
+    //     display: block;
+    //     visibility: visible;
+    //     animation: actions-smooth-appear 0.1s forwards;
+
+    //     &.hide {
+    //         visibility: hidden;
+    //         animation: actions-smooth-appear 0.1s forwards reverse;
+    //     }
+
+    //     .buttons {
+    //         display: flex;
+    //         flex-direction: column;
+    //         justify-content: space-evenly;
+    //         height: 100%;
+    //         width: 100%;
+
+    //         div {
+    //             display: flex;
+    //             justify-content: space-evenly;
+
+    //             &.close {
+    //                 svg {
+    //                     color: addOpacity($color-pallette-white, 0.5);
+    //                     border: 1px solid addOpacity($color-pallette-white, 0.5);
+    //                     border-radius: 50%;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    // .clip-actions {
+    //     display: flex;
+    //     flex-direction: row;
+    //     flex-wrap: wrap;
+    // }
+}
+
+button {
+    &.favorited {
+        color: $color-pallette-orange;
+    }
+}

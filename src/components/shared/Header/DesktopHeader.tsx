@@ -1,132 +1,47 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { connect, useSelector } from 'react-redux';
-import { useLocation, Link, useHistory } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSelector } from 'react-redux';
+import { useLocation, Link, useNavigate } from "react-router";
 
 import {
     AppBar,
     Toolbar,
-    Tabs,
     Tab,
     Menu,
     MenuItem,
     Button,
-    IconButton
-} from '@material-ui/core';
-import { AccountCircle, Launch } from '@material-ui/icons';
-import { makeStyles } from '@material-ui/core/styles';
+    IconButton,
+    Box
+} from '@mui/material';
+import { AccountCircle, Launch } from '@mui/icons-material';
 
-import { fetchUserAuthorization, isMoviegoer, isSPLMember } from '../../../actions';
-
-import { RootState } from '../../../reducers';
+import { AppDispatch, RootState } from '../../../state/store';
 
 import {
+    apiState,
     PageLink,
-    HeaderProps,
-    UserState,
     User
 } from '../../../types';
 
 import '../../../sass/_globals.scss';
 import ThemeSwitch from './ThemeSwitch';
+import { HeaderProps, TabProps } from './Header';
+import { login } from '../../../state/reducers/user';
+import { useDispatch } from 'react-redux';
 
-import { AllPages as views } from './Views';
+const devMode = process.env.NODE_ENV === 'development';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        flexGrow: 0,
-    },
-    menuButton: {
-        marginRight: theme.spacing(2),
-    },
-    title: {
-        flexGrow: 1,
-        maxWidth: '33%'
-    }
-}));
-
-interface TabProps {
-    key: number;
-    name: string;
-    label: React.ReactNode | string;
-    href: string;
-    disabled?: boolean;
-    icon?: JSX.Element;
-    external?: boolean;
-    requiresAuth?: boolean;
-    requiresMoviegoer?: boolean;
-}
-
-const DefaultHeader: React.FC<HeaderProps> = (props) => {
-    const classes = useStyles();
-    const [ view, setView ] = useState<number | false>(0);
-    const [ tabs, setTabs ] = useState<TabProps[]>([]);
-    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | ((element: Element) => Element) | null>(null);
-    const userState: UserState = useSelector((state: RootState) => state.user);
-    const history = useHistory();
+const DefaultHeader: React.FC<HeaderProps> = ({
+    classes,
+    pages,
+    handleNavigation
+}) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element)>(null);
+    const [ accountIconUrl, setAccountIconUrl ] = useState<string | null>(null);
     const authMenuOpen: boolean = Boolean(authAnchorEl);
-    const currentLoc: string = useLocation().pathname;
 
-    const { user, isMoviegoer, isLodgeGuest }: { user: User, isMoviegoer: boolean, isLodgeGuest: boolean } = userState;
-
-    useLayoutEffect(() => {
-        if (userState.status === 'idle') {
-            props.getAuth();
-            props.getMoviegoerStatus();
-            props.getGuestStatus();
-        }
-    });
-    
-    useEffect(() => {
-        const actualView = Object.values(views).findIndex(view => view.to === currentLoc);
-        if (actualView === -1) {
-            handleNavigation(null, false);
-        } else if (actualView !== view) {
-            handleNavigation(null, actualView);
-        }
-    }, [view]);
-
-    useEffect(() => {
-        const _tabs = [];
-        for (let i = 0; i < Object.keys(views).length; i++) {
-            const viewName = Object.keys(views)[i];
-            const page: PageLink = views[viewName];
-            if (page.requiresAuth && user === null) {
-                continue;
-            }
-
-            if (page.requiresMoviegoer && !isMoviegoer) continue;
-
-            let label: React.ReactNode | string;
-
-            // if (page.ancillary) {
-            //     label = (
-            //         <div className='tab-label'>
-            //             <span className='view'>{viewName}</span>
-            //             {typeof page.ancillary.content === 'string' ? 
-            //                 <span className={page.ancillary.class}>{page.ancillary.content}</span>
-            //             :
-            //                 <>{page.ancillary.content}</>
-            //             }
-            //         </div>
-            //     );
-            // } else {
-            // }
-            label = page.label ? page.label : viewName;
-
-            const props: TabProps = {
-                name: viewName,
-                key: i,
-                label,
-                href: page.to,
-                disabled: page.disabled,
-                icon: page.externalSite ? <Launch /> : undefined,
-                external: page.externalSite || false
-            };
-            
-            _tabs.push(props);
-        }
-        setTabs(_tabs);
-    }, [user, isLodgeGuest, isMoviegoer]);
+    const user: User | undefined = useSelector((state: RootState) => state.user.user);
+    const userFetchState: apiState = useSelector((state: RootState) => state.user.userFetchState);
 
     const handleAuthMenu = (event: any) => {
         setAuthAnchorEl(event.currentTarget);
@@ -136,27 +51,44 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
         setAuthAnchorEl(null)
     }
 
-    const handleNavigation = (event: any, newView: number | false) => {
-        if (newView !== false && newView === tabs.findIndex(view => view.name === 'Subscribe')) return;
-
-        setView(newView);
-        if (newView !== false) history.push(Object.values(views)[newView].to);
-    }
+    useEffect(() => {
+        if (userFetchState === 'fulfilled' && user) {
+            if (user.avatarUrl) {
+                setAccountIconUrl(user.avatarUrl);
+            }
+            else if (user.avatar) {
+                setAccountIconUrl(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`);
+            }
+        }
+    }, [user, userFetchState]);
 
     return (
-        <div className={classes.root}>
-            <AppBar className="spl-header" position="static" color="inherit">
-                <Toolbar>
+        <>
+            <AppBar className="spl-header" position="static">
+                <Toolbar className='spl-toolbar'>
                     <div className='header-content'>
-                        <div className='nav-tabs'>
-                            <Tabs 
-                                variant='fullWidth'
-                                value={view}
-                                onChange={handleNavigation}
-                                aria-label='nav tabs'
-                            >
-                                {tabs.map((tab: TabProps) => <LinkTab {...tab} />)}
-                            </Tabs>
+                        <div className='logo'>
+                            <Link to="/">
+                                <img className='logo-img' src='/img/logo.png' alt="Save Point Lodge" />
+                            </Link>
+                        </div>
+                        <div className='nav-tabs-container'>
+                            <div className='nav-tabs'>
+                                {pages.map((page) => (
+                                    <Button
+                                        sx={page.isLogo ? { my: 2, alignSelf: 'flex-start' } : {}}
+                                        name={page.name}
+                                        key={page.key}
+                                        onClick={handleNavigation}
+                                        // sx={{ my: 2, color: 'white', display: 'block' }}
+                                        disableFocusRipple={true}
+                                        disableRipple={true}
+                                        startIcon={page.icon && page.external ? page.icon : undefined}
+                                    >
+                                        {page.label}
+                                    </Button>
+                                ))}
+                            </div>
                         </div>
                         <div className='personalization'>
                             <div className='theme-toggle'><ThemeSwitch /></div>
@@ -170,8 +102,8 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
                                         onClick={handleAuthMenu}
                                     >
                                         {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
-                                        {userState.status === 'succeeded' && user.avatar && <img className='acct-icon' src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`} />}
-                                        {userState.status === 'succeeded' && user.avatar === null && <AccountCircle />}
+                                        {user && (user.avatar || user.avatarUrl) && <img style={user.avatarUrl ? { height: '32px', width: '32px' } : {}} className='acct-icon' src={accountIconUrl} />}
+                                        {user && user.avatar === null && <AccountCircle />}
                                     </IconButton>
                                     <Menu
                                         id="account-menu"
@@ -189,7 +121,7 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
                                         open={authMenuOpen}
                                         onClose={handleAuthMenuClose}
                                     >
-                                        {user && isLodgeGuest === true && (
+                                        {user && user.isPlanetExpressMember === true && (
                                             <MenuItem onClick={handleAuthMenuClose}><Link to="/members">Discord Options</Link></MenuItem>
                                         )}
                                         <MenuItem onClick={handleAuthMenuClose}><a href="/logout">Logout</a></MenuItem>
@@ -200,8 +132,9 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
                                 <div className='acct'>
                                     <Button
                                         variant="contained"
-                                        href="/login"
+                                        onClick={() => dispatch(login())}
                                         startIcon={<AccountCircle />}
+                                        loading={userFetchState === 'pending'}
                                     >Login</Button>
                                 </div>
                             )}
@@ -209,30 +142,8 @@ const DefaultHeader: React.FC<HeaderProps> = (props) => {
                     </div>
                 </Toolbar>
             </AppBar>
-        </div>
+        </>
     );
 };
 
-const LinkTab = (props: any) => {
-    return (
-        <Tab
-            component="a"
-            onClick={(e: any) => { if (!props.external) e.preventDefault(); }}
-            target={props.external ? "_blank" : undefined}
-            {...props}
-        />
-    )
-};
-
-const mapStateToProps = (state: RootState) => {
-    const { user } = state.user;
-    return { user }
-};
-
-const mapDispatchToProps = (dispatch: any) => ({
-    getAuth: () => dispatch(fetchUserAuthorization()),
-    getMoviegoerStatus: () => dispatch(isMoviegoer()),
-    getGuestStatus: () => dispatch(isSPLMember())
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(DefaultHeader);
+export default DefaultHeader;

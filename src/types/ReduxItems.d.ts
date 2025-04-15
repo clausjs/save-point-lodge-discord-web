@@ -1,3 +1,5 @@
+import { ClipCategory } from "../components/Soundboard/Categories";
+
 type CommandOption = {
     name: string;
     description: string;
@@ -17,7 +19,7 @@ export type TabledCommands = {
     [id: string]: Command;
 }
 
-export interface BotState {
+export interface CommandState {
     commands: Command[];
 }
 
@@ -25,8 +27,9 @@ export interface User {
     id: string;
     username: string;
     avatar: string;
+    avatarUrl?: string;
     isPlanetExpressMember: boolean;
-    isMoviegoer: boolean;
+    isSoundboardUser: boolean;
 }
 
 interface UserOption {
@@ -43,13 +46,20 @@ interface UserOptDescription {
     alt: string;
 }
 
+interface SoundboardOpt {
+    description: string;
+    enabled?: boolean;
+}
+
+export interface SoundboardOptions {
+    [id: string]: SoundboardOpt;
+}
+
 export interface UserState {
-    status: 'idle' | 'loading' | 'succeeded' | 'failed';
-    error: string | null;
     user: User | null;
     opts: UserOptions | {};
-    isMoviegoer: boolean;
-    isLodgeGuest: boolean;
+    soundboardOpts: SoundboardOptions | {};
+    userFetchState?: apiState;
 }
 
 export interface VotableMovie {
@@ -86,6 +96,50 @@ export interface MovieStats {
 export interface MovieState {
     votable: VotableMovies;
     stats: MovieStats;
+}
+
+export interface DiscordState {
+    members: DiscordUser[];
+}
+
+export interface DiscordUser {
+    id: string;
+    username: string;
+    discriminator: number;
+    avatar: string;
+    status: string;
+    game?: any
+    avatar_url: string;
+}
+
+export interface Clip {
+    id: string;
+    name: string;
+    tags: string[];
+    description: string;
+    uploadedBy: string;
+    playCount?: number;
+    volume?: number;
+    url?: string;
+    favoritedBy?: string[];
+    category?: ClipCategory;
+    duration?: number;
+    updatedAt?: Date;
+    createdAt?: Date;
+}
+
+export type apiState = 'idle' | 'pending' | 'fulfilled' | 'rejected';
+
+export interface SoundboardState {
+    clips: Clip[];
+    allTags: string[];
+    isMyInstants: boolean;
+    lastResults: boolean;
+    clipFetchState?: apiState;
+    clipAddState?: apiState;
+    clipEditState?: apiState;
+    clipDeleteState?: apiState;
+    clipSearchState?: apiState;
 }
 
 export interface Action {

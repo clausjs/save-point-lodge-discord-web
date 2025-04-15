@@ -1,0 +1,11 @@
+services:
+  web:
+    build:
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - '.env'
+    ports:
+      - "3000:3000"
+      - ":8080"

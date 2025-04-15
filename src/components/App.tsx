@@ -1,8 +1,8 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { Provider } from 'react-redux';
-import { SnackbarProvider } from 'notistack';
-import { store } from '../store/configureStore';
+import { store } from '../state/store';
+import { ThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
 
 //Views
 import Header from './shared/Header/Header';
@@ -10,51 +10,71 @@ import Home from "./Home/Home";
 import Bots from './Bots/Bots';
 import Commands from './Bots/Commands/Commands';
 import Members from "./Members/Members";
-import NoMovies from './Movies/Closed';
 import Giphy from './Bots/Commands/Giphy';
+import Soundboard from './Soundboard/Soundboard';
+import PostAuth from './Auth/PostAuth';
 
-import { ThemeProvider, createTheme, makeStyles } from '@material-ui/core/styles';
-import { Container } from '@material-ui/core';
-
-const theme = createTheme();
-
-const useStyles = makeStyles((theme) => {
-  root: {
-    // some CSS that accesses the theme
-  }
+const theme = createTheme({
+    components: {
+        MuiAppBar: {
+            styleOverrides: {
+                colorDefault: {
+                    display: 'flex',
+                    flexGrow: 1
+                },
+                colorPrimary: {
+                    // backgroundColor: '#1C364A',
+                    // color: '#FFFFFF',
+                    display: 'flex',
+                    flexGrow: 1
+                }
+            }
+        },
+        MuiLink: {
+            styleOverrides: {
+                root: {
+                    color: '#FFFFFF',
+                    '&:hover': {
+                        color: 'gray'
+                    },
+                    '&:visited': {
+                        color: 'gray'
+                    }
+                }
+            }
+        }
+    }
 });
 
-// function App() {
-//   const classes = useStyles(); // ❌ If you have this, consider moving it
-//   // inside of a component wrapped with <ThemeProvider />
-//   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
-// }
-
-
-const App: React.FC = () => (
-    <ThemeProvider theme={theme}>
-        <SnackbarProvider>
-            <Provider store={store}>
-                <Router>
-                    <Header />
-                    <Switch>
-                        <Route path="/" exact component={Home} />
-                        <Route path="/our-bots" component={Bots} />
-                        <Route path="/members" component={Members} />
-                        <Route path="/movies" component={NoMovies} />
-                        <Route path="/commands" component={Commands} />
-                        <Route path='/giphy-examples' component={Giphy} />
-                    </Switch>
-                </Router>
-                <Container className='copyright-info' maxWidth={false}>
-                    <Container className='c-content' maxWidth='md'>
-                        <img src='/img/logo.png'></img>
-                        <span>© Copyright Save Point Lodge 2016-2023</span>
-                    </Container>
-                </Container>
-            </Provider>
-        </SnackbarProvider>
-    </ThemeProvider>
-);
+const App: React.FC = () => {
+    return (
+        <React.StrictMode>
+            <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={theme}>
+                    <Provider store={store}>
+                        <Router>
+                            <Header />
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/our-bots" element={<Bots />} />
+                                <Route path="/members" element={<Members />} />
+                                <Route path="/commands" element={<Commands />} />
+                                <Route path='/soundboard' element={<Soundboard />} />
+                                <Route path='/giphy-examples' element={<Giphy />} />
+                                <Route path='/postAuth' element={<PostAuth />} />
+                            </Routes>
+                        </Router>
+                        {/* <Container className='copyright-info' maxWidth={false}>
+                            <Container className='c-content' maxWidth='md'>
+                                <img src='/img/logo.png'></img>
+                                <span>© Copyright Save Point Lodge 2016-2025</span>
+                            </Container>
+                        </Container> */}
+                    </Provider>
+                </ThemeProvider>
+            </StyledEngineProvider>
+        </React.StrictMode>
+    );
+};
 
 export default App;

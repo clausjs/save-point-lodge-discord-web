@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    env_file:
+      - .env
+    expose:
+      - "3000"
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"

@@ -11,3 +11,7 @@ build
 
 #env
 .env*
+
+#certs for nginx (superceded by Cloudflare)
+certs
+./certs/*

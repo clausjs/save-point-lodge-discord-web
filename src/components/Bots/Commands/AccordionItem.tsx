@@ -5,8 +5,8 @@ import {
     AccordionSummary,
     AccordionDetails,
     Typography
-} from '@material-ui/core';
-import ListRoundedIcon from '@material-ui/icons/ListRounded';
+} from '@mui/material';
+import ListRoundedIcon from '@mui/icons-material/ListRounded';
 
 import { Command } from '../../../types';
 
