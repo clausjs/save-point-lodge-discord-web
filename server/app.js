@@ -206,7 +206,7 @@ app.use('/api/giphy', require(`${API_DIR}/giphy`));
 
 app.use('/api/status', require(`${API_DIR}/status`));
 
-app.use('/api/discord', require(`${API_DIR}/discord`).router);
+app.use('/api/discord', require(`${API_DIR}/discord`));
 
 app.use('/api/soundboard', require(`${API_DIR}/soundboard`));
 
