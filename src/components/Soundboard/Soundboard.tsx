@@ -438,7 +438,7 @@ const Soundboard: React.FC = () => {
                         <NowPlaying
                             clip={nowPlaying}
                             onStop={() => {
-                                sendJsonMessage({ type: 'stop_sound' });
+                                sendJsonMessage({ type: 'stop_sound', caller: user.id });
                                 setNowPlaying(null);
                             }}
                         />
