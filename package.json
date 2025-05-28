@@ -60,6 +60,7 @@
     "serve-favicon": "^2.5.0",
     "toastr": "^2.1.4",
     "uuid": "^11.0.5",
+    "wavesurfer.js": "^7.9.5",
     "websocket": "^1.0.35"
   },
   "devDependencies": {

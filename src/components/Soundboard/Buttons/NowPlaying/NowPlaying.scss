@@ -1,0 +1,129 @@
+$STOP_BUTTON_WIDTH: 44px;
+
+.now-playing-card {
+  background-color: #0D1117;
+  border-radius: 14px;
+  padding: 16px;
+  color: #fff;
+  max-width: 300px;
+  height: 85px;
+  border: 2px solid transparent;
+  transition: box-shadow 0.3s ease;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.now-playing-card.playing {
+  border-color: #00e676;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 10px rgba(0, 230, 118, 0.2); }
+  50%  { box-shadow: 0 0 18px rgba(0, 230, 118, 0.4); }
+  100% { box-shadow: 0 0 10px rgba(0, 230, 118, 0.2); }
+}
+
+.idle-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  font-size: 16px;
+  color: #90A4AE;
+  height: 100%;
+}
+
+.active-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.content-info {
+  flex: 1;
+  width: calc(100% - #{$STOP_BUTTON_WIDTH});
+  
+  .label {
+    font-size: 12px;
+    color: #90A4AE;
+    letter-spacing: 1px;
+  }
+  
+  .title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .uploader {
+    font-size: 14px;
+    color: #90A4AE;
+  }
+}
+
+.stop-button {
+  background-color: #EF5350;
+  color: #0D1117;
+  border: none;
+  border-radius: 50%;
+  width: $STOP_BUTTON_WIDTH;
+  height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  margin-left: 5px;
+}
+
+.stop-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Equalizer Animation */
+.equalizer {
+  display: flex;
+  gap: 15px;
+  margin-top: 8px;
+  height: 16px;
+}
+
+.bar {
+  width: 4px;
+  background: #00e676;
+  border-radius: 2px;
+  animation: bounce 1.2s infinite ease-in-out;
+}
+
+.double-note-icon {
+  position: relative;
+  width: 32px;
+  height: 32px;
+}
+
+.double-note-icon .note {
+  position: absolute;
+  font-size: 32px;
+  color: #90A4AE;
+}
+
+.double-note-icon .back {
+  left: -4px;
+  top: 2px;
+  opacity: 0.6;
+}
+
+.double-note-icon .front {
+  left: 2px;
+  top: -2px;
+}
+
+@keyframes bounce {
+  0%, 100% { height: 6px; }
+  50% { height: 16px; }
+}

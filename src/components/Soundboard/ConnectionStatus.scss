@@ -1,0 +1,64 @@
+@import '../../sass/_globals';
+
+$success-color: #00E676;
+$error-color: #EF5350;
+$warning-color: #FFB300;
+
+.connection-status {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    border: 1px solid $color-pallette-light-blue;
+    border-radius: 5px;
+    width: 300px;
+
+    .websocket-setup {
+        margin: 0 5px;
+    }
+
+    .status {
+        display: flex;
+        flex-direction: row;
+        margin: 5px 0;
+
+        .status-text {
+            .success {
+                color: $success-color;
+            }
+    
+            .error {
+                color: $error-color;
+            }
+    
+            .unknown {
+                color: $warning-color;
+            }
+        }
+    
+        .status-icon {
+            display: flex;
+            justify-content: center;
+            align-self: center;
+            align-items: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin: 0 5px;
+            
+            &.success {
+                color: white;
+                background-color: $success-color;
+            }
+            &.error {
+                color: white;
+                background-color: $error-color;
+            }
+            &.unknown {
+                color: white;
+                background-color: $warning-color;
+            }
+        }
+    }
+    
+}

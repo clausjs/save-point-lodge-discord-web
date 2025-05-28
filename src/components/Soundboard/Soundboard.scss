@@ -48,6 +48,13 @@ body.light {
     flex-direction: column;
     align-items: center;
     width: 100%;
+
+    .header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+    }
 }
 
 .soundboard {
@@ -145,29 +152,17 @@ body.light {
             margin: 0 5px;
         }
 
-        .status-section {
-            flex: 1;
-            
-            .status {
-                .success {
-                    color: green;
-                }
-    
-                .error {
-                    color: red;
-                }
-    
-                .unknown {
-                    color: yellow;
-                }
-            }
-        }
-
-
         .button-grp {
             display: flex;
             align-items: center;
         }
+    }
+
+    .main-media-controls {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        flex: 1;
     }
 
     .active-tag-search-section {
@@ -195,7 +190,7 @@ body.light {
         align-items: flex-start;
         border: 2px solid transparent;
         cursor: pointer;
-        @include background-opacity($color-pallette-dark-background-2, 0.5);
+        background-color: $color-pallette-dark-background-2;
         margin: 0 auto;
         position: relative;
         color: inherit;
@@ -206,27 +201,24 @@ body.light {
 
         .clip-title-section {
             display: flex;
-            flex-direction: row;
-            justify-content: space-between;
             width: 100%;
 
             .clip-name {
-                max-width: 80%;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 text-decoration: solid;
                 white-space: nowrap;
-                align-self: flex-start;
-                display: flex;
+                z-index: 0;
             }
 
             .clip-metadata {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-end;
                 font-size: 0.8em;
-                color: $color-pallette-light-gray;
+                @include background-opacity($color-pallette-dark-background-2, 0.85);
+                margin: 0 5px;
                 visibility: hidden;
+                position: absolute;
+                right: 0;
+                z-index: 2;
                 
                 &.show {
                     visibility: visible;
@@ -266,6 +258,10 @@ body.light {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
+        }
+
+        .clip-actions {
+            align-items: center;
         }
 
         .tags {

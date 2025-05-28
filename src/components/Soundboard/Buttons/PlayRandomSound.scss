@@ -1,0 +1,17 @@
+// .menu-button-icon {
+//     display: flex;
+//     flex-direction: row;
+//     font-size: inherit !important;
+// }
+
+.history-button {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.history-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}

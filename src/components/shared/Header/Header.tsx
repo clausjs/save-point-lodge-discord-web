@@ -9,7 +9,7 @@ import { AppDispatch, RootState } from '../../../state/store';
 import { useSelector } from 'react-redux';
 import { PageLink, User } from '../../../types';
 import { useDispatch } from 'react-redux';
-import { fetchPlanetExpressStatus, fetchSoundboarderStatus, fetchUser } from '../../../state/reducers/user';
+import { fetchPlanetExpressStatus, fetchSoundboarderStatus, fetchUser, login } from '../../../state/reducers/user';
 import { AccountCircle, Launch } from '@mui/icons-material';
 import { AllPages as views } from './Views';
 import { useNavigate } from 'react-router';
@@ -19,6 +19,7 @@ export interface HeaderProps {
     classes?: ClassNameMap;
     pages: TabProps[];
     handleNavigation: (event: React.MouseEvent<any, any>) => void;
+    handleLogin: () => void;
 }
 
 const useStyles = makeStyles((theme: any) => ({
@@ -106,11 +107,17 @@ const Header: React.FC = () => {
         }
     }
 
+    const handleLogin = async () => {
+        await dispatch(login());
+        if (devMode) window.location.reload();
+    }
+
     if (currentLocation.pathname === '/postAuth') return null;
 
     return (
          <div className={classes.root}>
-             {isMobile ? <MobileHeader classes={classes} pages={pages} handleNavigation={handleNavigation}/> : <DesktopHeader classes={classes} pages={pages} handleNavigation={handleNavigation}/>}
+             {isMobile ? <MobileHeader classes={classes} pages={pages} handleNavigation={handleNavigation} handleLogin={handleLogin}/> : 
+             <DesktopHeader classes={classes} pages={pages} handleNavigation={handleNavigation} handleLogin={handleLogin} />}
         </div>
     );
 }

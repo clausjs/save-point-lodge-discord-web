@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, IconButton, Menu, MenuItem } from '@mui/material';
 import { Delete, Edit, Favorite, MoreHoriz, PlayArrow } from '@mui/icons-material';
-import ClipActionButton, { ClipPreviewButton } from './ClipActionButton';
+import ClipActionButton, { ClipPreviewButton } from '../Buttons/ClipActionButton';
 
 export interface MobileClipActionMenuProps {
     isFavorite?: boolean,

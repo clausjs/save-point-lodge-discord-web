@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { Box, Button, Chip, Checkbox, Container, FormControl, Grid2 as Grid, IconButton, Input, InputLabel, Link, Menu, MenuItem, Paper, Select } from '@mui/material';
+import { Box, Button, Chip, Checkbox, Container, FormControl, Grid2 as Grid, IconButton, Input, InputLabel, Link, Menu, MenuItem, Paper, Select, Typography } from '@mui/material';
 import { GridLoader } from 'react-spinners';
 
-import ConfigClipDialog from './ConfigClipDialog';
-import DeleteClipDialog from './DeleteClipDialog';
+import ConfigClipDialog from './Dialogs/ConfigClipDialog';
+import DeleteClipDialog from './Dialogs/DeleteClipDialog';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../state/store';
 import { Clip, User } from '../../types';
@@ -12,12 +12,17 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import SoundboardClip from './SoundboardClip';
 import toastr from '../../utils/toastr';
 
-import { ArrowDownward, ArrowUpward, Close, ExpandMore, Filter, FilterAlt, FilterAltOff, Search } from '@mui/icons-material';
+import { ArrowDownward, ArrowUpward, Close, ExpandMore, Filter, FilterAlt, FilterAltOff, Search, Stop } from '@mui/icons-material';
 import { fetchSoundboardClips, addClip, editClip, deleteClip, fetchMyInstantsTrending, fetchMyInstantsRecent, fetchMyInstantsByCategory, searchMyInstants, favoriteClip, resetClips } from '../../state/reducers/soundboard';
 
 import './Soundboard.scss';
 import SoundTypeToggle from './SoundTypeToggle';
-import { ClipCategory, MyInstantsCategory } from './Categories';
+import CategorySelectMenu, { ClipCategory, MyInstantsCategory, MyInstantType, SavedClipCategory } from './Menus/Categories';
+import ClipActionButton from './Buttons/ClipActionButton';
+import FilterMenu, { FilterRules } from './Menus/FilterMenu';
+import PlaySound from './Buttons/PlayRandomSound';
+import ConnectionStatus from './ConnectionStatus';
+import NowPlaying from './Buttons/NowPlaying/NowPlaying';
 
 enum SortType {
     TITLE = "Title",
@@ -32,10 +37,6 @@ enum SortDir {
 }
 
 const MY_INSTANTS_DISABLED_SORT_TYPES = [SortType.CREATED, SortType.UPLOADER];
-
-export type MyInstantType<T extends MyInstantsCategory | undefined> = 'trending' | 'recent' | T;
-const MY_INSTANTS_CATEGORIES: MyInstantType<MyInstantsCategory | undefined>[] = ['trending', 'recent', ...Object.values(MyInstantsCategory)];
-export type SavedClipCategory = 'all' | ClipCategory | undefined;
 
 type ClipType = 'saved' | 'myinstants';
 
@@ -64,13 +65,12 @@ const Soundboard: React.FC = () => {
     const [ sortType, setSortType ] = useState<SortType | null>(SortType.TITLE);
     const [ sortDir, setSortDir ] = useState<SortDir>(SortDir.ASC);
     const [ disabledSortTypes, setDisabledSortTypes ] = useState<SortType[]>([]);
-    const [ socketUrlInput, setSocketUrlInput ] = useState<string | null>(DEFAULT_SOCKET_URL);
     const [ myInstantsPage, setMyInstantsPage ] = useState<number>(1);
-    const [ exclusionRules, setExclusionRules ] = useState<('all' | 'favorites' | 'created')[]>(['all']);
+    const [ exclusionRules, setExclusionRules ] = useState<FilterRules[]>([FilterRules.ALL]);
     const [ tagFilters, setTagFilters ] = useState<string[]>([]);
+    const [ nowPlaying, setNowPlaying ] = useState<Clip & { caller: string } | null>(null);
 
     const [ filterMenuAnchorEl, setFilterMenuAnchorEl ] = React.useState<null | HTMLElement>(null);
-    const filterMenuOpen = Boolean(filterMenuAnchorEl);
 
     const openDialog = () => setDialogOpen(true);
     const closeDialog = () => {
@@ -101,29 +101,6 @@ const Soundboard: React.FC = () => {
             message: 'ping'
         }
     });
-
-    const connectionStatus = {
-        [ReadyState.CONNECTING]: 'Connecting',
-        [ReadyState.OPEN]: 'Connected',
-        [ReadyState.CLOSING]: 'Closing',
-        [ReadyState.CLOSED]: 'Closed',
-        [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-    }[readyState];
-
-    const getConnectionStatusClass = () => {
-        switch (readyState) {
-            case ReadyState.CONNECTING:
-                return 'unknown';
-            case ReadyState.OPEN:
-                return 'success';
-            case ReadyState.CLOSING:
-                return 'error';
-            case ReadyState.CLOSED:
-                return 'error';
-            default:
-                return '';
-        }
-    }
 
     const loadedClipDuration = (id: string, duration: number) => {
         if (clips.find(c => c.id === id) && !durations.current[id]) {
@@ -162,8 +139,11 @@ const Soundboard: React.FC = () => {
     useEffect(() => {
         if (user && user.isSoundboardUser) {
             if (clips.length) setFetchingClips(false);
-            if (!socketUrl) setSocketUrl(socketUrlInput || DEFAULT_SOCKET_URL);
+            if (!socketUrl) setSocketUrl(DEFAULT_SOCKET_URL);
         }
+
+        //DELETE ME
+        setNowPlaying({ ...clips[0], name: 'Something really really really long that will purposefully overflow', caller: 'ice2morrow' })
     }, [clips]);
 
     useEffect(() => {
@@ -180,15 +160,35 @@ const Soundboard: React.FC = () => {
             case ReadyState.CLOSED:
                 if (hasBeenConnected) toastr.info('Connection to Joe_Bot lost. Attempting to reconnect...');
                 break;
+            case ReadyState.CLOSING:
+                break;
             default:
-                console.error('WebSocket is in an unknown state:', readyState);
                 if (hasBeenConnected) toastr.error("Can't establish connection to Joe_Bot");
         }
     }, [readyState]);
 
+    const isValidJson = (data: string): boolean => {
+        try {
+            JSON.parse(data);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     useEffect(() => {
         if (lastMessage !== null) {
             setMessageHistory((prev) => prev.concat(lastMessage));
+            if (isValidJson(lastMessage.data)) {
+                const data = JSON.parse(lastMessage.data);
+                if (data.type === 'now_playing') {
+                    if (data.id) {
+                        const clip: Clip | undefined = clips.find(c => c.id === data.id);
+                        if (clip) setNowPlaying({ ...clip, caller: data.caller });
+                    }
+                }
+                if (data.type === 'clip_ended') setNowPlaying(null);
+            }
         }
     }, [lastMessage]);
 
@@ -221,7 +221,7 @@ const Soundboard: React.FC = () => {
             return c.id === clipId
         });
         if (clip && clip.url && readyState === ReadyState.OPEN) {
-            sendJsonMessage({ type: 'play_sound', sound: clip.url, volume: volumeOverride ?? clip.volume ?? 50, caller: user.id });
+            sendJsonMessage({ type: 'play_sound', ...clip, sound: clip.url, volume: volumeOverride ?? clip.volume ?? 50, caller: user.id });
         }
     };
 
@@ -237,9 +237,12 @@ const Soundboard: React.FC = () => {
         setDeletingClip(clip);
     }
 
-    const playRandomClip = () => {
+    const playRandomClip = (): Clip | void => {
         const randomIndex = Math.floor(Math.random() * filteredClips.length);
-        playClip(filteredClips[randomIndex].id);
+        const clip: Clip | undefined = filteredClips[randomIndex];
+        if (!clip) return;
+        playClip(clip.id);
+        return clip;
     }
 
     const _favoriteClip = (clipId: string) => {
@@ -262,8 +265,8 @@ const Soundboard: React.FC = () => {
         }
 
         // Filter filtering
-        if (exclusionRules.includes('favorites') && !clip.favoritedBy?.includes(user.id)) included = false;
-        if (exclusionRules.includes('created') && clip.uploadedBy.trim() !== user.username.trim()) included = false;
+        if (exclusionRules.includes(FilterRules.FAVORITES) && !clip.favoritedBy?.includes(user.id)) included = false;
+        if (exclusionRules.includes(FilterRules.CREATED) && clip.uploadedBy.trim() !== user.username.trim()) included = false;
 
         // Category filtering
         if (!isMyInstants) {
@@ -364,16 +367,16 @@ const Soundboard: React.FC = () => {
         setTagFilters(tagFilters.filter(tag => tag !== filter));
     }
 
-    const _setExclusionRules = (rule: 'all' | 'favorites' | 'created') => {
+    const _setExclusionRules = (rule: FilterRules) => {
         setFilterMenuAnchorEl(null);
-        if (rule === 'all') {
-            setExclusionRules(['all']);
+        if (rule === FilterRules.ALL) {
+            setExclusionRules([FilterRules.ALL]);
         } else {
-            if (exclusionRules.includes('all')) {
+            if (exclusionRules.includes(FilterRules.ALL)) {
                 setExclusionRules([rule]);
             } else if (exclusionRules.includes(rule)) {
                 const newRules = exclusionRules.filter(r => r !== rule);
-                if (!newRules.length) newRules.push('all');
+                if (!newRules.length) newRules.push(FilterRules.ALL);
                 setExclusionRules(newRules);
             } else {
                 setExclusionRules([...exclusionRules, rule]);
@@ -408,25 +411,20 @@ const Soundboard: React.FC = () => {
         <>
             <DeleteClipDialog clip={deletingClip} open={deletingClip !== null} onClose={closeDialog} onDelete={() => { dispatch(deleteClip(deletingClip)); }} />
             <ConfigClipDialog clip={editingClip} open={dialogOpen} onClose={closeDialog} onSave={_addOrEditClip} />
-            <Menu
-                anchorEl={filterMenuAnchorEl}
-                open={filterMenuOpen}
-                onClose={closeAllMenus}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-            >
-                <MenuItem><Checkbox checked={exclusionRules.length === 1 && exclusionRules[0] === 'all'} onChange={() => _setExclusionRules('all')} />All</MenuItem>
-                <MenuItem><Checkbox checked={exclusionRules.includes('favorites')} onChange={() => _setExclusionRules('favorites')} />Favorites</MenuItem>
-                <MenuItem><Checkbox checked={exclusionRules.includes('created')} onChange={() => _setExclusionRules('created')} />Created By Me</MenuItem>
-            </Menu>
             <div className='info-header'>
-                <div className='header-text'><h1>Joe_Bot Soundboard</h1></div>    
+                <div className='header'>
+                    <div style={{ flex: 1 }}>
+                        <ConnectionStatus
+                            readyState={readyState}
+                            onChange={(url: string | null) => {
+                                setSocketUrl(url);
+                            }}
+                            socketUrl={socketUrl}
+                        />
+                    </div>
+                    <h1>Joe_Bot Soundboard</h1>
+                    <div style={{ flex: 1 }}></div>
+                </div>    
                 <div className='my-instants-link'>
                     <span>
                         Looking for more sounds or a place to host sounds? <Link target="_blank" href='https://www.myinstants.com/en/index/us/'>Click here!</Link>
@@ -436,33 +434,14 @@ const Soundboard: React.FC = () => {
             {!user || !user.isSoundboardUser ? <div className='no-soundboard-access'>You must have the correct role access to access this page. If you feel this is incorrect, contact an admin.</div> : null}
             {user && user.isSoundboardUser && <div className='soundboard'> 
                 <div className='grid-actions'>
-                    <div className='status-section'>
-                        <p className='status'>Connection status: <span className={getConnectionStatusClass()}>{connectionStatus}</span></p>
-                        {devMode && <div className='websocket-setup'>
-                            <Input
-                                className='websocket-input'
-                                placeholder='WebSocket URL'
-                                value={socketUrlInput}
-                                onChange={(e) => setSocketUrlInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        if (socketUrlInput !== '') {
-                                            setSocketUrl(socketUrlInput);
-                                        } else {
-                                            setSocketUrl(null);
-                                        }
-
-                                        setConnectionAttempts(0);
-                                        setMessageHistory([]);
-                                    }
-                                }}
-                                endAdornment={<Close onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSocketUrlInput('');
-                                    setSocketUrl(null);
-                                }} />}
-                            />
-                        </div>}
+                    <div style={{ flex: 1 }}>
+                        <NowPlaying
+                            clip={nowPlaying}
+                            onStop={() => {
+                                sendJsonMessage({ type: 'stop_sound' });
+                                setNowPlaying(null);
+                            }}
+                        />
                     </div>
                     <div className='my-instants-button'>
                         <SoundTypeToggle 
@@ -478,31 +457,23 @@ const Soundboard: React.FC = () => {
                             }}
                         />
                     </div>
-                    <div className='category-select'>    
-                        <FormControl variant="standard" fullWidth>
-                            <Select
-                                labelId=""
-                                value={category}
-                                onChange={(e) => _setCategory(e.target.value as MyInstantType<MyInstantsCategory | undefined>)}
-                                label=""
-                                sx={{ color: 'inherit' }}
-                            >
-                                {isMyInstants && MY_INSTANTS_CATEGORIES.map((category, i) => {
-                                    return (
-                                        <MenuItem key={i} value={category}>{`${category.substring(0, 1).toUpperCase()}${category.substring(1)}`}</MenuItem>
-                                    );
-                                })}
-                                {!isMyInstants && ['all', ...Object.values(ClipCategory)].map((category, i) => {
-                                    return (
-                                        <MenuItem key={i} value={category}>{`${category.substring(0, 1).toUpperCase()}${category.substring(1)}`}</MenuItem>
-                                    );
-                                })}
-                            </Select>
-                        </FormControl>
-                    </div>
+                    <CategorySelectMenu
+                        category={category}
+                        onChange={_setCategory}
+                        isMyInstants={isMyInstants}
+                    />
                     <div className='button-grp'>
                         <Button disabled={!user.isSoundboardUser} className='grid-action' variant="contained" onClick={openDialog}>Add Clip</Button>
-                        <Button disabled={disableControls} className='grid-action' variant="contained" onClick={playRandomClip}>Play Random Sound</Button>
+                        <PlaySound
+                            isMyInstants={isMyInstants}
+                            onPlayRandom={playRandomClip}
+                            onPlayClip={playClip}
+                            onSaveClip={(clip) => {
+                                setEditingClip(clip);
+                                openDialog();
+                            }}
+                            disabled={disableControls}
+                        />
                     </div>
                 </div>
                 <Container className='active-tag-search-section'>
@@ -548,9 +519,10 @@ const Soundboard: React.FC = () => {
                             clearMyInstantsSearch();
                         }} />}
                     />
-                    <IconButton disabled={disableControls || isMyInstants} sx={{ color: 'inherit' }} onClick={(e) => setFilterMenuAnchorEl(e.currentTarget)}>
-                        {exclusionRules.length === 1 && exclusionRules[0] === 'all' ? <FilterAltOff /> : <FilterAlt />}
-                    </IconButton>
+                    <FilterMenu
+                        filters={exclusionRules}
+                        setFilter={_setExclusionRules}
+                    />
                 </Container>
                 <Container className='sort-section'>
                     {Object.values(SortType).map((type, i) => {
