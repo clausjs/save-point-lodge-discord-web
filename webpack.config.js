@@ -3,7 +3,6 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const commonConfig = {
-  mode: 'development',
   output: {
     filename: 'main.bundle.js',
     path: path.resolve(__dirname, 'build'),
