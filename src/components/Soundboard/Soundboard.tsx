@@ -141,9 +141,6 @@ const Soundboard: React.FC = () => {
             if (clips.length) setFetchingClips(false);
             if (!socketUrl) setSocketUrl(DEFAULT_SOCKET_URL);
         }
-
-        //DELETE ME
-        setNowPlaying({ ...clips[0], name: 'Something really really really long that will purposefully overflow', caller: 'ice2morrow' })
     }, [clips]);
 
     useEffect(() => {
