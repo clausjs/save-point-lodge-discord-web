@@ -84,10 +84,22 @@ services:
     volumes:
       - ./docker/savepointlodge.conf.template:/etc/nginx/templates/savepointlodge.conf.template
       - ./docker/dev.savepointlodge.conf.template:/etc/nginx/templates/dev.savepointlodge.conf.template
+      - ./docker/status.savepointlodge.conf.template:/etc/nginx/templates/status.savepointlodge.conf.template
       - ./certs:/etc/letsencrypt/live/savepointlodge.com/
     ports:
       - 80:80
       - 443:443
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    hostname: uptime-kuma
+    restart: always
+    volumes:
+      - uptime-kuma:/app/data
+    ports:
+      - 3001:3001
+
 volumes: 
   db-data:
+  uptime-kuma:
+
