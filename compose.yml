@@ -29,7 +29,7 @@ services:
 
   frontend-dev:
     build:
-      context: .
+      context: /root/code/dev.spl
       args:
         PORT: ${DEV_PORT:-8000}
     hostname: dev-frontend
