@@ -12,6 +12,7 @@ export interface SPLMenuItem {
 
 interface SPLMenuProps {
     classes?: string;
+    propogateClickAction?: boolean;
     items: (React.ReactNode | SPLMenuItem)[];
 }
 
@@ -32,6 +33,7 @@ const SPLMenu: React.FC<UncontrolledSPLMenu | ControlledSPLMenu> = ({
     anchorEl = null,
     //@ts-expect-error
     onClose = () => {},
+    propogateClickAction = false,
     items = []
 }) => {
     const [ _anchorEl, setAnchorEl ] = useState<null | HTMLElement>(null);
@@ -41,6 +43,7 @@ const SPLMenu: React.FC<UncontrolledSPLMenu | ControlledSPLMenu> = ({
     }, [anchorEl]);
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!propogateClickAction) event.stopPropagation();
         setAnchorEl(event.currentTarget);
     };
 
