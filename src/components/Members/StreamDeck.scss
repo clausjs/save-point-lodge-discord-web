@@ -1,0 +1,30 @@
+.streamdeck-configuration {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    color: inherit;
+
+    .token-box {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        flex-direction: row;
+        align-items: center;
+
+        label {
+            margin: 0 10px;
+        }
+
+        .token-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            color: inherit;
+        }
+    }
+}

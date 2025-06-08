@@ -5,6 +5,7 @@ import discord from "./reducers/discord";
 import user from "./reducers/user";
 import commands from "./reducers/commands";
 import soundboard from "./reducers/soundboard";
+import streamdeck from "./reducers/streamdeck";
 
 export const store = configureStore({
     reducer: {
@@ -12,7 +13,8 @@ export const store = configureStore({
         discord,
         user,
         commands,
-        soundboard
+        soundboard,
+        streamdeck
     }
 });
 

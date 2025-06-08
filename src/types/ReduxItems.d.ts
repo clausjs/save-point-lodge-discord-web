@@ -142,6 +142,11 @@ export interface SoundboardState {
     clipSearchState?: apiState;
 }
 
+export interface StreamDeckState {
+    token: string | null;
+    tokenFetchState?: apiState;
+}
+
 export interface Action {
     type: string;
     payload: any

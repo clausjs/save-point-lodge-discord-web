@@ -13,6 +13,7 @@ import Members from "./Members/Members";
 import Giphy from './Bots/Commands/Giphy';
 import Soundboard from './Soundboard/Soundboard';
 import PostAuth from './Auth/PostAuth';
+import StreamDeck from './Members/StreamDeck';
 
 const theme = createTheme({
     components: {
@@ -58,6 +59,7 @@ const App: React.FC = () => {
                                 <Route path="/" element={<Home />} />
                                 <Route path="/our-bots" element={<Bots />} />
                                 <Route path="/members" element={<Members />} />
+                                <Route path="/streamdeck" element={<StreamDeck />} />
                                 <Route path="/commands" element={<Commands />} />
                                 <Route path='/soundboard' element={<Soundboard />} />
                                 <Route path='/giphy-examples' element={<Giphy />} />

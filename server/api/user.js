@@ -67,4 +67,23 @@ router.get('/lodgeguest', function(req, res) {
     res.status(200).send(false);
 });
 
+router.get('/streamdeck/token', async function(req, res) {
+    if (req.isTesting || req.fakeAuth) {
+        const token = await new Promise(resolve => {
+            const slowResponse = setTimeout(() => {
+                clearTimeout(slowResponse);
+                resolve('abc123');
+            }, 2000);
+        });
+
+        return res.status(200).send({ token });
+    }
+
+    if (req.isAuthenticated() && req.user) {
+        return await req.db.firebase.streamdeck.get(req.user.id)
+    }
+
+    res.status(401).send('Unauthorized');
+});
+
 module.exports = router;
