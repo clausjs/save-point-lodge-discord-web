@@ -4,7 +4,8 @@ import {
     Contacts,
     Keyboard,
     Subscriptions,
-    VolumeUp
+    VolumeUp,
+    MonitorHeart
 } from '@mui/icons-material';
 
 import { Pages } from "../../../types";
@@ -32,6 +33,11 @@ export const AllPages: Pages = {
         requiresAuth: true,
         requiresSoundboarder: true,
         icon: <VolumeUp />
+    },
+    Status: {
+        to: "https://status.savepointlodge.com",
+        externalSite: true,
+        icon: <MonitorHeart />
     },
     Subscribe: {
         to: "https://ptb.discord.com/servers/save-point-lodge-184535415363993600",
