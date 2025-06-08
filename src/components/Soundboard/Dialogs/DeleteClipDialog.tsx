@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 
 import { Button, Dialog, DialogContent, DialogTitle, Stack } from "@mui/material";
-import { Clip } from "../../types";
+import { Clip } from "../../../types";
 import { useSelector } from 'react-redux';
-import { RootState } from '../../state/store';
+import { RootState } from '../../../state/store';
 import { Delete } from '@mui/icons-material';
 
 import './ConfigClipDialog.scss';

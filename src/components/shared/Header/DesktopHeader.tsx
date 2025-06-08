@@ -33,7 +33,8 @@ const devMode = process.env.NODE_ENV === 'development';
 const DefaultHeader: React.FC<HeaderProps> = ({
     classes,
     pages,
-    handleNavigation
+    handleNavigation,
+    handleLogin
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const [ authAnchorEl, setAuthAnchorEl ] = useState<Element | (() => Element)>(null);
@@ -132,7 +133,7 @@ const DefaultHeader: React.FC<HeaderProps> = ({
                                 <div className='acct'>
                                     <Button
                                         variant="contained"
-                                        onClick={() => dispatch(login())}
+                                        onClick={handleLogin}
                                         startIcon={<AccountCircle />}
                                         loading={userFetchState === 'pending'}
                                     >Login</Button>

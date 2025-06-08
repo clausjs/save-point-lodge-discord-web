@@ -8,16 +8,16 @@ import {
     Autocomplete,
     createFilterOptions
 } from '@mui/material';
-import { apiState } from '../../types';
+import { apiState } from '../../../types';
 import { Pause, PlayArrow, Save, VolumeDown, VolumeUp } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../state/store';
-import toastr from '../../utils/toastr';
+import { RootState } from '../../../state/store';
+import toastr from '../../../utils/toastr';
 
 import './ConfigClipDialog.scss';
-import ClipActionButton from './ClipActionButton';
-import { DialogClip } from './Soundboard';
-import { ClipCategory } from './Categories';
+import ClipActionButton from '../Buttons/ClipActionButton';
+import { DialogClip } from '../Soundboard';
+import { ClipCategory } from '../Menus/Categories';
 
 interface TagAutoCompleteOption {
     inputValue?: string; // for custom input

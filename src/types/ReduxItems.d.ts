@@ -1,4 +1,4 @@
-import { ClipCategory } from "../components/Soundboard/Categories";
+import { ClipCategory } from "../components/Soundboard/Menus/Categories";
 
 type CommandOption = {
     name: string;

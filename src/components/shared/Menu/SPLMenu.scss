@@ -1,0 +1,45 @@
+@import '../../../sass/globals';
+
+$menu-bg: $color-pallette-dark-2;
+$highlight-bg: $color-pallette-dark-background-2;
+// $highlight-accent: #00e676;
+$text-light: $color-pallette-white;
+$text-muted: $color-pallette-light-gray;
+
+.spl-menu-container {
+  background-color: $menu-bg;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.1);
+}
+
+.menu-item {
+  padding: 12px 20px;
+  font-size: 16px;
+  color: $text-light;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+
+  &:hover {
+    background-color: lighten($highlight-bg, 5%);
+  }
+
+  &.active {
+    background-color: $highlight-bg;
+    font-weight: bold;
+    color: #ffffff;
+
+    // .checkmark {
+    //   color: $highlight-accent;
+    // }
+  }
+}
+
+.checkmark {
+  font-size: 18px;
+  color: transparent;
+}

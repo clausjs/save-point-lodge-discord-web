@@ -1,6 +1,6 @@
 {
   "name": "save-point-lodge-crew-site",
-  "version": "2.4.5",
+  "version": "2.5.1",
   "description": "A web interface for crew members to interface with Save Point Lodge specific things",
   "main": "index.js",
   "engines": {
@@ -60,6 +60,7 @@
     "serve-favicon": "^2.5.0",
     "toastr": "^2.1.4",
     "uuid": "^11.0.5",
+    "wavesurfer.js": "^7.9.5",
     "websocket": "^1.0.35"
   },
   "devDependencies": {

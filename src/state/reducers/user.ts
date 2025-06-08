@@ -41,7 +41,7 @@ export const login = createAsyncThunk(
                 //@ts-ignore
                 window.windowClosed = () => console.log("Login window closed");
                 const popupParams = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no\n" +
-                                    "width=600,height=800,left=50%,top=50%";
+                                    `width=600,height=${window.screen.height},left=50%,top=50%`;
 
                 const signInPopup = window.open("/login-discord", "Discord Auth", popupParams);
                 signInPopup?.focus();

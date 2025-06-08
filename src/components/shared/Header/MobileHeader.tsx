@@ -46,7 +46,8 @@ import { HeaderProps } from './Header';
 const MobileHeader: React.FC<HeaderProps> = ({
     classes,
     pages,
-    handleNavigation
+    handleNavigation,
+    handleLogin
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     // const [ view, setView ] = useState<number | false>(0);
@@ -158,7 +159,7 @@ const MobileHeader: React.FC<HeaderProps> = ({
                                                 className='btn'
                                                 size='small'
                                                 variant="contained"
-                                                onClick={() => dispatch(login())}
+                                                onClick={handleLogin}
                                                 loading={userFetchState === 'pending'}
                                             >Login</Button>
                                         </div>
