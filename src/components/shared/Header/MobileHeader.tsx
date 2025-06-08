@@ -42,6 +42,7 @@ import { AccountCircle, Cancel, Launch } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
 import { fetchUser, login } from '../../../state/reducers/user';
 import { HeaderProps } from './Header';
+import AccountMenu from './AccountMenu';
 
 const MobileHeader: React.FC<HeaderProps> = ({
     classes,
@@ -138,32 +139,18 @@ const MobileHeader: React.FC<HeaderProps> = ({
                             <div className='account-section'>
                                 {/* @ts-ignore */}
                                 <div onClick={(e) => handleNavigation({...e, target: { ...e.target, name: 'Home' } })}><img src='/img/logo.png' /></div>
-                                {user !== null && (
-                                        <div className='acct'>
-                                            <IconButton
-                                                className='icon-btn'
-                                                aria-label={`${user.username}'s Account'`}
-                                                aria-controls="menu-appbar"
-                                                aria-haspopup="true"
-                                                color="inherit"
-                                                onClick={handleAuthMenu}
-                                            >
-                                                {user && authIconUrl && <img style={user.avatarUrl ? { height: '32px', width: '32px' } : {} } className='acct-icon' src={authIconUrl} />}
-                                                {user && !authIconUrl && <AccountCircle />}
-                                            </IconButton>
-                                        </div>
-                                    )}
-                                    {user === null && (
-                                        <div className='acct'>
-                                            <Button
-                                                className='btn'
-                                                size='small'
-                                                variant="contained"
-                                                onClick={handleLogin}
-                                                loading={userFetchState === 'pending'}
-                                            >Login</Button>
-                                        </div>
-                                    )}
+                                {user !== null && <AccountMenu />}
+                                {user === null && (
+                                    <div className='acct'>
+                                        <Button
+                                            className='btn'
+                                            size='small'
+                                            variant="contained"
+                                            onClick={() => dispatch(login())}
+                                            loading={userFetchState === 'pending'}
+                                        >Login</Button>
+                                    </div>
+                                )}
                             </div>
                         </ListItem>
                         {pages.map((page, index) => {
