@@ -42,4 +42,22 @@ class StreamDeck extends DataSource {
             return {};
         }
     }
+    getUserByToken = async (token) => {
+        if (!token) throw new Error("No token supplied to getUserByStreamDeckToken");
+
+        const { db } = this;
+
+        try {
+            const snapshot = await db.collection(this.collectionName).where('token', '==', token).get();
+            if (snapshot.empty) return null;
+
+            const doc = snapshot.docs[0];
+            return { userId: doc.id, ...doc.data() };
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    }
 }
+
+module.exports = StreamDeck;

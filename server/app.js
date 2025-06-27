@@ -190,9 +190,20 @@ const checkHeaders = (referer, params) => {
     return foundAcceptableHeader;
 }
 
-app.use('/api', function(req, res, next) {;
-    if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
+app.use('/api', async function(req, res, next) {
     req.db = db;
+
+    // If soundboard request with a token, attempt to authenticate the token
+    if (req.path === '/soundboard' && req.query.token) {
+        try {
+            const { userId } = await req.db.firebase.streamdeck.getUserByToken(req.query.token);
+            if (!userId) return res.status(401).send('Unauthorized. Token not recognized.');
+            if (devMode) console.log("Soundboard token authenticated for user: ", userId);
+        } catch (err) {
+            if (devMode) console.error("Error authenticating token: ", err);
+            return res.status(500).send();
+        }
+    } else if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     // req.isTesting = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'testing';
     req.fakeAuth = process.env.NODE_ENV === 'dev';
     next();

@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { Clip } from '../../../../types';
+import { Clip, User } from '../../../../types';
 import { MusicNote, Stop } from '@mui/icons-material';
 
 import './NowPlaying.scss';
 import { DoubleNoteIcon } from './DoubleNoteIcon';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../state/store';
 
 interface NowPlayingProps {
     clip: Clip & { caller?: string; };
@@ -12,6 +14,7 @@ interface NowPlayingProps {
 
 
 export default function NowPlaying({ clip: sound, onStop }: NowPlayingProps) {
+  const user: string | undefined = useSelector((state: RootState) => state.user.user.username);
   const isPlaying = Boolean(sound);
 
   return (
@@ -33,7 +36,7 @@ export default function NowPlaying({ clip: sound, onStop }: NowPlayingProps) {
               ))}
             </div>
           </div>
-          <button className="stop-button" onClick={onStop}>
+          <button className="stop-button" onClick={onStop} disabled={user !== sound.caller}>
             <Stop sx={{ fontSize: 28 }} />
           </button>
         </div>

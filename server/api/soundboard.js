@@ -2,7 +2,7 @@ const dotenv = require('dotenv').config;
 dotenv();
 const router = require('express').Router();
 
-const { getTrending, getRecent, getByCategory, search, getUploadedByUser, getFavoritedByUser } = require('./myinstants');
+const { getTrending, getRecent, getByCategory, search } = require('./myinstants');
 
 const clips = require('./testData').clips;
 
@@ -18,19 +18,6 @@ router.get('/', async function(req, res) {
         return res.status(500).send(e);
     }
 });
-
-// router.get('/:id', async function(req, res) {
-//     if (req.isTesting) {
-//         return res.status(200).send(clips.find(clip => clip.id === req.params.id));
-//     }
-
-//     try {
-//         const soundboardItem = await req.db.firebase.soundboard.getById(req.params.id);
-//         return res.status(200).send(soundboardItem);
-//     } catch (e) {
-//         return res.status(500).send(e);
-//     }
-// });
 
 router.get('/myinstants', async function(req, res) {
     try {
@@ -130,36 +117,5 @@ router.post('/add', async function(req, res) {
         return res.status(500).send(err);
     }
 });
-
-
-// router.post('/add/file', upload.single('file'), async function(req, res) {
-//     if (req.isTesting) {
-//         return res.status(200).send("success");
-//     }
-
-//     try {
-//         let firebaseRes;
-//         const fileId = `FILE-${req.body.name}-${uuid()}`;
-
-//         await s3.send(new PutObjectCommand({
-//             Bucket: process.env.SOUNDBOARD_BUCKET_ID,
-//             Key: fileId,
-//             Body: req.file
-//         }));
-//         firebaseRes = await req.db.firebase.addSoundboardItem(fileId, req.body.name, req.body.description, req.body.tags, req.body.fileName);
-
-//         const newClip = {
-//             id: firebaseRes.id,
-//             name: firebaseRes.name,
-//             description: firebaseRes.description,
-//             tags: firebaseRes.tags,
-//             url: firebaseRes.url
-//         }
-        
-//         return res.status(200).send(newClip);
-//     } catch (err) {
-//         return res.status(500).send(err);
-//     }
-// });
 
 module.exports = router;
