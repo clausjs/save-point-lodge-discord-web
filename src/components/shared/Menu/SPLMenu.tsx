@@ -43,7 +43,10 @@ const SPLMenu: React.FC<UncontrolledSPLMenu | ControlledSPLMenu> = ({
     }, [anchorEl]);
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLDivElement>) => {
-        if (!propogateClickAction) event.stopPropagation();
+        if (!propogateClickAction) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
         setAnchorEl(event.currentTarget);
     };
 
