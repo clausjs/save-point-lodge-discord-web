@@ -148,7 +148,6 @@ const Soundboard: React.FC = () => {
             case ReadyState.UNINSTANTIATED:
                 break;
             case ReadyState.CONNECTING:
-                toastr.info('Connecting to Joe_Bot...');
                 break;
             case ReadyState.OPEN:
                 toastr.success('Connected to Joe_Bot');
