@@ -4,9 +4,11 @@ import { useSelector } from 'react-redux';
 import { apiState, User } from '../../../types';
 import { RootState } from '../../../state/store';
 import { AccountCircle } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import SPLMenu from '../Menu/SPLMenu';
 
 const AccountMenu: React.FC = () => {
+    const history = useNavigate();
     const [ authAnchorEl, setAuthAnchorEl ] = React.useState<Element | (() => Element)>(null);
     const [ accountIconUrl, setAccountIconUrl ] = useState<string | null>(null);
     const authMenuOpen: boolean = Boolean(authAnchorEl);
@@ -35,18 +37,39 @@ const AccountMenu: React.FC = () => {
 
     return (
         <div className='acct'>
-            <IconButton
-                aria-label={`${user.username}'s Account`}
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                color="inherit"
-                onClick={handleAuthMenu}
-            >
-                {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
-                {user && (user.avatar || user.avatarUrl) && <img style={user.avatarUrl ? { height: '32px', width: '32px' } : {}} className='acct-icon' src={accountIconUrl} />}
-                {user && user.avatar === null && <AccountCircle />}
-            </IconButton>
-            <Menu
+            <SPLMenu
+                trigger={
+                    <IconButton
+                        aria-label={`${user.username}'s Account`}
+                        aria-controls="menu-appbar"
+                        aria-haspopup="true"
+                        color="inherit"
+                        onClick={handleAuthMenu}
+                    >
+                        {/* {userState.status === 'loading' && <MoonLoader size={20} />} */}
+                        {user && (user.avatar || user.avatarUrl) && <img style={user.avatarUrl ? { height: '32px', width: '32px' } : {}} className='acct-icon' src={accountIconUrl} />}
+                        {user && user.avatar === null && <AccountCircle />}
+                    </IconButton>
+                }
+                items={[
+                    user && user.isPlanetExpressMember === true ? (
+                        {
+                            node: <span>Discord Options</span>,
+                            onClick: () => {
+                                history('/members');
+                            }
+                        }
+                    ) : null,
+                    {
+                        node: <span>Logout</span>,
+                        onClick: () => {
+                            window.location.href = '/logout';
+                        }
+                    }
+                ]}
+            />
+            
+            {/* <Menu
                 id="account-menu"
                 variant="menu"
                 anchorEl={authAnchorEl}
@@ -66,7 +89,7 @@ const AccountMenu: React.FC = () => {
                     <MenuItem onClick={handleAuthMenuClose}><Link to="/members">Discord Options</Link></MenuItem>
                 )}
                 <MenuItem onClick={handleAuthMenuClose}><a href="/logout">Logout</a></MenuItem>
-            </Menu>
+            </Menu> */}
         </div>
     );
 }
