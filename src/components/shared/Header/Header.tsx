@@ -9,8 +9,8 @@ import { AppDispatch, RootState } from '../../../state/store';
 import { useSelector } from 'react-redux';
 import { PageLink, User } from '../../../types';
 import { useDispatch } from 'react-redux';
-import { fetchPlanetExpressStatus, fetchSoundboarderStatus, fetchUser, login } from '../../../state/reducers/user';
-import { AccountCircle, Launch } from '@mui/icons-material';
+import { fetchPlanetExpressStatus, fetchSoundboarderStatus, fetchUser } from '../../../state/reducers/user';
+import { Launch } from '@mui/icons-material';
 import { AllPages as views } from './Views';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router';
@@ -108,8 +108,7 @@ const Header: React.FC = () => {
     }
 
     const handleLogin = async () => {
-        await dispatch(login());
-        if (devMode) window.location.reload();
+        window.location.href = "/login-discord";
     }
 
     if (currentLocation.pathname === '/postAuth') return null;

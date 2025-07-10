@@ -65,9 +65,6 @@ const AccountMenu: React.FC = () => {
                 {user && user.isPlanetExpressMember === true && (
                     <MenuItem onClick={handleAuthMenuClose}><Link to="/members">Discord Options</Link></MenuItem>
                 )}
-                {user && user.isSoundboardUser === true && (
-                    <MenuItem onClick={handleAuthMenuClose}><Link to="/streamdeck">Stream Deck Integration</Link></MenuItem>
-                )}
                 <MenuItem onClick={handleAuthMenuClose}><a href="/logout">Logout</a></MenuItem>
             </Menu>
         </div>

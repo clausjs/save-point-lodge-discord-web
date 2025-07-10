@@ -43,6 +43,7 @@ class StreamDeck extends DataSource {
         }
     }
     getUserByToken = async (token) => {
+        if (process.env.NODE_ENV === 'dev' && token === 'abc123') return { userId: process.env.OWNER_ID, token: 'abc123' };
         if (!token) throw new Error("No token supplied to getUserByStreamDeckToken");
 
         const { db } = this;

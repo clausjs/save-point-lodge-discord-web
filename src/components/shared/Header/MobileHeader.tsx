@@ -37,10 +37,8 @@ import { AppDispatch, RootState } from '../../../state/store';
 
 import '../../../sass/_globals.scss';
 
-import { AllPages as views } from './Views';
-import { AccountCircle, Cancel, Launch } from '@mui/icons-material';
+import { Cancel } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
-import { fetchUser, login } from '../../../state/reducers/user';
 import { HeaderProps } from './Header';
 import AccountMenu from './AccountMenu';
 
@@ -146,7 +144,7 @@ const MobileHeader: React.FC<HeaderProps> = ({
                                             className='btn'
                                             size='small'
                                             variant="contained"
-                                            onClick={() => dispatch(login())}
+                                            onClick={() => window.location.href = "/login-discord"}
                                             loading={userFetchState === 'pending'}
                                         >Login</Button>
                                     </div>

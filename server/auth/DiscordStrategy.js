@@ -5,8 +5,6 @@ var OAuth2Strategy      = require('passport-oauth2')
  , InternalOAuthError  = require('passport-oauth2').InternalOAuthError
  , util                = require('util');
 
-const db = require('../data');
-
  
 /**
 * Options for the Strategy.
@@ -48,7 +46,6 @@ function Strategy(options, verify) {
    options.scopeSeparator = ' ';
 
    OAuth2Strategy.call(this, options, verify);
-   this.name = 'discord';
    this._oauth2.useAuthorizationHeaderforGET(true);
 }
 

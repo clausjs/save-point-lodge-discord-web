@@ -60,6 +60,7 @@ export interface UserState {
     opts: UserOptions | {};
     soundboardOpts: SoundboardOptions | {};
     userFetchState?: apiState;
+    soundboardStatusFetchState?: apiState;
 }
 
 export interface VotableMovie {

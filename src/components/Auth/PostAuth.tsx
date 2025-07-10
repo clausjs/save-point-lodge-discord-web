@@ -4,35 +4,34 @@ import './PostAuth.scss';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../state/store';
 import { useNavigate } from 'react-router';
+import { apiState, User } from '../../types';
+import { CircleLoader } from 'react-spinners';
 
-const ORIGIN_PROTOCOL = window.location.protocol;
-const ORIGIN_HOST = window.location.host;
-const ORIGIN = `${ORIGIN_PROTOCOL}//${process.env.NODE_ENV === 'development' ? 'localhost:3000' : ORIGIN_HOST}`;
 
 const PostAuth: React.FC = () => {
     const history = useNavigate();
-    const userFetchState = useSelector((state: RootState) => state.user.userFetchState);
+    const user: User | null = useSelector((state: RootState) => state.user.user);
+    const userFetchState: apiState = useSelector((state: RootState) => state.user.userFetchState);
 
     useEffect(() => {
-        if (userFetchState !== 'pending') history('/');
+        if (user && ['fulfilled'].includes(userFetchState)) {
+            history('/');
+        }
+    }, [user]);
 
-        window.addEventListener('message', (event) => {
-            if (event.origin !== ORIGIN) return;
-            const data = JSON.parse(event.data);
-            if (data.type === 'discord-auth-heartbeat') {
-                event.source.postMessage(JSON.stringify({ type: 'loginResponse' }), { targetOrigin: event.origin });
-            }
-        });
-    }, []);
+    const success: boolean = userFetchState === 'fulfilled' && user !== null;
+    const error: boolean = userFetchState === 'rejected';
 
     return (
         <div className='post-auth'>
             <div className='heading'>
                 <img src='/img/logo.png' alt="SPL logo" />
-                <h3>Login Success!</h3>
-                <span></span>
+                {!user || userFetchState !== 'fulfilled' && <CircleLoader />}
+                {success && <h3>Login Success!</h3>}
+                {error && <h3>Login Failed</h3>}
             </div>
-            <h6>This window will close automatically.</h6>
+            {success && <h6>This window will close automatically.</h6>}
+            {error && <h6>There was an error logging in. Please close this window and try again.</h6>}
         </div>
     );
 };

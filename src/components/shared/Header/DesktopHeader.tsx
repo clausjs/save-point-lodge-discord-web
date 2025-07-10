@@ -18,14 +18,12 @@ import { AppDispatch, RootState } from '../../../state/store';
 
 import {
     apiState,
-    PageLink,
     User
 } from '../../../types';
 
 import '../../../sass/_globals.scss';
 import ThemeSwitch from './ThemeSwitch';
 import { HeaderProps, TabProps } from './Header';
-import { login } from '../../../state/reducers/user';
 import { useDispatch } from 'react-redux';
 import AccountMenu from './AccountMenu';
 

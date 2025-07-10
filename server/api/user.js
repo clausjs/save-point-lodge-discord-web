@@ -49,7 +49,7 @@ router.post('/soundboard/opts', async function(req, res) {
 }); 
 
 router.get('/soundboarder', function(req, res) {
-    if (req.isTesting || req.fakeAuth) return res.status(200).send(true);
+    if (req.isTesting) return res.status(200).send(true);
     
     if (req.isAuthenticated() && req.user) {
         return res.status(200).send(req.user.isSoundboardUser);

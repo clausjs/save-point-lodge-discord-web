@@ -1,62 +1,65 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
-import { CircularProgress, Tooltip } from '@mui/material';
-import { CopyAll } from '@mui/icons-material';
+import { Button, CircularProgress } from '@mui/material';
 
 import { AppDispatch, RootState } from '../../state/store';
-import { apiState } from '../../types';
+import { apiState, User } from '../../types';
 import { fetchToken } from '../../state/reducers/streamdeck';
 
 import './StreamDeck.scss';
+import { useSearchParams } from 'react-router';
+import { fetchSoundboarderStatus } from '../../state/reducers/user';
 
-const StreamDeck = () => {
+const StreamDeck: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const [loading, setLoading] = useState(true);
-    const [ showCopiedTooltip, setShowCopiedTooltip ] = useState(false);
+    const [ loading, setLoading ] = useState(true);
+    const [ showTooltip, setShowTooltip ] = useState(false);
 
+    const user: User | null = useSelector((state: RootState) => state.user.user);
     const token: string | null = useSelector((state: RootState) => state.streamdeck.token);
+    const userFetchState: apiState = useSelector((state: RootState) => state.user.userFetchState);
     const tokenFetchState: apiState = useSelector((state: RootState) => state.streamdeck.tokenFetchState);
+    const soundboardStatusFetchState: apiState = useSelector((state: RootState) => state.user.soundboardStatusFetchState);
+    const [ searchParams ] = useSearchParams();
+
+    const sendToStreamdeck = () => window.open(`streamdeck://plugins/message/com.joseph-claus.spl-soundboard/settings?token=${token}`, '_blank');
 
     useEffect(() => {
-        if (tokenFetchState === 'idle' && token === null) {
+        if (user && soundboardStatusFetchState === 'idle') {
+            dispatch(fetchSoundboarderStatus());
+            setLoading(true);
+        }
+
+        if (user && user.isSoundboardUser && tokenFetchState === 'idle' && token === null) {
             setLoading(true);
             dispatch(fetchToken());
         }
-    }, []);
 
-    useEffect(() => {
-        if (tokenFetchState === 'fulfilled') {
+        if (userFetchState === 'fulfilled' && 
+            soundboardStatusFetchState === 'fulfilled' && 
+            tokenFetchState === 'fulfilled') {
             setLoading(false);
         }
-    }, [token, tokenFetchState]);
+
+        if (user && token && searchParams.get('broadcast')) {
+            sendToStreamdeck();
+        }
+    }, [user, token, tokenFetchState]);
 
     return (
         <div className="streamdeck-configuration">
             <h1>Stream Deck Integration</h1>
-            <p>Authorize your Stream Deck plugin to control the soundboard by using this token.</p>
+            <p>Authorizing your Stream Deck plugin to control the soundboard.</p>
 
-            {loading ? (
+            {!user ? <>
+                <p>Please <a href="#" onClick={() => window.location.href = "/login-sdauth"}>log in</a> to connect to StreamDeck.</p>
+            </> : loading ? (
                 <CircularProgress />
             ) : (
-                <div className="token-box">
-                    <label>Your Token:</label>
-                    <div className='token-display'>
-                        <span>{token}</span>
-                        <Tooltip title="Token copied to clipboard" open={showCopiedTooltip}>
-                            <CopyAll
-                                className='copy-icon'
-                                onClick={() => {
-                                    if (token) {
-                                        navigator.clipboard.writeText(token);
-                                        setShowCopiedTooltip(true);
-                                        setTimeout(() => setShowCopiedTooltip(false), 1500);
-                                    }
-                                }}
-                            />
-                        </Tooltip>
-                    </div>
-                </div>
+                <Button className='send-to-streamdeck' variant='contained' onClick={sendToStreamdeck}>
+                    Open Stream Deck
+                </Button>
             )}
         </div>
     );

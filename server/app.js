@@ -10,7 +10,7 @@ const redis = require('redis');
 const passport = require('passport');
 const history = require('connect-history-api-fallback');
 const cors = require('cors');
-const Strategy = require('./auth/Strategy');
+const DiscordStrategy = require('./auth/DiscordStrategy');
 const LocalStrategy = require('passport-local').Strategy;
 const db = require('./data');
 const { reduceUser } = require('./auth/utils');
@@ -83,6 +83,7 @@ var prompt = 'consent';
 const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com" : `${process.env.NODE_ENV === 'test' ? 'dev.' : ''}savepointlodge.com`;
 const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
 const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
+const streamdeckCallbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-streamdeck`;
 
 passport.use(new LocalStrategy(
     function(username, password, done) {
@@ -91,12 +92,26 @@ passport.use(new LocalStrategy(
     }
 ));
 
-passport.use(new Strategy({
+passport.use('discord', new DiscordStrategy({
     authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
     clientID: process.env.DISCORD_AUTH_CLIENT_ID,
     clientSecret: process.env.DISCORD_AUTH_CLIENT_SECRET,
     tokenURL: 'https://discord.com/api/oauth2/token',
     callbackURL,
+    scope: scopes,
+    prompt: prompt
+}, function(accessToken, refreshToken, profile, done) {
+    process.nextTick(function() {
+        return done(null, profile);
+    });
+}));
+
+passport.use('streamdeck', new DiscordStrategy({
+    authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${streamdeckCallbackURL}&response_type=code&scope=${scopes.join(' ')}`,
+    clientID: process.env.DISCORD_AUTH_CLIENT_ID,
+    clientSecret: process.env.DISCORD_AUTH_CLIENT_SECRET,
+    tokenURL: 'https://discord.com/api/oauth2/token',
+    callbackURL: streamdeckCallbackURL,
     scope: scopes,
     prompt: prompt
 }, function(accessToken, refreshToken, profile, done) {
@@ -135,9 +150,9 @@ if (devMode) {
     });
 }
 app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
-app.get('/login-redirect',
-    passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) { res.redirect('/postAuth'); } // auth success
-);
+app.get('/login-redirect', passport.authenticate('discord', { successRedirect: '/postAuth', failureRedirect: '/' }));
+app.get('/login-sdauth', passport.authenticate('streamdeck', { scope: scopes, prompt: prompt }));
+app.get('/login-streamdeck', passport.authenticate('streamdeck', { successRedirect: "/streamdeck-setup?broadcast=yes", failureRedirect: '/' }));
 
 app.get('/logout', function(req, res) {
     req.logout();
@@ -196,7 +211,9 @@ app.use('/api', async function(req, res, next) {
     // If soundboard request with a token, attempt to authenticate the token
     if (req.path === '/soundboard' && req.query.token) {
         try {
-            const { userId } = await req.db.firebase.streamdeck.getUserByToken(req.query.token);
+            const tokenRes = await req.db.firebase.streamdeck.getUserByToken(req.query.token);
+            if (!tokenRes) return res.status(401).send('Unauthorized. Token not recognized.');
+            const { userId } = tokenRes;
             if (!userId) return res.status(401).send('Unauthorized. Token not recognized.');
             if (devMode) console.log("Soundboard token authenticated for user: ", userId);
         } catch (err) {
