@@ -122,6 +122,17 @@ const SoundboardClip: React.FC<Clip & {
         onDelete({ id, name, tags, description, url, volume, uploadedBy, favoritedBy });
     }
 
+    const _onDownload = async (e: React.MouseEvent<any, any>) => {
+        e.stopPropagation();
+        const download = document.createElement('a');
+        download.style.display = 'none';
+        download.href = `/api/download/clip/${name}`;
+        download.download = name;
+        document.body.appendChild(download);
+        download.click();
+        document.body.removeChild(download);
+    }
+
     return (
         <Paper className={`clip-card ${expanded ? 'highlighted' : ''}`.trim()} style={{ padding: 10 }} onClick={_onPlay} onMouseOver={() => setExpanded(true)} onMouseOut={() => setExpanded(false)}>
             <Box className='clip-title-section'>
@@ -161,6 +172,7 @@ const SoundboardClip: React.FC<Clip & {
                     stop={(e) => controlAudio(e, 'stop')}
                     onEdit={_onEdit}
                     onDelete={_onDelete}
+                    onDownload={_onDownload}
                     onSave={_addMyInstant}
                     canDelete={!isMyInstant && uploadedBy === username}
                     isPlaying={isPlaying}

@@ -238,6 +238,8 @@ app.use('/api/discord', require(`${API_DIR}/discord`));
 
 app.use('/api/soundboard', require(`${API_DIR}/soundboard`));
 
+app.use('/api/download', require(`${API_DIR}/download`));
+
 if (devMode) {
     console.info("Execution directory: ", __dirname);
     console.info("BUILD_DIR: ", BUILD_DIR);

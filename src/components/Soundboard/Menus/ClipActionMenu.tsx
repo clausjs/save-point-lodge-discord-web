@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import ClipActionButton, { ClipPreviewButton } from '../Buttons/ClipActionButton';
-import { Delete, Edit, Favorite, MoreHoriz, Save } from '@mui/icons-material';
+import { Delete, Download, Edit, Favorite, MoreHoriz, Save } from '@mui/icons-material';
 import { IconButton, Stack } from '@mui/material';
 import SPLMenu, { SPLMenuItem } from '../../shared/Menu/SPLMenu';
 
@@ -10,6 +10,7 @@ interface ClipActionMenuProps {
     stop: (e: React.MouseEvent<any, any>) => void;
     onEdit: (e: React.MouseEvent<any, any>) => void;
     onDelete: (e: React.MouseEvent<any, any>) => void;
+    onDownload?: (e: React.MouseEvent<any, any>) => void;
     onSave?: (e: React.MouseEvent<any, any>) => void;
     canDelete?: boolean;
     isPlaying: boolean;
@@ -24,6 +25,7 @@ const ClipActionMenu: React.FC<ClipActionMenuProps> = ({
     stop = (e) => {},
     onEdit = (e) => {},
     onDelete = (e) => {},
+    onDownload = (e) => {},
     onSave = (e) => {},
     canDelete = false,
     isPlaying = false,
@@ -49,6 +51,8 @@ const ClipActionMenu: React.FC<ClipActionMenuProps> = ({
         _items.push({ node: desktop ? <>{editButton} Edit</> : editButton, onClick: onEdit });
         const deleteButton = canDelete ? <Delete fontSize='small' sx={{ mr: 1 }} /> : null;
         if (deleteButton) _items.push({ node: desktop ? <>{deleteButton} Delete</> : deleteButton, onClick: onDelete });
+        const downloadButton = <Download fontSize='small' sx={{ mr: 1 }} />;
+        _items.push({ node: desktop ? <>{downloadButton} Download</> : downloadButton, onClick: onDownload });
 
         setItems(_items);
     }, [desktop, canDelete, isPlaying, isFavorite, isMyInstants])
