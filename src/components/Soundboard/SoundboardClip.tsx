@@ -126,8 +126,9 @@ const SoundboardClip: React.FC<Clip & {
         e.stopPropagation();
         const download = document.createElement('a');
         download.style.display = 'none';
-        download.href = `/api/download/clip/${name}`;
-        download.download = name;
+        const slug = url.split('/').pop().replace(/\.mp3$/, '');
+        download.href = `/api/download/clip/${slug}`;
+        download.download = `${slug}.mp3`;
         document.body.appendChild(download);
         download.click();
         document.body.removeChild(download);
