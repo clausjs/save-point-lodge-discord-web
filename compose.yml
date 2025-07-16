@@ -26,6 +26,8 @@ services:
     expose:
       - "${PORT}:${PORT}"
       - ":${WS_PORT}"
+    volumes:
+      - "/root/code/save-point-lodge-discord-web:/data"
 
   frontend-dev:
     build:
@@ -56,6 +58,8 @@ services:
     expose:
       - "${DEV_PORT}:${DEV_PORT}"
       - ":${WS_PORT}"
+    volumes:
+      - "/root/code/dev.spl:/data"
 
   redis:
     image: redis:latest

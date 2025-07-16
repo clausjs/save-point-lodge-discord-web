@@ -34,6 +34,7 @@ COPY . .
 
 # Use production node environment by default.
 ENV NODE_ENV=production
+ENV USE_DOCKER_PATHS=true
 
 # Expose the port that the application listens on.
 EXPOSE ${PORT}

@@ -17,7 +17,8 @@ const downloadFileAndRemove = (res, filePath) => {
 
 router.get('/clip/:filename', async function(req, res) {
     const filename = req.params.filename;
-    const path = `${process.cwd()}/public/downloads/clips/`;
+    const basePath = Boolean(process.env.USE_DOCKER_PATHS) ? '/data' : `${process.cwd()}`;
+    const path = `${basePath}/public/downloads/clips/`;
     const filePath = `${path}${filename}.mp3`;
 
     const fileExists = fs.existsSync(filePath);
