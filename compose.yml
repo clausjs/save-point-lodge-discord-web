@@ -1,6 +1,7 @@
 name: savepointlodge-web
 services:
   frontend-prod:
+    container_name: savepointlodge-web-frontend
     image: savepointlodge-web-frontend:latest
     hostname: frontend
     env_file:
@@ -32,6 +33,7 @@ services:
       - "/root/code/save-point-lodge-discord-web:/data"
 
   frontend-dev:
+    container_name: savepointlodge-web-dev
     build:
       context: /root/code/dev.spl
       args:
@@ -66,6 +68,7 @@ services:
       - "/root/code/dev.spl:/data"
 
   redis:
+    constainer_name: savepointlodge-web-redis
     image: redis:latest
     restart: always
     volumes:
@@ -80,6 +83,7 @@ services:
       - 6379
 
   server:
+    container_name: savepointlodge-web-server
     image: nginx:latest
     restart: always
     env_file:
@@ -99,6 +103,7 @@ services:
       - 443:443
 
   uptime-kuma:
+    container_name: savepointlodge-web-status
     image: louislam/uptime-kuma:latest
     hostname: uptime-kuma
     restart: always
