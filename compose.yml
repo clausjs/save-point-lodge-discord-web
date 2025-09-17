@@ -68,7 +68,7 @@ services:
       - "/root/code/dev.spl:/data"
 
   redis:
-    constainer_name: savepointlodge-web-redis
+    container_name: savepointlodge-web-redis
     image: redis:latest
     restart: always
     volumes:
