@@ -312,8 +312,8 @@ const Soundboard: React.FC = () => {
     }).filter(clip => {
         if (!searchTerm || isMyInstants) return true;
         return (clip.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                clip.tags.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
-                clip.description.toLowerCase().includes(searchTerm.toLowerCase()));
+                clip.tags?.map(t => t.toLowerCase()).includes(searchTerm.toLowerCase()) ||
+                clip.description?.toLowerCase().includes(searchTerm.toLowerCase()));
     });
 
     const closeAllMenus = () => {
