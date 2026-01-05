@@ -21,7 +21,7 @@ const API_DIR = path.join(__dirname, 'api');
 
 let RedisStore, redisClient;
 
-const devMode = process.env.NODE_ENV === 'dev' ? true : false;
+const devMode = ['dev', 'testing', 'test'].includes(process.env.NODE_ENV);
 
 if (!devMode) {
     RedisStore = require('connect-redis')(session);
@@ -91,19 +91,21 @@ passport.use(new LocalStrategy(
     }
 ));
 
-passport.use(new Strategy({
-    authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
-    clientID: process.env.DISCORD_AUTH_CLIENT_ID,
-    clientSecret: process.env.DISCORD_AUTH_CLIENT_SECRET,
-    tokenURL: 'https://discord.com/api/oauth2/token',
-    callbackURL,
-    scope: scopes,
-    prompt: prompt
-}, function(accessToken, refreshToken, profile, done) {
-    process.nextTick(function() {
-        return done(null, profile);
-    });
-}));
+if (!devMode) {
+    passport.use(new Strategy({
+        authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
+        clientID: process.env.DISCORD_AUTH_CLIENT_ID,
+        clientSecret: process.env.DISCORD_AUTH_CLIENT_SECRET,
+        tokenURL: 'https://discord.com/api/oauth2/token',
+        callbackURL,
+        scope: scopes,
+        prompt: prompt
+    }, function(accessToken, refreshToken, profile, done) {
+        process.nextTick(function() {
+            return done(null, profile);
+        });
+    }));
+}
 
 const store = devMode ? new MemoryStore() : new RedisStore({ 
     host: process.env.REDIS_HOST ?? 'redis',
@@ -154,12 +156,14 @@ app.use("/js/*", function (req, res, next) {
 process.on('kill', function() {
     console.log('Process has been murdered.');
     db.shutdown();
+    process.exit();
 });
   
 //Ctrl + C event
 process.on('SIGINT', function() { 
     console.log('Manual kill executed.');
     db.shutdown();
+    process.exit();
 });
 
 //Errors and Ctrl + C will fire this event.
@@ -193,7 +197,7 @@ const checkHeaders = (referer, params) => {
 app.use('/api', function(req, res, next) {;
     if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
     req.db = db;
-    // req.isTesting = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'testing';
+    req.isTesting = ['testing', 'test'].includes(process.env.NODE_ENV);
     req.fakeAuth = process.env.NODE_ENV === 'dev';
     next();
 });
@@ -217,5 +221,32 @@ if (devMode) {
     console.info("API_DIR: ", API_DIR);
 }
 
-app.listen(port, () => console.log(`SPL Web listening on port ${port} and env is ${process.env.NODE_ENV}!`));
+let httpServer;
+
+function start(portOverride) {
+    return new Promise((resolve) => {
+        const listenPort = typeof portOverride === 'number' ? portOverride : port;
+        httpServer = app.listen(listenPort, () => {
+            console.log(`SPL Web listening on port ${httpServer.address().port} and env is ${process.env.NODE_ENV}!`);
+            resolve(httpServer);
+        });
+    });
+}
+
+function stop() {
+    return new Promise((resolve, reject) => {
+        if (!httpServer) return resolve();
+        httpServer.close((err) => {
+            if (err) return reject(err);
+            db.shutdown();
+            resolve();
+        });
+    });
+}
+
+if (require.main === module) {
+    start();
+}
+
+module.exports = { app, start, stop };
 
