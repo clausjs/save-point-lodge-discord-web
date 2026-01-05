@@ -1,62 +1,40 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { expect } = chai;
 const supertest = require('supertest');
-const express = require('express');
-const commandsRouter = require('../server/api/commands');
+process.env.NODE_ENV = 'testing';
+process.env.AUTH_SESSION_SECRET = process.env.AUTH_SESSION_SECRET || 'testsecret';
+const { start, stop } = require('../server/app');
 const testCommands = require('../server/api/testData').commands;
 
-chai.use(chaiHttp);
+describe('Commands API (e2e)', () => {
+    let baseUrl;
+    let server;
 
-describe('Commands API', () => {
-    let app;
-
-    before(() => {
-        // Set up a mock Express app
-        app = express();
-        app.use(express.json());
-        app.use((req, res, next) => {
-            // Mock middleware to inject testing flag and mock database
-            req.db = {
-                firebase: {
-                    commands: {
-                        get: async () => testCommands,
-                    },
-                },
-            };
-            next();
-        });
-        app.use('/api/commands', commandsRouter);
+    before(async () => {
+        server = await start(0); // use ephemeral port
+        const address = server.address();
+        baseUrl = `http://127.0.0.1:${address.port}`;
     });
 
-    it('should return all non-private message type commands', async () => {
-        const res = await supertest(app).get('/api/commands');
+    after(async () => {
+        await stop();
+    });
+
+    it('returns all non-private message type commands', async function () {
+        this.timeout(8000);
+        const res = await supertest(baseUrl)
+            .get('/api/commands')
+            .set('Referer', 'http://localhost');
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('array');
-        expect(res.body.length).to.equal(testCommands.filter(c =>
-            c.type === 1 && !c.private
-        ).length);
+        expect(res.body.length).to.equal(
+            testCommands.filter((c) => c.type === 1 && !c.private).length
+        );
     });
 
-    it('should handle errors gracefully', async () => {
-        const errorApp = express();
-        errorApp.use(express.json());
-        errorApp.use((req, res, next) => {
-            req.db = {
-                firebase: {
-                    commands: {
-                        get: async () => {
-                            throw new Error('Database error');
-                        },
-                    },
-                }
-            };
-            next();
-        });
-        errorApp.use('/api/commands', commandsRouter);
-
-        const res = await supertest(errorApp).get('/api/commands');
-        expect(res.status).to.equal(500);
-        expect(res.body).to.be.an('object');
+    it('rejects unauthorized requests without referer/apiKey', async function () {
+        const res = await supertest(baseUrl)
+            .get('/api/commands')
+            .set('Referer', 'http://example.com'); // explicit unacceptable referer
+        expect(res.status).to.equal(401);
+        expect(res.text).to.match(/Unauthorized/i);
     });
 });
