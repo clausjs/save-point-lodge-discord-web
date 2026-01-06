@@ -224,7 +224,7 @@ app.use('/api', async function(req, res, next) {
             return res.status(500).send();
         }
     } else if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
-    // req.isTesting = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'testing';
+    req.isTesting = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'testing';
     req.fakeAuth = process.env.NODE_ENV === 'dev';
     next();
 });
