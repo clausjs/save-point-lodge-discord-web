@@ -22,6 +22,7 @@ const API_DIR = path.join(__dirname, 'api');
 let RedisStore, redisClient;
 
 const devMode = ['dev', 'testing', 'test'].includes(process.env.NODE_ENV);
+const testingMode = ['testing', 'test'].includes(process.env.NODE_ENV);
 
 if (!devMode) {
     RedisStore = require('connect-redis')(session);
@@ -92,7 +93,7 @@ passport.use(new LocalStrategy(
     }
 ));
 
-if (!devMode) {
+if (!testingMode) {
     passport.use('discord', new DiscordStrategy({
         authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
         clientID: process.env.DISCORD_AUTH_CLIENT_ID,
@@ -153,10 +154,13 @@ if (devMode) {
         res.status(401).send('Unauthorized');
     });
 }
-app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
-app.get('/login-redirect', passport.authenticate('discord', { successRedirect: '/postAuth', failureRedirect: '/' }));
-app.get('/login-sdauth', passport.authenticate('streamdeck', { scope: scopes, prompt: prompt }));
-app.get('/login-streamdeck', passport.authenticate('streamdeck', { successRedirect: "/streamdeck-setup?broadcast=yes", failureRedirect: '/' }));
+
+if (!testingMode) {
+    app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
+    app.get('/login-redirect', passport.authenticate('discord', { successRedirect: '/postAuth', failureRedirect: '/' }));
+    app.get('/login-sdauth', passport.authenticate('streamdeck', { scope: scopes, prompt: prompt }));
+    app.get('/login-streamdeck', passport.authenticate('streamdeck', { successRedirect: "/streamdeck-setup?broadcast=yes", failureRedirect: '/' }));
+}
 
 app.get('/logout', function(req, res) {
     req.logout();
