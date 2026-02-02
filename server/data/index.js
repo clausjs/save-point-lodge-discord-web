@@ -3,9 +3,9 @@ const firebase = require('firebase');
 
 const { FIREBASE_PRIVATE_KEY: apiKey, FIREBASE_PROJECT_ID: projectId, FIREBASE_SENDER_ID: senderId } = process.env;
 const devMode = ['dev', 'testing', 'test'].includes(process.env.NODE_ENV);
-let firebaseData;
+let firebaseData, app;
 if (!devMode) {
-    const app = firebase.initializeApp({
+    app = firebase.initializeApp({
         apiKey: apiKey,
         authDomain: `${projectId}.firebaseapp.com`,
         databaseURL: `${projectId}.firebaseio.com`,

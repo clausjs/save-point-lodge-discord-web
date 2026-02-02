@@ -15,3 +15,6 @@ build
 #certs for nginx (superceded by Cloudflare)
 certs
 ./certs/*
+
+#MacOS system files
+.DS_Store

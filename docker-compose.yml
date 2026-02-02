@@ -1,6 +1,10 @@
 services:
   web:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      tags:
+        - "spl-web:main"
     env_file:
       - .env
     expose:
