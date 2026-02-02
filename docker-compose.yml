@@ -1,10 +1,16 @@
 services:
-  web:
-    build: .
+  frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      tags:
+        - "frontend:main"
     env_file:
       - .env
-    expose:
-      - "3000"
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
   redis:
     image: "redis:alpine"
     ports:
