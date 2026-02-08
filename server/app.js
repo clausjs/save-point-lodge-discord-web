@@ -21,8 +21,8 @@ const API_DIR = path.join(__dirname, 'api');
 
 let RedisStore, redisClient;
 
-const devMode = ['dev', 'testing', 'test'].includes(process.env.NODE_ENV);
-const testingMode = ['testing', 'test'].includes(process.env.NODE_ENV);
+const devMode = ['dev', 'development', 'testing', 'test'].includes(process.env.NODE_ENV);
+const isAlpha = process.env.NODE_ENV === 'alpha';
 
 if (!devMode) {
     RedisStore = require('connect-redis')(session);
@@ -34,7 +34,7 @@ if (!devMode) {
 
 const app = express();
 
-const portIdentifier = ['dev', 'development', 'test'].includes(process.env.NODE_ENV) ? 'DEV_PORT' : 'PORT';
+const portIdentifier = devMode || isAlpha ? 'DEV_PORT' : 'PORT';
 const port = process.env[portIdentifier] || 3000;
 
 db.authenticate();
@@ -81,7 +81,7 @@ app.use(function(req, res, next) {
 var scopes = ['identify', 'guilds', 'guilds.members.read'];
 var prompt = 'consent';
 
-const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com" : `${process.env.NODE_ENV === 'test' ? 'dev.' : ''}savepointlodge.com`;
+const productionDomain = process.env.PRE_DNS ? "ec2-54-165-53-210.compute-1.amazonaws.com" : `${isAlpha ? 'dev.' : ''}savepointlodge.com`;
 const protocol = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'prod_test'  ? 'http' : 'https';
 const callbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-redirect`;
 const streamdeckCallbackURL = `${protocol}://${devMode || process.env.NODE_ENV === 'prod_test' ? `localhost:${port}` : `${productionDomain}`}/login-streamdeck`;
@@ -93,7 +93,7 @@ passport.use(new LocalStrategy(
     }
 ));
 
-if (!testingMode) {
+if (!devMode) {
     passport.use('discord', new DiscordStrategy({
         authorizationURL: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_AUTH_CLIENT_ID}&redirect_uri=${callbackURL}&response_type=code&scope=${scopes.join(' ')}`,
         clientID: process.env.DISCORD_AUTH_CLIENT_ID,
@@ -155,7 +155,7 @@ if (devMode) {
     });
 }
 
-if (!testingMode) {
+if (!devMode) {
     app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
     app.get('/login-redirect', passport.authenticate('discord', { successRedirect: '/postAuth', failureRedirect: '/' }));
     app.get('/login-sdauth', passport.authenticate('streamdeck', { scope: scopes, prompt: prompt }));
