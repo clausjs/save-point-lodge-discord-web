@@ -1,10 +1,6 @@
 services:
   frontend:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-      tags:
-        - "spl-web:main"
+    image: 'spl-web:main'
     env_file:
       - .env
     environment:
