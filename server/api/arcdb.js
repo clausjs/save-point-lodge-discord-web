@@ -86,7 +86,7 @@ class ArcDB {
 
             let page = 1;
             const tasks = [];
-            while (page < totalPages) {
+            while (page <= totalPages) {
                 tasks.push(new Promise((resolve, reject) => {
                     https.get(`${this.baseUrl}/items?limit=100&page=${page}`, (res) => {
                         let data = '';
