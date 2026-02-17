@@ -5,7 +5,8 @@ import {
     Keyboard,
     Subscriptions,
     VolumeUp,
-    MonitorHeart
+    MonitorHeart,
+    Build
 } from '@mui/icons-material';
 
 import { Pages } from "../../../types";
@@ -33,6 +34,10 @@ export const AllPages: Pages = {
         requiresAuth: true,
         requiresSoundboarder: true,
         icon: <VolumeUp />
+    },
+    'ARC Workbench': {
+        to: '/arc-workbench',
+        icon: <Build />
     },
     Status: {
         to: "https://status.savepointlodge.com",

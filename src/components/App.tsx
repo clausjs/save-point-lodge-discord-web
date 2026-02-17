@@ -13,6 +13,7 @@ import Members from "./Members/Members";
 import Giphy from './Bots/Commands/Giphy';
 import Soundboard from './Soundboard/Soundboard';
 import PostAuth from './Auth/PostAuth';
+import ArcWorkbench from './ArcWorkbench/ArcWorkbench';
 import StreamDeck from './Members/StreamDeck';
 
 const theme = createTheme({
@@ -64,6 +65,7 @@ const App: React.FC = () => {
                                 <Route path='/soundboard' element={<Soundboard />} />
                                 <Route path='/giphy-examples' element={<Giphy />} />
                                 <Route path='/postAuth' element={<PostAuth />} />
+                                <Route path='/arc-workbench' element={<ArcWorkbench />} />
                             </Routes>
                         </Router>
                         {/* <Container className='copyright-info' maxWidth={false}>

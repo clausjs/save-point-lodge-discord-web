@@ -231,7 +231,7 @@ app.use('/api', async function(req, res, next) {
             return res.status(500).send();
         }
     } else if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
-    req.isTesting = ['testing', 'test'].includes(process.env.NODE_ENV);
+    req.isTesting = devMode;
     req.fakeAuth = process.env.NODE_ENV === 'dev';
     next();
 });
@@ -249,6 +249,13 @@ app.use('/api/discord', require(`${API_DIR}/discord`));
 app.use('/api/soundboard', require(`${API_DIR}/soundboard`));
 
 app.use('/api/download', require(`${API_DIR}/download`));
+
+app.use('/api/arcdb', function(req, res, next) {
+    if (redisClient) {
+        req.redisClient = redisClient;
+    }
+    next();
+}, require(`${API_DIR}/arcdb`));
 
 if (devMode) {
     console.info("Execution directory: ", __dirname);
