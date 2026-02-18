@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 
 import './ArcWorkbench.scss';
-import { ArcCraftingRequirement, ArcItemDetail, ArcItemSummary } from '../../types';
+import { ArcCraftingRequirement, ArcItemDetail, ArcItemReference, ArcItemSummary } from '../../types';
 
 const arcImageBaseUrl = 'https://ardb.app/static';
 
@@ -113,9 +113,73 @@ const ArcWorkbench: React.FC = () => {
         return `${arcImageBaseUrl}/${icon}`;
     };
 
+    const getItemDetailById = (itemId: string) => {
+        if (selectedItem?.id === itemId) return selectedItem;
+        return itemDetailCache[itemId];
+    };
+
+    const isBlueprintItem = (item?: ArcItemReference) => {
+        if (!item) return false;
+        const name = item.name?.toLowerCase() || '';
+        const type = item.item_type?.toLowerCase() || '';
+        return name.includes('blueprint') || type.includes('blueprint');
+    };
+
+    const parseRomanNumeral = (value: string) => {
+        const numerals: Record<string, number> = {
+            I: 1,
+            V: 5,
+            X: 10,
+            L: 50,
+            C: 100,
+            D: 500,
+            M: 1000
+        };
+
+        let total = 0;
+        let previous = 0;
+        for (let i = value.length - 1; i >= 0; i -= 1) {
+            const current = numerals[value[i]];
+            if (!current) return null;
+            if (current < previous) total -= current;
+            else total += current;
+            previous = current;
+        }
+        return total;
+    };
+
+    const parseStationTier = (stationName: string) => {
+        const match = stationName.trim().match(/^(.*?)(?:\s+(\d+|[IVXLCDM]+))?$/i);
+        if (!match) return { base: stationName.trim(), tier: 0 };
+
+        const base = match[1].trim();
+        const rawTier = match[2];
+        if (!rawTier) return { base, tier: 0 };
+        if (/^\d+$/.test(rawTier)) return { base, tier: parseInt(rawTier, 10) };
+
+        const romanTier = parseRomanNumeral(rawTier.toUpperCase());
+        return { base, tier: romanTier || 0 };
+    };
+
+    const choosePrimaryStation = (stationNames: string[]) => {
+        if (!stationNames.length) return null;
+
+        const ranked = stationNames.map((name) => {
+            const parsed = parseStationTier(name);
+            return { name, base: parsed.base.toLowerCase(), tier: parsed.tier };
+        });
+
+        ranked.sort((left, right) => {
+            if (right.tier !== left.tier) return right.tier - left.tier;
+            return left.base.localeCompare(right.base);
+        });
+
+        return ranked[0].name;
+    };
+
     const addAggregate = (
-        aggregate: Record<string, { item: ArcItemSummary; amount: number }>,
-        item: ArcItemSummary,
+        aggregate: Record<string, { item: ArcItemReference; amount: number }>,
+        item: ArcItemReference,
         amount: number
     ) => {
         if (!aggregate[item.id]) {
@@ -125,19 +189,43 @@ const ArcWorkbench: React.FC = () => {
         }
     };
 
+    const getFallbackSummary = (itemId: string): ArcItemSummary => ({
+        id: itemId,
+        name: itemId,
+        description: '',
+        item_type: 'Unknown',
+        loadout_slots: [],
+        icon: '',
+        rarity: '',
+        value: 0,
+        workbench: null,
+        stat_block: {},
+        flavor_text: null,
+        subcategory: null,
+        created_at: '',
+        updated_at: '',
+        shield_type: null,
+        loot_area: null,
+        sources: null,
+        ammo_type: null,
+        locations: [],
+        guide_links: [],
+        game_asset_id: 0
+    });
+
     const buildAggregateMaterials = (
         itemId: string,
         requiredAmount: number,
         visited: Set<string>
     ) => {
-        const aggregate: Record<string, { item: ArcItemSummary; amount: number }> = {};
+        const aggregate: Record<string, { item: ArcItemReference; amount: number }> = {};
         if (visited.has(itemId)) return aggregate;
         visited.add(itemId);
 
-        const detail = itemDetailCache[itemId];
+        const detail = getItemDetailById(itemId);
         const requirement = getCraftingRequirement(detail);
         if (!requirement?.requiredItems?.length) {
-            const summary: ArcItemSummary = detail || { id: itemId, name: itemId };
+            const summary: ArcItemSummary = detail || getFallbackSummary(itemId);
             addAggregate(aggregate, summary, requiredAmount);
             return aggregate;
         }
@@ -146,8 +234,9 @@ const ArcWorkbench: React.FC = () => {
         const crafts = Math.ceil(requiredAmount / output);
 
         requirement.requiredItems.forEach((entry) => {
+            if (isBlueprintItem(entry.item)) return;
             const needed = entry.amount * crafts;
-            const childDetail = itemDetailCache[entry.item.id];
+            const childDetail = getItemDetailById(entry.item.id);
             const childRequirement = getCraftingRequirement(childDetail);
             if (childRequirement?.requiredItems?.length) {
                 const childAggregate = buildAggregateMaterials(entry.item.id, needed, new Set(visited));
@@ -162,6 +251,38 @@ const ArcWorkbench: React.FC = () => {
         return aggregate;
     };
 
+    const deriveStationForUpgradePath = (itemId: string) => {
+        const stations = new Set<string>();
+        const queue: string[] = [ itemId ];
+        const visited = new Set<string>();
+        let traversed = 0;
+        const maxNodes = 300;
+
+        while (queue.length > 0 && traversed < maxNodes) {
+            const currentItemId = queue.shift();
+            if (!currentItemId || visited.has(currentItemId)) continue;
+            visited.add(currentItemId);
+            traversed += 1;
+
+            const detail = getItemDetailById(currentItemId);
+            const requirement = getCraftingRequirement(detail);
+            if (!requirement?.requiredItems?.length) continue;
+
+            const stationName = requirement.station?.name || requirement.station?.id;
+            if (stationName) stations.add(stationName);
+
+            requirement.requiredItems.forEach((entry) => {
+                if (isBlueprintItem(entry.item)) return;
+                const childDetail = getItemDetailById(entry.item.id);
+                const childRequirement = getCraftingRequirement(childDetail);
+                if (!childRequirement?.requiredItems?.length) return;
+                queue.push(entry.item.id);
+            });
+        }
+
+        return choosePrimaryStation(Array.from(stations));
+    };
+
     const renderUpgradeChain = (
         itemId: string,
         requiredAmount: number,
@@ -171,55 +292,63 @@ const ArcWorkbench: React.FC = () => {
         if (visited.has(itemId)) return null;
         visited.add(itemId);
 
-        const detail = itemDetailCache[itemId];
+        const detail = getItemDetailById(itemId);
         const requirement = getCraftingRequirement(detail);
         if (!requirement?.requiredItems?.length) return null;
 
         const output = requirement.outputAmount || 1;
         const crafts = Math.ceil(requiredAmount / output);
+        const detailName = detail?.name || itemId;
+        const visibleEntries = requirement.requiredItems.filter((entry) => !isBlueprintItem(entry.item));
+        const stationName = requirement.station?.name || requirement.station?.id;
 
         return (
             <div className='arc-workbench__upgrade-step' style={{ marginLeft: depth * 12 }}>
-                <div className='arc-workbench__upgrade-header'>
-                    <div className='arc-workbench__upgrade-title'>Craft {detail.name}</div>
-                    <div className='arc-workbench__upgrade-meta'>
-                        Need {requiredAmount} • Craft {crafts}x
+                <details open={depth === 0}>
+                    <summary className='arc-workbench__upgrade-summary'>
+                        <span className='arc-workbench__upgrade-title'>Craft {detailName}</span>
+                        <span className='arc-workbench__upgrade-meta-group'>
+                            <span className='arc-workbench__upgrade-meta'>Need {requiredAmount} • Craft {crafts}x</span>
+                            {stationName && (
+                                <span className='arc-workbench__upgrade-station'>Workbench: {stationName}</span>
+                            )}
+                        </span>
+                    </summary>
+                    <div className='arc-workbench__upgrade-items'>
+                        {visibleEntries.map((entry) => {
+                            const totalAmount = entry.amount * crafts;
+                            return (
+                                <button
+                                    key={`${itemId}-${entry.item.id}`}
+                                    className='arc-workbench__requirement-subcard'
+                                    onClick={() => handleRequirementClick(entry.item.id)}
+                                    type='button'
+                                >
+                                    <div className='arc-workbench__requirement-title'>
+                                        <div className='arc-workbench__requirement-image'>
+                                            <img
+                                                src={resolveIconUrl(entry.item.icon)}
+                                                alt={entry.item.name}
+                                            />
+                                        </div>
+                                        <div className='arc-workbench__requirement-name'>
+                                            {entry.item.name}
+                                        </div>
+                                    </div>
+                                    <div className='arc-workbench__requirement-meta'>
+                                        Base: {entry.amount} • Needed: {totalAmount}
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
-                </div>
-                <div className='arc-workbench__upgrade-items'>
-                    {requirement.requiredItems.map((entry) => {
-                        const totalAmount = entry.amount * crafts;
-                        return (
-                            <button
-                                key={`${itemId}-${entry.item.id}`}
-                                className='arc-workbench__requirement-subcard'
-                                onClick={() => handleRequirementClick(entry.item.id)}
-                                type='button'
-                            >
-                                <div className='arc-workbench__requirement-title'>
-                                    <div className='arc-workbench__requirement-image'>
-                                        <img
-                                            src={resolveIconUrl(entry.item.icon)}
-                                            alt={entry.item.name}
-                                        />
-                                    </div>
-                                    <div className='arc-workbench__requirement-name'>
-                                        {entry.item.name}
-                                    </div>
-                                </div>
-                                <div className='arc-workbench__requirement-meta'>
-                                    Base: {entry.amount} • Needed: {totalAmount}
-                                </div>
-                            </button>
-                        );
+                    {visibleEntries.map((entry) => {
+                        const childDetail = getItemDetailById(entry.item.id);
+                        const childRequirement = getCraftingRequirement(childDetail);
+                        if (!childRequirement?.requiredItems?.length) return null;
+                        return renderUpgradeChain(entry.item.id, entry.amount * crafts, depth + 1, new Set(visited));
                     })}
-                </div>
-                {requirement.requiredItems.map((entry) => {
-                    const childDetail = itemDetailCache[entry.item.id];
-                    const childRequirement = getCraftingRequirement(childDetail);
-                    if (!childRequirement?.requiredItems?.length) return null;
-                    return renderUpgradeChain(entry.item.id, entry.amount * crafts, depth + 1, new Set(visited));
-                })}
+                </details>
             </div>
         );
     };
@@ -304,18 +433,30 @@ const ArcWorkbench: React.FC = () => {
         }
 
         const expandedUpgrades = requirement.requiredItems.filter((entry) => {
+            if (isBlueprintItem(entry.item)) return false;
             if (!isUpgradeName(entry.item.name)) return false;
-            const detail = itemDetailCache[entry.item.id];
+            const detail = getItemDetailById(entry.item.id);
             const detailRequirement = getCraftingRequirement(detail);
             return Boolean(detailRequirement?.requiredItems?.length);
         });
 
         const baseRequirements = requirement.requiredItems.filter((entry) => {
+            if (isBlueprintItem(entry.item)) return false;
             if (!isUpgradeName(entry.item.name)) return true;
-            const detail = itemDetailCache[entry.item.id];
+            const detail = getItemDetailById(entry.item.id);
             const detailRequirement = getCraftingRequirement(detail);
             return !detailRequirement?.requiredItems?.length;
         });
+        const totalAggregate = selectedItemId
+            ? Object.values(buildAggregateMaterials(selectedItemId, quantity, new Set()))
+                .sort((left, right) => {
+                    if (right.amount !== left.amount) return right.amount - left.amount;
+                    return left.item.name.localeCompare(right.item.name);
+                })
+            : [];
+        const hasUpgradePath = expandedUpgrades.length > 0;
+        const derivedStationName = selectedItemId ? deriveStationForUpgradePath(selectedItemId) : null;
+        const displayStationName = requirement.station?.name || requirement.station?.id || derivedStationName;
 
         return (
             <div className='arc-workbench__requirements'>
@@ -325,26 +466,62 @@ const ArcWorkbench: React.FC = () => {
                         Output: {requirement.outputAmount} • Crafts Needed: {craftsNeeded}
                     </span>
                 </div>
-                {requirement.station && (
+                {displayStationName && (
                     <div className='arc-workbench__station'>
                         <span>Station</span>
                         <strong>
-                            {requirement.station.name || requirement.station.id || 'Unknown'}
+                            {displayStationName}
                         </strong>
-                        {requirement.station.tier !== undefined && (
+                        {requirement.station?.tier !== undefined && (
                             <span className='arc-workbench__station-tier'>Tier {requirement.station.tier}</span>
                         )}
                     </div>
                 )}
+                {totalAggregate.length > 0 && (
+                    <div className='arc-workbench__aggregate arc-workbench__aggregate--top'>
+                        <div className='arc-workbench__aggregate-header'>Total materials required for {quantity}x</div>
+                        <div className='arc-workbench__aggregate-grid arc-workbench__aggregate-grid--top'>
+                            {totalAggregate.map((material) => (
+                                <button
+                                    key={`aggregate-total-${material.item.id}`}
+                                    className='arc-workbench__aggregate-card'
+                                    onClick={() => handleRequirementClick(material.item.id)}
+                                    type='button'
+                                >
+                                    <div className='arc-workbench__requirement-title'>
+                                        <div className='arc-workbench__requirement-image'>
+                                            <img
+                                                src={resolveIconUrl(material.item.icon)}
+                                                alt={material.item.name}
+                                            />
+                                        </div>
+                                        <div className='arc-workbench__requirement-name'>
+                                            {material.item.name}
+                                        </div>
+                                    </div>
+                                    <div className='arc-workbench__requirement-meta'>
+                                        Needed: {material.amount}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 <div className='arc-workbench__requirements-grid'>
+                    {hasUpgradePath && (
+                        <div className='arc-workbench__upgrade-path'>
+                            <div className='arc-workbench__upgrade-path-header'>
+                                <span>Upgrade path</span>
+                                <span>{expandedUpgrades.length} step{expandedUpgrades.length > 1 ? 's' : ''}</span>
+                            </div>
+                        </div>
+                    )}
                     {expandedUpgrades.map((entry) => {
                         const detail = itemDetailCache[entry.item.id];
                         const upgradeRequirement = getCraftingRequirement(detail);
                         if (!upgradeRequirement) return null;
                         const requiredUnits = entry.amount * craftsNeeded;
                         const upgradeCraftsNeeded = getCraftsNeeded(requiredUnits, upgradeRequirement.outputAmount || 1);
-                        const aggregate = buildAggregateMaterials(entry.item.id, requiredUnits, new Set());
-                        const aggregateList = Object.values(aggregate);
 
                         return (
                             <div key={`upgrade-${entry.item.id}`} className='arc-workbench__requirement-group'>
@@ -358,36 +535,6 @@ const ArcWorkbench: React.FC = () => {
                                     Need {requiredUnits} (craft {upgradeCraftsNeeded}x)
                                 </div>
                                 {renderUpgradeChain(entry.item.id, requiredUnits)}
-                                {aggregateList.length > 0 && (
-                                    <div className='arc-workbench__aggregate'>
-                                        <div className='arc-workbench__aggregate-header'>Total materials required</div>
-                                        <div className='arc-workbench__aggregate-grid'>
-                                            {aggregateList.map((material) => (
-                                                <button
-                                                    key={`aggregate-${entry.item.id}-${material.item.id}`}
-                                                    className='arc-workbench__aggregate-card'
-                                                    onClick={() => handleRequirementClick(material.item.id)}
-                                                    type='button'
-                                                >
-                                                    <div className='arc-workbench__requirement-title'>
-                                                        <div className='arc-workbench__requirement-image'>
-                                                            <img
-                                                                src={resolveIconUrl(material.item.icon)}
-                                                                alt={material.item.name}
-                                                            />
-                                                        </div>
-                                                        <div className='arc-workbench__requirement-name'>
-                                                            {material.item.name}
-                                                        </div>
-                                                    </div>
-                                                    <div className='arc-workbench__requirement-meta'>
-                                                        Needed: {material.amount}
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         );
                     })}
@@ -427,9 +574,41 @@ const ArcWorkbench: React.FC = () => {
         );
     };
 
+    const blueprintRequirements = useMemo(() => {
+        if (!selectedItemId) return [];
+
+        const found: Record<string, ArcItemReference> = {};
+        const collectBlueprints = (itemId: string, visited = new Set<string>()) => {
+            if (visited.has(itemId)) return;
+            visited.add(itemId);
+
+            const detail = getItemDetailById(itemId);
+            const requirement = getCraftingRequirement(detail);
+            if (!requirement?.requiredItems?.length) return;
+
+            requirement.requiredItems.forEach((entry) => {
+                if (isBlueprintItem(entry.item)) {
+                    found[entry.item.id] = entry.item;
+                    return;
+                }
+
+                const childDetail = getItemDetailById(entry.item.id);
+                const childRequirement = getCraftingRequirement(childDetail);
+                if (childRequirement?.requiredItems?.length) {
+                    collectBlueprints(entry.item.id, new Set(visited));
+                }
+            });
+        };
+
+        collectBlueprints(selectedItemId);
+        return Object.values(found).sort((left, right) => left.name.localeCompare(right.name));
+    }, [selectedItemId, selectedItem, itemDetailCache]);
+
     const rarityKey = selectedItem?.rarity ? selectedItem.rarity.toString().toLowerCase() : 'unknown';
     const foundInLocations = selectedItem?.locations?.length
         ? selectedItem.locations
+            .map((location) => location.map || location.id)
+            .filter(Boolean)
         : selectedItem?.loot_area
             ? [ selectedItem.loot_area ]
             : [];
@@ -560,6 +739,11 @@ const ArcWorkbench: React.FC = () => {
                                         className='arc-workbench__chip'
                                     />
                                 </div>
+                                {blueprintRequirements.length > 0 && (
+                                    <div className='arc-workbench__blueprint-status'>
+                                        <strong>Blueprint Required</strong>
+                                    </div>
+                                )}
                                 <div className='arc-workbench__foundin'>
                                     <strong>Found In</strong>
                                     <div className='arc-workbench__foundin-tags'>

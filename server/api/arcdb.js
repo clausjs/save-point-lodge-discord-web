@@ -4,55 +4,69 @@ const router = require('express').Router();
 class ArcDB {
     baseUrl = 'https://metaforge.app/api/arc-raiders';
     redisClient;
-    lastFetch;
 
     constructor(redisClient) {
         this.redisClient = redisClient;
-        redisClient.get('arcdb_all_item_cache', (err, data) => {
-            if (err) {
-                console.error('Error fetching item cache from Redis:', err);
-            } else if (data) {
-                try {
-                    this.itemCache = JSON.parse(data);
-                } catch (e) {
-                    console.error('Error parsing item cache from Redis:', e);
-                }
+    }
+
+    _cacheGet(key) {
+        return new Promise((resolve) => {
+            if (!this.redisClient) {
+                return resolve(null);
             }
+
+            this.redisClient.get(key, (err, data) => {
+                if (err) {
+                    console.error(`Error fetching ${key} cache from Redis:`, err);
+                    return resolve(null);
+                }
+
+                if (!data) {
+                    return resolve(null);
+                }
+
+                try {
+                    resolve(JSON.parse(data));
+                } catch (e) {
+                    console.error(`Error parsing ${key} cache from Redis:`, e);
+                    resolve(null);
+                }
+            });
         });
     }
+
     _getFromCache(id = undefined) {
         if (!id) {
-            this.redisClient.get('arcdb_all_items_cache', (err, data) => {
-                if (err) {
-                    console.error('Error fetching all items cache from Redis:', err);
-                }
-                
-                return JSON.parse(data);
-            });
-        } else {
-            this.redisClient.get(`arcdb_item_cache:${id}`,(err, data) => {
-                if (err) {
-                    console.error(`Error fetching item ${id} cache from Redis:`, err);
-                }
-                
-                return JSON.parse(data);
-            });
+            return this._cacheGet('arcdb_all_items_cache');
         }
+
+        return this._cacheGet(`arcdb_item_cache:${id}`);
     }
+
     _setAllItemsCache(data) {
+        if (!this.redisClient) {
+            return;
+        }
+
         this.redisClient.set('arcdb_all_items_cache', JSON.stringify(data), (err) => {
             if (err) {
                 console.error('Error setting all items cache in Redis:', err);
             }
         });
-    } 
+    }
+
     _setItemCache(key, data) {
+        if (!this.redisClient) {
+            return;
+        }
+
         this.redisClient.set(`arcdb_item_cache:${key}`, JSON.stringify(data), (err) => {
             if (err) {
                 console.error(`Error setting item ${key} cache in Redis:`, err);
             }
         });
     }
+
     async getAllItems() {
         return new Promise(async (resolve, reject) => {
             let allItems = await this._getFromCache() ?? [];
@@ -62,7 +76,7 @@ class ArcDB {
             }
 
             const { totalPages, items: firstPageItems } = await new Promise((resolve, reject) => {
-                https.get(`${this.baseUrl}/items?limit=100&page=0`, (res) => {
+                https.get(`${this.baseUrl}/items?limit=100&page=0&minimal=true`, (res) => {
                     let data = '';
                     res.on('data', (chunk) => {
                         data += chunk;
@@ -88,7 +102,7 @@ class ArcDB {
             const tasks = [];
             while (page <= totalPages) {
                 tasks.push(new Promise((resolve, reject) => {
-                    https.get(`${this.baseUrl}/items?limit=100&page=${page}`, (res) => {
+                    https.get(`${this.baseUrl}/items?limit=100&page=${page}&minimal=true`, (res) => {
                         let data = '';
                         res.on('data', (chunk) => {
                             data += chunk;
@@ -124,10 +138,9 @@ class ArcDB {
     }
     async getItemById(id) {
         return new Promise(async (resolve, reject) => {
-            console.log(`Fetching item with ID ${id} from ArcDB...`);
-            const cachedItem = this._getFromCache(id);
+            const cachedItem = await this._getFromCache(id);
             if (cachedItem) {
-                console.log(`Fetched item ${id} from ArcDB cache`, cachedItem);
+                console.log(`Fetched item ${id} from ArcDB cache`);
                 return resolve(cachedItem);
             }
             
@@ -156,7 +169,7 @@ class ArcDB {
 
 let arcDBInstance;
 const initializeArcDB = (redisClient) => {
-    if (!arcDBInstance && redisClient) {
+    if (!arcDBInstance) {
         arcDBInstance = new ArcDB(redisClient);
     }
     return arcDBInstance;
@@ -186,8 +199,8 @@ router.get('/items', async (req, res) => {
 
 router.get('/items/:id', async (req, res) => {
     if (req.isTesting) {
-        const testDetailData = require('./testData/advanced_electrical_components.json');
-        const detailMatch = testDetailData.find((item) => item.id === req.params.id) || testDetailData[0];
+        const testDetailData = require('./testData/anvil-iv.json');
+        const detailMatch = testDetailData[0];
         if (detailMatch) return res.status(200).json(detailMatch);
     }
 

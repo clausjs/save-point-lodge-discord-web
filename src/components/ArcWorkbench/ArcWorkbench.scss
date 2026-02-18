@@ -222,6 +222,23 @@
         }
     }
 
+    &__blueprint-status {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(242, 100, 25, 0.35);
+        background: rgba(242, 100, 25, 0.08);
+
+        strong {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: $color-pallette-orange;
+        }
+    }
+
     &__foundin-tags {
         display: flex;
         flex-wrap: wrap;
@@ -287,17 +304,37 @@
     &__requirements-grid {
         margin-top: 18px;
         display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 10px;
+    }
+
+    &__upgrade-path {
+        grid-column: 1 / -1;
+        border: 1px solid rgba(68, 229, 231, 0.15);
+        background: rgba(8, 16, 22, 0.45);
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    &__upgrade-path-header {
+        display: flex;
+        justify-content: space-between;
         gap: 12px;
+        color: $color-pallette-light-blue;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
     }
 
     &__requirement-group {
+        grid-column: 1 / -1;
         border: 1px solid rgba(68, 229, 231, 0.2);
         background: rgba(8, 16, 22, 0.6);
-        border-radius: 16px;
-        padding: 14px;
+        border-radius: 14px;
+        padding: 12px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 
     &__requirement-group-header {
@@ -340,11 +377,11 @@
         border: 1px solid rgba(68, 229, 231, 0.18);
         background: rgba(19, 37, 51, 0.7);
         color: $color-pallette-white;
-        border-radius: 12px;
-        padding: 12px 14px;
+        border-radius: 10px;
+        padding: 10px 12px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
         cursor: pointer;
         text-align: left;
         transition: transform 0.2s ease, border-color 0.2s ease;
@@ -356,45 +393,76 @@
     }
 
     &__upgrade-step {
-        margin-top: 12px;
-        padding: 12px;
+        margin-top: 8px;
+        padding: 8px 10px;
         border-radius: 12px;
         border: 1px dashed rgba(68, 229, 231, 0.2);
         background: rgba(10, 20, 28, 0.6);
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 6px;
     }
 
-    &__upgrade-header {
+    &__upgrade-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        cursor: pointer;
+        list-style: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+    }
+
+    &__upgrade-meta-group {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        align-items: flex-end;
+        gap: 2px;
     }
 
     &__upgrade-title {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
         color: $color-pallette-light-blue;
     }
 
     &__upgrade-meta {
-        font-size: 12px;
+        font-size: 11px;
         color: $color-pallette-light-gray;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+    }
+
+    &__upgrade-station {
+        font-size: 10px;
+        color: $color-pallette-orange;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
     }
 
     &__upgrade-items {
+        margin-top: 8px;
         display: grid;
-        gap: 10px;
+        gap: 8px;
     }
 
     &__aggregate {
-        margin-top: 12px;
+        margin-top: 10px;
         padding-top: 12px;
         border-top: 1px solid rgba(68, 229, 231, 0.2);
         display: flex;
         flex-direction: column;
         gap: 10px;
+
+        &--top {
+            margin-top: 14px;
+            padding-top: 0;
+            border-top: 0;
+        }
     }
 
     &__aggregate-header {
@@ -407,6 +475,10 @@
     &__aggregate-grid {
         display: grid;
         gap: 10px;
+
+        &--top {
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        }
     }
 
     &__aggregate-card {
@@ -434,12 +506,12 @@
         border: 1px solid rgba(68, 229, 231, 0.2);
         background: rgba(19, 37, 51, 0.7);
         color: $color-pallette-white;
-        border-radius: 14px;
-        padding: 14px 16px;
+        border-radius: 12px;
+        padding: 12px 14px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         cursor: pointer;
         transition: transform 0.2s ease, border-color 0.2s ease;
 
@@ -478,7 +550,7 @@
     }
 
     &__requirement-name {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
     }
 
