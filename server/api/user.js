@@ -79,8 +79,13 @@ router.get('/streamdeck/token', async function(req, res) {
         return res.status(200).send({ token });
     }
 
-    if (req.isAuthenticated() && req.user) {
-        return await req.db.firebase.streamdeck.get(req.user.id)
+    try {
+        if (req.isAuthenticated() && req.user) {
+            const token = await req.db.firebase.streamdeck.get(req.user.id)
+            return res.status(200).send({ token });
+        }
+    } catch (err) {
+        console.error("Error getting stream deck token: ", err);
     }
 
     res.status(401).send('Unauthorized');
