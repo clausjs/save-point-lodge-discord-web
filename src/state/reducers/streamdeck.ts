@@ -11,6 +11,7 @@ export const fetchToken = createAsyncThunk(
     async () => {
         const response = await fetch('/api/user/streamdeck/token');
         const data = await response.json();
+        console.log("Fetched Stream Deck token: ", data);
         return data.token || null;
     }
 );
