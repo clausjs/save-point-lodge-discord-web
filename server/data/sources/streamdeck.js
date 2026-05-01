@@ -20,7 +20,7 @@ class StreamDeck extends DataSource {
             const response = await db.collection(this.collectionName).doc(userId).get();
             if (!response.exists) {
                 const token = tokenGenerate();
-                this.set(userId, token);
+                await this.set(userId, token);
                 return { token };
             }
             return response.data() || {};

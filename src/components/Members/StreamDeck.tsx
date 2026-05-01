@@ -14,7 +14,6 @@ import { fetchSoundboarderStatus } from '../../state/reducers/user';
 const StreamDeck: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const [ loading, setLoading ] = useState(true);
-    const [ showTooltip, setShowTooltip ] = useState(false);
 
     const user: User | null = useSelector((state: RootState) => state.user.user);
     const token: string | null = useSelector((state: RootState) => state.streamdeck.token);
