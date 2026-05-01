@@ -18,9 +18,9 @@ const StreamDeck: React.FC = () => {
 
     const user: User | null = useSelector((state: RootState) => state.user.user);
     const token: string | null = useSelector((state: RootState) => state.streamdeck.token);
-    const userFetchState: apiState = useSelector((state: RootState) => state.user.userFetchState);
-    const tokenFetchState: apiState = useSelector((state: RootState) => state.streamdeck.tokenFetchState);
-    const soundboardStatusFetchState: apiState = useSelector((state: RootState) => state.user.soundboardStatusFetchState);
+    const userFetchState: apiState | undefined = useSelector((state: RootState) => state.user.userFetchState);
+    const tokenFetchState: apiState | undefined = useSelector((state: RootState) => state.streamdeck.tokenFetchState);
+    const soundboardStatusFetchState: apiState | undefined = useSelector((state: RootState) => state.user.soundboardStatusFetchState);
     const [ searchParams ] = useSearchParams();
 
     const sendToStreamdeck = () => window.open(`streamdeck://plugins/message/com.joseph-claus.spl-soundboard/settings?token=${token}`, '_blank');
