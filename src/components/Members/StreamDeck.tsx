@@ -22,8 +22,20 @@ const StreamDeck: React.FC = () => {
     const soundboardStatusFetchState: apiState | undefined = useSelector((state: RootState) => state.user.soundboardStatusFetchState);
     const [ searchParams ] = useSearchParams();
 
-    const sendToStreamdeck = () => window.open(`streamdeck://plugins/message/com.joseph-claus.spl-soundboard/settings?token=${token}`, '_blank');
-
+    
+    const openDeepLink = (url: string) => {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        
+        // Cleanup
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+        }, 1000);
+    }
+    const sendToStreamdeck = () => openDeepLink(`streamdeck://plugins/message/com.joseph-claus.spl-soundboard/settings?token=${token}`);
+    
     useEffect(() => {
         if (user && soundboardStatusFetchState === 'idle') {
             dispatch(fetchSoundboarderStatus());
