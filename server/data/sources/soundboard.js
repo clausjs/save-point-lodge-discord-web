@@ -11,7 +11,6 @@ class Soundboard extends DataSource {
         super(store);
         this.collectionName = "soundboard-clips";
         this.clips = [];
-        this._init();
     }
     async _init() {
         const { db } = this;
@@ -26,7 +25,7 @@ class Soundboard extends DataSource {
             if (!clip.volume) clip.volume = 50;
             soundboardItems.push(clip);
         });
-        this.clips = soundboardItems;
+        // this.clips = soundboardItems;
 
         db.collection(this.collectionName).onSnapshot(snapshot => {
             console.log("Soundboard snapshot received: ", snapshot.docChanges());
