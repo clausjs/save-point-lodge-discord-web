@@ -1,10 +1,12 @@
 services:
   frontend:
-    image: 'spl-web:main'
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - .env
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=prod_test
     ports:
       - "3000:3000"
   redis:
