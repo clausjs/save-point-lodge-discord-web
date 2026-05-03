@@ -19,6 +19,20 @@ router.get('/', async function(req, res) {
     }
 });
 
+router.get('/random', async function(req, res) {
+    if (req.isTesting) {
+        const randomIndex = Math.floor(Math.random() * clips.length);
+        return res.status(200).send(clips[randomIndex]);
+    }
+
+    try {
+        const clip = await req.db.firebase.soundboard.getRandom();
+        return res.status(200).send(clip);
+    } catch (e) {
+        return res.status(500).send(e);
+    }
+});
+
 router.get('/myinstants', async function(req, res) {
     try {
         const lang = req.query.lang;

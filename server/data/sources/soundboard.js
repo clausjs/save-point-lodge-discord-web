@@ -10,11 +10,13 @@ class Soundboard extends DataSource {
     constructor(store) {
         super(store);
         this.collectionName = "soundboard-clips";
+        this.clips = [];
+        this._init();
     }
-    get = async () => {
+    async _init() {
         const { db } = this;
         const getSoundboardItemsResponse = await db.collection(this.collectionName).get();
-
+    
         const soundboardItems = [];
         getSoundboardItemsResponse.forEach(res => {
             const clipData = res.data();
@@ -24,9 +26,36 @@ class Soundboard extends DataSource {
             if (!clip.volume) clip.volume = 50;
             soundboardItems.push(clip);
         });
-        return soundboardItems;
+        this.clips = soundboardItems;
+
+        db.collection(this.collectionName).onSnapshot(snapshot => {
+            console.log("Soundboard snapshot received: ", snapshot.docChanges());
+
+            snapshot.docChanges().forEach(change => {
+                const clipData = change.doc.data();
+                const clip = { id: change.doc.id, ...clipData };
+                clip.createdAt = clipData.createdAt ? clipData.createdAt.toDate() : new Date();
+                clip.updatedAt = clipData.updatedAt ? clipData.updatedAt.toDate() : new Date();
+                if (!clip.volume) clip.volume = 50;
+                
+                if (change.type === "added") {
+                    this.clips.push(clip);
+                } else if (change.type === "modified") {
+                    this.clips = this.clips.map(c => c.id === clip.id ? clip : c);
+                } else if (change.type === "removed") {
+                    this.clips = this.clips.filter(c => c.id !== clip.id);
+                }
+            });
+        });
     }
-    getById = async (id) => {
+    get () {
+        return this.clips;
+    }
+    getRandom () {
+        const randomIndex = Math.floor(Math.random() * this.clips.length);
+        return this.clips[randomIndex];
+    }
+    async getById (id) {
         const { db } = this;
         
         try {
@@ -44,7 +73,7 @@ class Soundboard extends DataSource {
             throw err;
         }
     }
-    add = async (opts) => {
+    async add (opts) {
         const { db } = this;
         const { url, name, description = "", tags = [], uploadedBy = "", volume = 50, category = "Uncategorized" } = opts;
         const transactionDate = Timestamp.fromDate(new Date());
@@ -71,7 +100,7 @@ class Soundboard extends DataSource {
             throw err;
         }
     }
-    update = async (clip) => {
+    async update (clip) {
         const { db } = this;
 
 
@@ -96,7 +125,7 @@ class Soundboard extends DataSource {
             throw err;
         }
     }
-    delete = async (id) => {
+    async delete (id) {
         const { db } = this;
 
         try {
@@ -107,7 +136,7 @@ class Soundboard extends DataSource {
             return false;
         }
     }
-    toggleFavorite = async (id, user) => {
+    async toggleFavorite (id, user) {
         const { db } = this;
         
         try {
