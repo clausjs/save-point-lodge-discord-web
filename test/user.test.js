@@ -26,8 +26,7 @@ describe('User API (e2e)', () => {
             .send({ username: 'test', password: 'test' });
 
         const res = await agent
-            .get('/api/user')
-            .set('Referer', 'http://localhost');
+            .get('/api/user');
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('object');
         expect(res.body).to.deep.include({ id: process.env.OWNER_ID });
@@ -35,24 +34,21 @@ describe('User API (e2e)', () => {
 
     it('returns null when not authenticated', async () => {
         const res = await supertest(baseUrl)
-            .get('/api/user')
-            .set('Referer', 'http://localhost');
+            .get(`/api/user?apiKey=${process.env.AUTHORIZED_API_KEY}`);
         expect(res.status).to.equal(200);
         expect(res.body).to.be.null;
     });
 
     it('returns true for /soundboarder when testing', async () => {
         const res = await supertest(baseUrl)
-            .get('/api/user/soundboarder')
-            .set('Referer', 'http://localhost');
+            .get(`/api/user/soundboarder?apiKey=${process.env.AUTHORIZED_API_KEY}`);
         expect(res.status).to.equal(200);
         expect(res.body).to.be.true;
     });
 
     it('returns true for /lodgeguest when testing', async () => {
         const res = await supertest(baseUrl)
-            .get('/api/user/lodgeguest')
-            .set('Referer', 'http://localhost');
+            .get(`/api/user/lodgeguest?apiKey=${process.env.AUTHORIZED_API_KEY}`);
         expect(res.status).to.equal(200);
         expect(res.body).to.be.true;
     });

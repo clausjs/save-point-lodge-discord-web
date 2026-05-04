@@ -199,38 +199,53 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
-const checkHeaders = (referer, params) => {
-    const ACCEPTED_HEADERS = ['localhost', 'dev.savepointlodge.com', 'savepointlodge.com'];
+const isSoundboardPath = (apiPath) => apiPath === '/soundboard' || apiPath.startsWith('/soundboard/');
 
-    let foundAcceptableHeader = false;
+const hasAcceptedApiKey = (params) => {
+    return Boolean(process.env.AUTHORIZED_API_KEY && params?.apiKey === process.env.AUTHORIZED_API_KEY);
+}
 
-    if (referer) {
-        ACCEPTED_HEADERS.map(header => {
-            if (referer.includes(header)) foundAcceptableHeader = true;
-        });
-    } else if (params) {
-        if (params.apiKey === process.env.AUTHORIZED_API_KEY) foundAcceptableHeader = true;
+const getSoundboardTokenUser = async (streamdeck, token) => {
+    if (!token) return null;
+
+    if (devMode && token === 'abc123') {
+        return { userId: process.env.OWNER_ID, token };
     }
 
-    return foundAcceptableHeader;
+    if (!streamdeck) return null;
+
+    return streamdeck.getUserByToken(token);
 }
 
 app.use('/api', async function(req, res, next) {
     req.db = db;
 
-    // If soundboard request with a token, attempt to authenticate the token
-    if (req.path.startsWith('/soundboard/') && req.query.token) {
+    if (req.isAuthenticated() && req.user) {
+        req.isTesting = devMode;
+        req.fakeAuth = process.env.NODE_ENV === 'dev';
+        return next();
+    }
+
+    if (hasAcceptedApiKey(req.query)) {
+        req.isTesting = devMode;
+        req.fakeAuth = process.env.NODE_ENV === 'dev';
+        return next();
+    }
+
+    // Soundboard requests may also authenticate through a Stream Deck token.
+    if (isSoundboardPath(req.path) && req.query.token) {
         try {
-            const tokenRes = await req.db.firebase.streamdeck.getUserByToken(req.query.token);
+            const tokenRes = await getSoundboardTokenUser(req.db.firebase?.streamdeck, req.query.token);
             if (!tokenRes) return res.status(401).send('Unauthorized. Token not recognized.');
             const { userId } = tokenRes;
             if (!userId) return res.status(401).send('Unauthorized. Token not recognized.');
             if (devMode) console.log("Soundboard token authenticated for user: ", userId);
         } catch (err) {
-            if (devMode) console.error("Error authenticating token: ", err);
+            console.error("Error authenticating token: ", err);
             return res.status(500).send();
         }
-    } else if (!checkHeaders(req.get('Referer'), req.query)) return res.status(401).send('Unauthorized');
+    } else return res.status(401).send('Unauthorized');
+
     req.isTesting = devMode;
     req.fakeAuth = process.env.NODE_ENV === 'dev';
     next();

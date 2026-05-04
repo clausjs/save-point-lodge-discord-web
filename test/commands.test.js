@@ -21,8 +21,7 @@ describe('Commands API (e2e)', () => {
     it('returns all non-private message type commands', async function () {
         this.timeout(8000);
         const res = await supertest(baseUrl)
-            .get('/api/commands')
-            .set('Referer', 'http://localhost');
+            .get(`/api/commands?apiKey=${process.env.AUTHORIZED_API_KEY}`);
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('array');
         expect(res.body.length).to.equal(
@@ -30,10 +29,10 @@ describe('Commands API (e2e)', () => {
         );
     });
 
-    it('rejects unauthorized requests without referer/apiKey', async function () {
+    it('rejects unauthorized requests without session or apiKey', async function () {
         const res = await supertest(baseUrl)
             .get('/api/commands')
-            .set('Referer', 'http://example.com'); // explicit unacceptable referer
+            .set('Referer', 'http://localhost');
         expect(res.status).to.equal(401);
         expect(res.text).to.match(/Unauthorized/i);
     });

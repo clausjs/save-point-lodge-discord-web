@@ -19,8 +19,7 @@ describe('Status API (e2e)', () => {
 
     it('returns a success response for GET /', async () => {
         const res = await supertest(baseUrl)
-            .get('/api/status')
-            .set('Referer', 'http://localhost');
+            .get(`/api/status?apiKey=${process.env.AUTHORIZED_API_KEY}`);
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('object');
         expect(res.body).to.deep.equal({ success: true });

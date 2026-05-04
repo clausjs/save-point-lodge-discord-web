@@ -26,8 +26,7 @@ describe('Discord API (e2e)', () => {
         });
 
         const res = await supertest(baseUrl)
-            .get('/api/discord/members')
-            .set('Referer', 'http://localhost');
+            .get(`/api/discord/members?apiKey=${process.env.AUTHORIZED_API_KEY}`);
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('array');
         expect(res.body).to.have.lengthOf(2);
@@ -38,8 +37,7 @@ describe('Discord API (e2e)', () => {
         global.fetch = async () => { throw new Error('Unable to fetch discord widget data.'); };
 
         const res = await supertest(baseUrl)
-            .get('/api/discord/members')
-            .set('Referer', 'http://localhost');
+            .get(`/api/discord/members?apiKey=${process.env.AUTHORIZED_API_KEY}`);
         expect(res.status).to.equal(500);
         // Express serializes Error objects as {} by default; status check is sufficient.
     });

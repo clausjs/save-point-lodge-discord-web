@@ -50,8 +50,7 @@ describe('Soundboard API (e2e)', () => {
 
     it('returns trending sounds for /myinstants', async () => {
         const res = await supertest(baseUrl)
-            .get('/api/soundboard/myinstants?lang=en&page=1')
-            .set('Referer', 'http://localhost');
+            .get('/api/soundboard/myinstants?lang=en&page=1&token=abc123');
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('array');
         expect(res.body).to.have.lengthOf(2);
@@ -60,8 +59,7 @@ describe('Soundboard API (e2e)', () => {
 
     it('returns recent sounds for /myinstants/recent', async () => {
         const res = await supertest(baseUrl)
-            .get('/api/soundboard/myinstants/recent?lang=en&page=1')
-            .set('Referer', 'http://localhost');
+            .get('/api/soundboard/myinstants/recent?lang=en&page=1&token=abc123');
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('array');
         expect(res.body).to.have.lengthOf(2);
@@ -70,8 +68,7 @@ describe('Soundboard API (e2e)', () => {
 
     it('returns search results for /myinstants/search', async () => {
         const res = await supertest(baseUrl)
-            .get('/api/soundboard/myinstants/search?lang=en&query=test&page=1')
-            .set('Referer', 'http://localhost');
+            .get('/api/soundboard/myinstants/search?lang=en&query=test&page=1&token=abc123');
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('array');
         expect(res.body).to.have.lengthOf(2);
@@ -80,11 +77,26 @@ describe('Soundboard API (e2e)', () => {
 
     it('returns sounds by category for /myinstants/:category', async () => {
         const res = await supertest(baseUrl)
-            .get('/api/soundboard/myinstants/test-category?lang=en&page=1')
-            .set('Referer', 'http://localhost');
+            .get('/api/soundboard/myinstants/test-category?lang=en&page=1&token=abc123');
         expect(res.status).to.equal(200);
         expect(res.body).to.be.an('array');
         expect(res.body).to.have.lengthOf(2);
         expect(res.body[0]).to.deep.include({ id: '7', name: 'CategorySound1' });
+    });
+
+    it('rejects soundboard requests without token, session, or apiKey', async () => {
+        const res = await supertest(baseUrl)
+            .get('/api/soundboard/myinstants?lang=en&page=1')
+            .set('Referer', 'http://localhost');
+        expect(res.status).to.equal(401);
+        expect(res.text).to.match(/Unauthorized/i);
+    });
+
+    it('allows soundboard requests with an accepted apiKey', async () => {
+        const res = await supertest(baseUrl)
+            .get(`/api/soundboard/myinstants?lang=en&page=1&apiKey=${process.env.AUTHORIZED_API_KEY}`);
+        expect(res.status).to.equal(200);
+        expect(res.body).to.be.an('array');
+        expect(res.body).to.have.lengthOf(2);
     });
 });
