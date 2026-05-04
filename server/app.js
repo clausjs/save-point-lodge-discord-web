@@ -219,7 +219,7 @@ app.use('/api', async function(req, res, next) {
     req.db = db;
 
     // If soundboard request with a token, attempt to authenticate the token
-    if (req.path === '/soundboard' && req.query.token) {
+    if (req.path.startsWith('/soundboard/') && req.query.token) {
         try {
             const tokenRes = await req.db.firebase.streamdeck.getUserByToken(req.query.token);
             if (!tokenRes) return res.status(401).send('Unauthorized. Token not recognized.');

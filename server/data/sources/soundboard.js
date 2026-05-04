@@ -28,8 +28,6 @@ class Soundboard extends DataSource {
         // this.clips = soundboardItems;
 
         db.collection(this.collectionName).onSnapshot(snapshot => {
-            console.log("Soundboard snapshot received: ", snapshot.docChanges());
-
             snapshot.docChanges().forEach(change => {
                 const clipData = change.doc.data();
                 const clip = { id: change.doc.id, ...clipData };
