@@ -54,7 +54,7 @@ app.use(history({
         {
             from: /\/login/,
             to: function(context) {
-                return context.parsedUrl.pathname;
+                return context.parsedUrl.path;
             }
         },
         {
@@ -71,12 +71,6 @@ app.use('/', express.static(BUILD_DIR, {
     index: 'index.html'
 }));
 
-app.use(function(req, res, next) {
-    if (req.isAuthenticated()) {
-        res.cookie('user', req.user, { maxAge: 86400 });
-    }
-    next();
-});
 
 var scopes = ['identify', 'guilds', 'guilds.members.read'];
 var prompt = 'consent';
@@ -101,6 +95,7 @@ if (!devMode) {
         tokenURL: 'https://discord.com/api/oauth2/token',
         callbackURL,
         scope: scopes,
+        state: true,
         prompt: prompt
     }, function(accessToken, refreshToken, profile, done) {
         process.nextTick(function() {
@@ -145,6 +140,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/login-extension', require('./auth/firefox')({ db }));
+
 if (devMode) {
     app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), function(req, res) {
         if (req.user) {
@@ -157,7 +154,9 @@ if (devMode) {
 
 if (!devMode) {
     app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
-    app.get('/login-redirect', passport.authenticate('discord', { successRedirect: '/postAuth', failureRedirect: '/' }));
+    app.get('/login-redirect', passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) {
+        res.redirect(req.session.firefoxAuth ? '/login-extension/confirm' : '/postAuth');
+    });
     app.get('/login-sdauth', passport.authenticate('streamdeck', { scope: scopes, prompt: prompt }));
     app.get('/login-streamdeck', passport.authenticate('streamdeck', { successRedirect: "/streamdeck-setup?broadcast=yes", failureRedirect: '/' }));
 }
