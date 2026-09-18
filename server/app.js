@@ -220,6 +220,11 @@ const getSoundboardTokenUser = async (streamdeck, token) => {
 app.use('/api', async function(req, res, next) {
     req.db = db;
 
+    // This endpoint authenticates its path token in the soundboard router.
+    if (req.method === 'POST' && /^\/soundboard\/[^/]+\/add\/?$/i.test(req.path)) {
+        return next();
+    }
+
     if (req.isAuthenticated() && req.user) {
         req.isTesting = devMode;
         req.fakeAuth = process.env.NODE_ENV === 'dev';

@@ -78,6 +78,40 @@ router.get('/myinstants/:category', async function(req, res) {
     }
 });
 
+router.post('/:token/add', async function(req, res) {
+    try {
+        const authorization = await req.db.firebase.streamdeck.getUserByToken(req.params.token);
+        if (!authorization?.userId) {
+            return res.status(401).send('Unauthorized. Token not recognized.');
+        }
+
+        if (!process.env.DISCORD_BOT_TOKEN || !process.env.SPL_ID) {
+            throw new Error('Discord member lookup is not configured.');
+        }
+
+        const memberResponse = await fetch(`https://discord.com/api/v10/guilds/${process.env.SPL_ID}/members/${encodeURIComponent(authorization.userId)}`, {
+            headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` }
+        });
+        if (memberResponse.status === 404) {
+            return res.status(403).send('Unauthorized. Guild member not found.');
+        }
+        if (!memberResponse.ok) {
+            throw new Error('Unable to fetch guild member.');
+        }
+
+        const member = await memberResponse.json();
+        if (member.user?.id !== authorization.userId || !member.user?.username) {
+            throw new Error('Invalid guild member response.');
+        }
+
+        const clip = { ...req.body, uploadedBy: member.user.username };
+        await req.db.firebase.soundboard.add(clip);
+        return res.status(200).send(clip);
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+});
+
 router.post('/favorite/:id', async function(req, res) {
     if (req.isTesting) {
         return res.status(200).send({ id: req.params.id, favoritedBy: [req.user.id] });
