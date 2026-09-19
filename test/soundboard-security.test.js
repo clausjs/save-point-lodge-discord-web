@@ -1,8 +1,8 @@
 const express = require('express');
 const request = require('supertest');
 const sinon = require('sinon');
-const dns = require('node:dns');
-const { parseClip, addClip, publicLookup, resolveMyInstant } = require('../server/soundboard/clips');
+const https = require('node:https');
+const { parseClip, addClip } = require('../server/soundboard/clips');
 const guard = require('../server/auth/soundboard');
 const origin = 'https://savepointlodge.com';
 const clip = { name: 'Test', url: 'https://www.myinstants.com/media/sounds/test.mp3' };
@@ -56,7 +56,7 @@ describe('Soundboard write boundaries', () => {
     });
 });
 
-describe('Clip validation and Myinstants imports', () => {
+describe('Clip validation', () => {
     afterEach(() => sinon.restore());
     it('accepts normalized fields and ignores client ownership', async () => {
         const parsed = await parseClip({ ...clip, tags: [' Hi '], volume: 0 });
@@ -72,30 +72,19 @@ describe('Clip validation and Myinstants imports', () => {
             try { await parseClip(value); throw new Error('Expected rejection'); } catch (error) { expect(error.status).to.equal(400); }
         }
     });
-    it('resolves one approved page with bounded reads and no redirects', async () => {
-        const fetchPage = sinon.stub().resolves({ ok: true, headers: { get: () => 'text/html' }, text: async () => '<meta property="og:audio" content="/media/sounds/test.mp3">' });
-        expect(await resolveMyInstant('https://www.myinstants.com/en/instant/test/', fetchPage)).to.equal(clip.url);
-        const options = fetchPage.firstCall.args[1];
-        expect(options.redirect).to.equal('error');
-        expect(options.size).to.equal(512 * 1024);
-        expect(options.timeout).to.equal(5000);
-        expect(options.agent.options.lookup).to.equal(publicLookup);
-    });
-    it('rejects an unsafe page before fetching and an unsafe extracted audio URL', async () => {
-        const fetchPage = sinon.stub();
-        try { await resolveMyInstant('https://127.0.0.1/instant/test/', fetchPage); } catch (error) { expect(error.status).to.equal(400); }
-        sinon.assert.notCalled(fetchPage);
-        fetchPage.resolves({ ok: true, headers: { get: () => 'text/html' }, text: async () => '<meta property="og:audio" content="https://evil.example/test.mp3">' });
-        try { await resolveMyInstant('https://www.myinstants.com/instant/test/', fetchPage); throw new Error('Expected rejection'); }
-        catch (error) { expect(error.status).to.equal(400); }
-    });
-    it('blocks private, mapped, link-local, and mixed DNS answers at connection time', async () => {
-        const lookup = sinon.stub(dns, 'lookup');
-        for (const address of ['127.0.0.1', '10.0.0.1', '169.254.169.254', '100.64.0.1', '::1', '::ffff:127.0.0.1', 'fc00::1']) {
-            lookup.callsFake((host, options, callback) => callback(null, [{ address, family: address.includes(':') ? 6 : 4 }, { address: '8.8.8.8', family: 4 }]));
-            await new Promise(resolve => publicLookup('www.myinstants.com', {}, error => { expect(error).to.be.an('error'); resolve(); }));
-        }
-        lookup.callsFake((host, options, callback) => callback(null, [{ address: '8.8.8.8', family: 4 }]));
-        await new Promise(resolve => publicLookup('www.myinstants.com', {}, (error, address) => { expect(error).to.equal(null); expect(address).to.equal('8.8.8.8'); resolve(); }));
+    it('saves direct audio URLs without requesting Myinstants and rejects detail-page imports', async () => {
+        const outbound = sinon.stub(https, 'request').throws(new Error('Unexpected outbound request'));
+        const add = sinon.stub().resolves();
+        const app = express();
+        app.use(express.json());
+        app.post('/add', (req, res) => {
+            req.user = { id: 'user' };
+            req.db = { firebase: { soundboard: { add } } };
+            return addClip(req, res);
+        });
+        await request(app).post('/add').send(clip).expect(200);
+        await request(app).post('/add').send({ name: 'Clip', sourceUrl: 'https://www.myinstants.com/instant/test/' }).expect(400);
+        sinon.assert.calledOnce(add);
+        sinon.assert.notCalled(outbound);
     });
 });

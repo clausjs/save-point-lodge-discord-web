@@ -6,8 +6,8 @@ POST `/api/soundboard/add` derives `uploadedBy` from the authenticated username 
 
 Clip names, descriptions, tags, categories, volume, and source URLs have explicit limits. Audio URLs must use HTTPS on `myinstants.com`, `www.myinstants.com`, or an exact host listed in `SOUNDBOARD_AUDIO_HOSTS` (comma-separated, no wildcards). Configure trusted storage/CDN hosts before deploying if existing custom audio uses them. Arbitrary external and HTTP audio URLs will be rejected on add/edit; existing clips are not modified.
 
-Adding `{name, sourceUrl}` supports Myinstants detail pages. The server fetches only an approved page, bounds HTML to 512 KiB and five seconds, refuses redirects, and checks/pins public DNS addresses at connection time. Extracted audio must still belong to Myinstants. The add operation stores the audio URL; it does not fetch audio bytes. Downstream players/downloaders must enforce their own redirect, DNS, size, and media-type limits when fetching audio.
+Adding `{name, url}` requires a direct audio URL. The extension extracts the name and audio URL from the loaded Myinstants card. The add/edit handlers validate submitted data locally and never fetch Myinstants pages, resolve DNS, or download audio. Detail-page `sourceUrl` requests are rejected. Existing playback behavior remains unchanged.
 
 The Firefox authorization PR builds on these handlers to admit an independently verified, add-only grant. This PR alone does not enable extension bearer authentication. A separate unmerged `/:token/add` proposal must not bypass these restrictions or be merged as-is.
 
-Validation: `npm test` covers session/role/origin guards, forged uploader fields, malformed clips, source-host checks, safe import options, and private/mixed DNS answers, alongside existing read APIs.
+Validation: `npm test` covers session/role/origin guards, forged uploader fields, malformed clips, source-host checks, rejected detail-page imports, and saving without outbound requests, alongside existing read APIs.
