@@ -62,7 +62,8 @@
     "toastr": "^2.1.4",
     "uuid": "^11.0.5",
     "wavesurfer.js": "^7.9.5",
-    "websocket": "^1.0.35"
+    "websocket": "^1.0.35",
+    "ipaddr.js": "^2.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
