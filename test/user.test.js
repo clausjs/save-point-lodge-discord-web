@@ -32,6 +32,16 @@ describe('User API (e2e)', () => {
         expect(res.body).to.deep.include({ id: process.env.OWNER_ID });
     });
 
+    it('destroys the session on logout and creates a new session on the next login', async () => {
+        const login = await agent.post('/login').send({ username: 'test', password: 'test' }).expect(200);
+        const oldCookie = login.headers['set-cookie'][0].split(';')[0];
+        await agent.get('/logout').expect(302);
+        const loggedOut = await supertest(baseUrl).get(`/api/user?apiKey=${process.env.AUTHORIZED_API_KEY}`).set('Cookie', oldCookie).expect(200);
+        expect(loggedOut.body).to.equal(null);
+        const next = await agent.post('/login').send({ username: 'test', password: 'test' }).expect(200);
+        expect(next.headers['set-cookie'][0].split(';')[0]).not.to.equal(oldCookie);
+    });
+
     it('returns null when not authenticated', async () => {
         const res = await supertest(baseUrl)
             .get(`/api/user?apiKey=${process.env.AUTHORIZED_API_KEY}`);

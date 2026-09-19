@@ -124,6 +124,8 @@ const store = devMode ? new MemoryStore() : new RedisStore({
     client: redisClient
 });
 
+if (db.firebase) db.firebase.extensionAuth.sessionStore = store;
+
 app.use(session({
     store, 
     saveUninitialized: false,
@@ -165,7 +167,11 @@ if (!devMode) {
 
 app.get('/logout', function(req, res) {
     req.logout();
-    res.redirect('/');
+    req.session.destroy(error => {
+        if (error) return res.status(503).send('Could not end the session. Please try again.');
+        res.clearCookie('_savepointlodgesession');
+        res.redirect('/');
+    });
 });
 
 // this middleware will be executed for every request to the app

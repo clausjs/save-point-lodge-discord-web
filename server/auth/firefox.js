@@ -19,6 +19,13 @@ module.exports = ({ db, origin }) => {
     });
 
     router.post('/token', async (req, res) => {
+        if (req.body.grant_type === 'refresh_token') {
+            if (typeof req.body.refresh_token !== 'string') return res.status(400).json({ error: 'invalid_request' });
+            try {
+                const result = await db.firebase.extensionAuth.refresh(req.body.refresh_token, origin);
+                return result ? res.json(result) : res.status(400).json({ error: 'invalid_grant' });
+            } catch { return res.status(503).json({ error: 'temporarily_unavailable' }); }
+        }
         const { grant_type, code, code_verifier, redirect_uri } = req.body;
         if (grant_type !== 'authorization_code' || redirect_uri !== redirectUri || typeof code !== 'string' || typeof code_verifier !== 'string') {
             return res.status(400).json({ error: 'invalid_request' });
@@ -32,6 +39,11 @@ module.exports = ({ db, origin }) => {
     });
 
     router.post('/revoke', async (req, res) => {
+        const refresh = /^Bearer (spl_refresh_[a-f0-9]{32}\.[a-f0-9]{64})$/.exec(req.get('authorization') || '')?.[1];
+        if (refresh) {
+            try { await db.firebase.extensionAuth.revokeRefresh(refresh, origin); return res.sendStatus(204); }
+            catch { return res.sendStatus(503); }
+        }
         const token = /^Bearer (spl_ext_[a-f0-9]{32}\.[a-f0-9]{64})$/.exec(req.get('authorization') || '')?.[1];
         if (!token) return res.sendStatus(401);
         try {
@@ -54,7 +66,7 @@ module.exports = ({ db, origin }) => {
             const grants = await db.firebase.extensionAuth.list(req.user.id, origin);
             const forms = grants.map(grant => `<form method="post" action="/login-extension/connections">
 <input type="hidden" name="csrf" value="${req.session.extensionCsrf}"><input type="hidden" name="id" value="${grant.id}">
-<button>Revoke Firefox connection (expires ${new Date(grant.expiresAt).toISOString()})</button></form>`).join('');
+<button>Revoke Firefox connection</button></form>`).join('');
             return res.type('html').send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Firefox connections</title></head><body><h1>Firefox connections</h1>${forms || '<p>No active connections.</p>'}</body></html>`);
         } catch {
             return res.status(503).send('Could not load connections.');
@@ -109,7 +121,7 @@ module.exports = ({ db, origin }) => {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Connect Firefox to Savepoint Lodge</title></head>
 <body><main><h1>Connect Firefox</h1>
 <p>Allow the Savepoint Lodge Firefox extension to add clips as <strong>${username}</strong>?</p>
-<p>This connection can only add clips, expires in 15 minutes, and can be revoked independently. It cannot edit, delete, or play clips.</p>
+<p>This connection can only add clips, renews automatically while this SPL session is active, and can be revoked independently. It cannot edit, delete, or play clips.</p>
 <form method="post" action="/login-extension/confirm">
 <input type="hidden" name="csrf" value="${req.session.firefoxAuth.csrf}">
 <button name="decision" value="allow">Connect Firefox</button>
@@ -135,7 +147,7 @@ module.exports = ({ db, origin }) => {
                 result.set('error', 'access_denied');
             } else {
                 try {
-                    const code = await db.firebase.extensionAuth.issueCode({ userId: req.user.id, challenge: pending.challenge, redirectUri, audience: origin });
+                    const code = await db.firebase.extensionAuth.issueCode({ userId: req.user.id, sessionId: req.sessionID, challenge: pending.challenge, redirectUri, audience: origin });
                     result.set('code', code);
                 } catch {
                     return res.status(503).send('Could not authorize Firefox. Start again from Firefox settings.');

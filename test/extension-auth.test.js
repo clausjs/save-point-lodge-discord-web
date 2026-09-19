@@ -9,10 +9,10 @@ const redirectUri = 'https://extension.example/';
 const audience = 'https://savepointlodge.com';
 
 describe('Extension authorization storage', () => {
-    let db, auth;
-    beforeEach(() => { db = database(); auth = new ExtensionAuth(db); });
+    let db, auth, session;
+    beforeEach(() => { db = database(); auth = new ExtensionAuth(db); session = { passport: { user: { id: 'user' } }, cookie: { expires: new Date(Date.now() + 10800000).toISOString() } }; auth.sessionStore = { get: (id, callback) => callback(null, id === 'session' ? session : null) }; });
     afterEach(() => sinon.restore());
-    const issue = () => auth.issueCode({ userId: 'user', challenge, redirectUri, audience });
+    const issue = () => auth.issueCode({ userId: 'user', sessionId: 'session', challenge, redirectUri, audience });
     it('stores hashes only and issues an add-only credential for 15 minutes', async () => {
         const code = await issue();
         const result = await auth.exchange(code, verifier, redirectUri, audience);
@@ -59,6 +59,47 @@ describe('Extension authorization storage', () => {
         expect(await auth.list('user', audience)).to.have.length(1);
         sinon.useFakeTimers({ now: Date.now() + 900001, toFake: ['Date'] });
         expect(await auth.authenticate(second.access_token, audience)).to.equal(null);
-        expect(await auth.list('user', audience)).to.have.length(0);
+        expect(await auth.list('user', audience)).to.have.length(1);
     });
+    it('rotates credentials after access expiry and rejects replay and wrong origins', async () => {
+        const first = await auth.exchange(await issue(), verifier, redirectUri, audience);
+        sinon.useFakeTimers({ now: Date.now() + 900001, toFake: ['Date'] });
+        expect(await auth.refresh(first.access_token, audience)).to.equal(null);
+        expect(await auth.refresh(first.refresh_token, 'https://dev.savepointlodge.com')).to.equal(null);
+        const results = await Promise.all([auth.refresh(first.refresh_token, audience), auth.refresh(first.refresh_token, audience)]);
+        expect(results.filter(Boolean)).to.have.length(1);
+        const second = results.find(Boolean);
+        expect(second.refresh_token).not.to.equal(first.refresh_token);
+        expect(await auth.authenticate(second.access_token, audience)).not.to.equal(null);
+        expect(await auth.authenticate(first.access_token, audience)).to.equal(null);
+        expect(JSON.stringify([...db.data])).not.to.include(second.refresh_token);
+        await auth.revokeRefresh(second.refresh_token, audience);
+        expect(await auth.refresh(second.refresh_token, audience)).to.equal(null);
+    });
+    for (const reason of ['expired', 'deleted', 'signed out', 'different user']) {
+        it(`rejects refresh and existing access when the SPL session is ${reason}`, async () => {
+            const first = await auth.exchange(await issue(), verifier, redirectUri, audience);
+            if (reason === 'expired') session.cookie.expires = new Date(Date.now() - 1).toISOString();
+            if (reason === 'deleted') session = null;
+            if (reason === 'signed out') delete session.passport.user;
+            if (reason === 'different user') session.passport.user.id = 'other';
+            expect(await auth.refresh(first.refresh_token, audience)).to.equal(null);
+            expect(await auth.authenticate(first.access_token, audience)).to.equal(null);
+        });
+    }
+    it('follows website session extensions without touching or extending its expiry', async () => {
+        const first = await auth.exchange(await issue(), verifier, redirectUri, audience);
+        const expiry = new Date(Date.now() + 21600000).toISOString();
+        session.cookie.expires = expiry;
+        sinon.useFakeTimers({ now: Date.now() + 10800001, toFake: ['Date'] });
+        expect(await auth.refresh(first.refresh_token, audience)).not.to.equal(null);
+        expect(session.cookie.expires).to.equal(expiry);
+    });
+    it('fails closed on session-store outages', async () => {
+        const first = await auth.exchange(await issue(), verifier, redirectUri, audience);
+        auth.sessionStore.get = (id, callback) => callback(new Error('offline'));
+        try { await auth.refresh(first.refresh_token, audience); throw new Error('Should reject'); }
+        catch (error) { expect(error.message).to.equal('offline'); }
+    });
+
 });

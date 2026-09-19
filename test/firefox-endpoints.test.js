@@ -11,6 +11,8 @@ describe('Firefox exchange and revocation endpoints', () => {
         user = { id: 'user' };
         auth = {
             exchange: sinon.stub().resolves({ access_token: token, token_type: 'Bearer', expires_in: 900, scope: 'soundboard:clips:add' }),
+            refresh: sinon.stub().resolves({ access_token: token }),
+            revokeRefresh: sinon.stub().resolves(),
             authenticate: sinon.stub().resolves({ id: 'a'.repeat(32), userId: 'user' }),
             revoke: sinon.stub().resolves(),
             list: sinon.stub().resolves([{ id: 'a'.repeat(32), expiresAt: Date.now() + 900000 }])
@@ -55,4 +57,17 @@ describe('Firefox exchange and revocation endpoints', () => {
         user = null;
         await agent.post('/login-extension/connections').type('form').send({ id: 'a'.repeat(32), csrf }).expect(403);
     });
+    it('refreshes without cookies and fails closed on ended sessions or store failures', async () => {
+        user = null;
+        const refresh = `spl_refresh_${'a'.repeat(32)}.${'b'.repeat(64)}`;
+        await request(app).post('/login-extension/token').send({ grant_type: 'refresh_token', refresh_token: refresh }).expect(200);
+        sinon.assert.calledOnceWithExactly(auth.refresh, refresh, 'https://savepointlodge.com');
+        auth.refresh.resolves(null);
+        await request(app).post('/login-extension/token').send({ grant_type: 'refresh_token', refresh_token: refresh }).expect(400);
+        auth.refresh.rejects(new Error('offline'));
+        await request(app).post('/login-extension/token').send({ grant_type: 'refresh_token', refresh_token: refresh }).expect(503);
+        await request(app).post('/login-extension/revoke').set('Authorization', `Bearer ${refresh}`).expect(204);
+        sinon.assert.calledOnceWithExactly(auth.revokeRefresh, refresh, 'https://savepointlodge.com');
+    });
+
 });

@@ -51,7 +51,7 @@ describe('Firefox soundboard login', () => {
         expect(callback.hash).to.equal('');
         expect(callback.searchParams.get('code')).to.equal('b'.repeat(64));
         expect(callback.searchParams.get('state')).to.equal(state);
-        expect(issueCode.calledOnceWithExactly({ userId: 'discord-user', challenge: 'c'.repeat(43), redirectUri: firefox.redirectUri, audience: 'https://savepointlodge.com' })).to.equal(true);
+        expect(issueCode.calledOnceWithMatch({ sessionId: sinon.match.string, userId: 'discord-user', challenge: 'c'.repeat(43), redirectUri: firefox.redirectUri, audience: 'https://savepointlodge.com' })).to.equal(true);
         await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(400);
     });
     it('can resume confirmation after Discord authenticates the session', async () => {
