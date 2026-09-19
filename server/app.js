@@ -139,7 +139,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/login-extension', require('./auth/firefox')({ db }));
+app.use('/login-extension', require('./auth/firefox')({ db, origin: new URL(callbackURL).origin }));
 
 if (devMode) {
     app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), function(req, res) {
@@ -154,7 +154,10 @@ if (devMode) {
 if (!devMode) {
     app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
     app.get('/login-redirect', passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) {
-        res.redirect(req.session.firefoxAuth ? '/login-extension/confirm' : '/postAuth');
+        const target = req.session.firefoxAuth?.expiresAt > Date.now() ? '/login-extension/confirm'
+            : req.session.firefoxConnections ? '/login-extension/connections' : '/postAuth';
+        delete req.session.firefoxConnections;
+        res.redirect(target);
     });
     app.get('/login-sdauth', passport.authenticate('streamdeck', { scope: scopes, prompt: prompt }));
     app.get('/login-streamdeck', passport.authenticate('streamdeck', { successRedirect: "/streamdeck-setup?broadcast=yes", failureRedirect: '/' }));
@@ -214,6 +217,8 @@ const getSoundboardTokenUser = async (streamdeck, token) => {
 
     return streamdeck.getUserByToken(token);
 }
+
+app.use('/api', require('./auth/extensionGrant')({ db, origin: new URL(callbackURL).origin, addClip: require('./soundboard/clips').addClip }));
 
 app.use('/api', async function(req, res, next) {
     req.db = db;

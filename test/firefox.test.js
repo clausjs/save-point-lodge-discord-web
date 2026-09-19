@@ -5,13 +5,13 @@ const sinon = require('sinon');
 const firefox = require('../server/auth/firefox');
 
 const state = 'a'.repeat(64);
-const beginUrl = `/login-extension?redirect_uri=${encodeURIComponent(firefox.redirectUri)}&state=${state}`;
+const beginUrl = `/login-extension?redirect_uri=${encodeURIComponent(firefox.redirectUri)}&state=${state}&code_challenge=${"c".repeat(43)}&code_challenge_method=S256`;
 
 describe('Firefox soundboard login', () => {
-    let agent, user, getToken, clock;
+    let agent, user, issueCode, clock;
     beforeEach(() => {
         user = { id: 'discord-user', username: '<test-user>', isSoundboardUser: true };
-        getToken = sinon.stub().resolves({ token: 'existing-soundboard-token' });
+        issueCode = sinon.stub().resolves('b'.repeat(64));
         const app = express();
         app.use(express.urlencoded({ extended: false }));
         app.use(session({ secret: 'test-secret', resave: false, saveUninitialized: false }));
@@ -20,7 +20,7 @@ describe('Firefox soundboard login', () => {
             req.isAuthenticated = () => Boolean(user);
             next();
         });
-        app.use('/login-extension', firefox({ db: { firebase: { streamdeck: { get: getToken } } } }));
+        app.use('/login-extension', firefox({ origin: 'https://savepointlodge.com', db: { firebase: { extensionAuth: { issueCode } } } }));
         agent = supertest.agent(app);
     });
     afterEach(() => { if (clock) { clock.restore(); clock = null; } });
@@ -34,24 +34,24 @@ describe('Firefox soundboard login', () => {
         user = null;
         await agent.get(beginUrl).expect(302).expect('Location', '/login-discord');
         await agent.get('/login-extension/confirm').expect(401);
-        expect(getToken.called).to.equal(false);
+        expect(issueCode.called).to.equal(false);
     });
-    it('returns the existing token only after approval and consumes the request', async () => {
+    it('returns only a PKCE-bound code after approval and consumes the request', async () => {
         const { page, csrf } = await consent();
         expect(page.headers['cache-control']).to.equal('no-store');
         expect(page.headers['referrer-policy']).to.equal('no-referrer');
         expect(page.headers['content-security-policy']).to.include("frame-ancestors 'none'");
         expect(page.text).to.include('&lt;test-user&gt;');
         expect(page.text).not.to.include('existing-soundboard-token');
-        expect(getToken.called).to.equal(false);
+        expect(issueCode.called).to.equal(false);
         const response = await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(303);
         const callback = new URL(response.headers.location);
         expect(response.text).to.equal('');
         expect(callback.origin + callback.pathname).to.equal(firefox.redirectUri);
-        expect(callback.search).to.equal('');
-        expect(new URLSearchParams(callback.hash.slice(1)).get('token')).to.equal('existing-soundboard-token');
-        expect(new URLSearchParams(callback.hash.slice(1)).get('state')).to.equal(state);
-        expect(getToken.calledOnceWithExactly('discord-user')).to.equal(true);
+        expect(callback.hash).to.equal('');
+        expect(callback.searchParams.get('code')).to.equal('b'.repeat(64));
+        expect(callback.searchParams.get('state')).to.equal(state);
+        expect(issueCode.calledOnceWithExactly({ userId: 'discord-user', challenge: 'c'.repeat(43), redirectUri: firefox.redirectUri, audience: 'https://savepointlodge.com' })).to.equal(true);
         await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(400);
     });
     it('can resume confirmation after Discord authenticates the session', async () => {
@@ -63,18 +63,18 @@ describe('Firefox soundboard login', () => {
     it('cancels without reading or returning the token', async () => {
         const { csrf } = await consent();
         const response = await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'deny' }).expect(303);
-        const params = new URLSearchParams(new URL(response.headers.location).hash.slice(1));
+        const params = new URL(response.headers.location).searchParams;
         expect(params.get('error')).to.equal('access_denied');
         expect(params.get('state')).to.equal(state);
         expect(params.has('token')).to.equal(false);
-        expect(getToken.called).to.equal(false);
+        expect(issueCode.called).to.equal(false);
     });
     it('rejects another host, callback suffix, query, or duplicate redirect URI', async () => {
         for (const redirect of ['https://attacker.example/', firefox.redirectUri + 'extra', firefox.redirectUri + '?extra=1']) {
             await agent.get(`/login-extension?redirect_uri=${encodeURIComponent(redirect)}&state=${state}`).expect(400);
         }
         await agent.get(beginUrl + '&redirect_uri=https://attacker.example/').expect(400);
-        expect(getToken.called).to.equal(false);
+        expect(issueCode.called).to.equal(false);
     });
     it('rejects missing, malformed, or duplicate state', async () => {
         for (const suffix of ['', '&state=short', `&state=${state}&state=${state}`]) {
@@ -85,13 +85,13 @@ describe('Firefox soundboard login', () => {
         await agent.get('/login-extension/confirm').expect(400);
         await consent();
         await agent.post('/login-extension/confirm').type('form').send({ csrf: 'wrong', decision: 'allow' }).expect(403);
-        expect(getToken.called).to.equal(false);
+        expect(issueCode.called).to.equal(false);
     });
     it('rejects expired requests', async () => {
         const { csrf } = await consent();
         clock = sinon.useFakeTimers({ now: Date.now() + 300001, toFake: ['Date'] });
         await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(400);
-        expect(getToken.called).to.equal(false);
+        expect(issueCode.called).to.equal(false);
     });
     it('requires soundboard membership both before display and after approval', async () => {
         user.isSoundboardUser = false;
@@ -101,18 +101,20 @@ describe('Firefox soundboard login', () => {
         const { csrf } = await consent();
         user.isSoundboardUser = false;
         await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(403);
-        expect(getToken.called).to.equal(false);
+        expect(issueCode.called).to.equal(false);
     });
-    it('fails closed when token retrieval fails or returns an empty record', async () => {
-        for (const result of [null, {}]) {
-            if (result) getToken.resolves(result);
-            else getToken.rejects(new Error('private database details'));
-            const { csrf } = await consent();
-            const response = await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(503);
-            expect(response.headers.location).to.equal(undefined);
-            expect(response.text).not.to.include('private database details');
-        }
+    it('fails closed when code issuance fails', async () => {
+        issueCode.rejects(new Error('private database details'));
+        const { csrf } = await consent();
+        const response = await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(503);
+        expect(response.headers.location).to.equal(undefined);
+        expect(response.text).not.to.include('private database details');
     });
+    it('requires S256 and a valid challenge', async () => {
+        await agent.get(beginUrl.replace('S256', 'plain')).expect(400);
+        await agent.get(beginUrl.replace('c'.repeat(43), 'short')).expect(400);
+    });
+
 });
 
 // Exercise app middleware too: browser navigation must retain OAuth query parameters.
