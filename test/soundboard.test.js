@@ -12,7 +12,7 @@ describe('Soundboard API (e2e)', () => {
     before(async () => {
         // Ensure a clean reload of app with stubbed myinstants
         const appPath = require.resolve('../server/app');
-        const routerPath = require.resolve('../server/api/soundboard');
+        const routerPath = require.resolve('../server/api/soundboard/soundboard');
         const myinstantsPath = require.resolve('../server/api/myinstants');
 
         originalModule = require.cache[myinstantsPath];

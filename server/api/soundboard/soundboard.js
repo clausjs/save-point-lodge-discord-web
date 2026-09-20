@@ -2,9 +2,9 @@ const dotenv = require('dotenv').config;
 dotenv();
 const router = require('express').Router();
 
-const { getTrending, getRecent, getByCategory, search } = require('./myinstants');
+const { getTrending, getRecent, getByCategory, search } = require('../myinstants');
 
-const clips = require('./testData').clips;
+const clips = require('../testData').clips;
 
 router.get('/', async function(req, res) {
     if (req.isTesting) {
@@ -97,7 +97,9 @@ router.put('/:id', async function(req, res) {
     }
 
     try {
-        const clip = req.body;
+        const existing = await req.db.firebase.soundboard.getById(req.params.id);
+        if (!existing) return res.status(404).send('Clip not found.');
+        const clip = { ...existing, ...await require('./clips').parseClip(req.body), id: req.params.id };
         await req.db.firebase.soundboard.update(clip);
         return res.status(200).send(clip);
     } catch (err) {
@@ -118,18 +120,6 @@ router.delete('/:id', async function(req, res) {
     }
 });
 
-router.post('/add', async function(req, res) {
-    if (req.isTesting) {
-        return res.status(200).send("success");
-    }
-    
-    try {
-        const clip = req.body;
-        await req.db.firebase.soundboard.add(clip);
-        return res.status(200).send(clip);
-    } catch (err) {
-        return res.status(500).send(err);
-    }
-});
+router.post('/add', require('./clips').addClip);
 
 module.exports = router;

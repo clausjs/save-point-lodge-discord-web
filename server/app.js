@@ -71,13 +71,6 @@ app.use('/', express.static(BUILD_DIR, {
     index: 'index.html'
 }));
 
-app.use(function(req, res, next) {
-    if (req.isAuthenticated()) {
-        res.cookie('user', req.user, { maxAge: 86400 });
-    }
-    next();
-});
-
 var scopes = ['identify', 'guilds', 'guilds.members.read'];
 var prompt = 'consent';
 
@@ -261,7 +254,7 @@ app.use('/api/status', require(`${API_DIR}/status`));
 
 app.use('/api/discord', require(`${API_DIR}/discord`));
 
-app.use('/api/soundboard', require(`${API_DIR}/soundboard`));
+app.use('/api/soundboard', require('./auth/soundboard')(new URL(callbackURL).origin), require(`${API_DIR}/soundboard/soundboard`));
 
 app.use('/api/download', require(`${API_DIR}/download`));
 
