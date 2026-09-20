@@ -32,7 +32,7 @@ describe('Soundboard write boundaries', () => {
         expect(res.body).not.to.have.property('favoritedBy');
         sinon.assert.calledOnceWithExactly(add, res.body);
     });
-    for (const method of ['post', 'put', 'delete']) {
+    for (const method of ['post', 'put', 'delete', 'head', 'options']) {
         it(`denies ${method} without a soundboard session even with legacy credentials`, async () => {
             user = null;
             await request(app)[method]('/add?token=legacy&apiKey=legacy').set('Origin', origin).send(clip).expect(401);
