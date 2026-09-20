@@ -35,9 +35,9 @@ describe('Soundboard write boundaries', () => {
     for (const method of ['post', 'put', 'delete', 'head', 'options']) {
         it(`denies ${method} without a soundboard session even with legacy credentials`, async () => {
             user = null;
-            await request(app)[method]('/add?token=legacy&apiKey=legacy').set('Origin', origin).send(clip).expect(401);
+            await request(app)[method]('/add?token=legacy&apiKey=legacy').set('Origin', origin).expect(401);
             user = { id: '123', isSoundboardUser: false };
-            await request(app)[method]('/add').set('Origin', origin).send(clip).expect(403);
+            await request(app)[method]('/add').set('Origin', origin).expect(403);
             sinon.assert.notCalled(add);
         });
     }
