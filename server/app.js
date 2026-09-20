@@ -254,7 +254,7 @@ app.use('/api/status', require(`${API_DIR}/status`));
 
 app.use('/api/discord', require(`${API_DIR}/discord`));
 
-app.use('/api/soundboard', require('./auth/soundboard')(new URL(callbackURL).origin), require(`${API_DIR}/soundboard`));
+app.use('/api/soundboard', require('./auth/soundboard')(new URL(callbackURL).origin), require(`${API_DIR}/soundboard/soundboard`));
 
 app.use('/api/download', require(`${API_DIR}/download`));
 
