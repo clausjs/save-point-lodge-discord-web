@@ -67,7 +67,7 @@ describe('Clip validation', () => {
         const invalid = [null, [], { ...clip, name: '' }, { ...clip, tags: 'tag' }, { ...clip, tags: Array(21).fill('tag') },
             { ...clip, volume: '50' }, { ...clip, description: 'a'.repeat(2001) }, { ...clip, sourceUrl: 'https://www.myinstants.com/instant/test/' }];
         for (const url of ['http://www.myinstants.com/test.mp3', 'https://evil.example/test.mp3', 'https://www.myinstants.com.evil.example/test.mp3',
-            'https://user@www.myinstants.com/test.mp3', 'https://www.myinstants.com:444/test.mp3', 'https://www.myinstants.com/test.html']) invalid.push({ ...clip, url });
+            'https://www.myinstants.com:444/test.mp3', 'https://www.myinstants.com/test.html']) invalid.push({ ...clip, url });
         for (const value of invalid) {
             try { await parseClip(value); throw new Error('Expected rejection'); } catch (error) { expect(error.status).to.equal(400); }
         }

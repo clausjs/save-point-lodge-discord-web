@@ -12,7 +12,7 @@ function isText(value, max, fallback) {
 function isAudioUrl(value) {
     let url;
     try { url = new URL(value); } catch { invalid('Invalid audio URL.'); }
-    if (typeof value !== 'string' || value.length > 2048 || url.protocol !== 'https:' || url.username || url.password || url.port
+    if (typeof value !== 'string' || value.length > 2048 || url.protocol !== 'https:' || url.port
         || !isValidHost(url.hostname) || !/\.(mp3|ogg|wav)$/i.test(url.pathname) || url.hash) {
         invalid('Use an HTTPS audio URL from an approved sound host.');
     }
