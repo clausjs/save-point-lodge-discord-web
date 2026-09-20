@@ -46,8 +46,8 @@ describe('Extension API permission boundary', () => {
 describe('Current Discord soundboard membership', () => {
     afterEach(() => sinon.restore());
     it('requires the actual soundboard role and matching Discord user ID', async () => {
-        sinon.stub(process, 'env').value({ ...process.env, DISCORD_BOT_TOKEN: 'test-bot', SPL_ID: 'guild' });
-        const member = { user: { id: 'member', username: 'Verified user' }, roles: ['1335694712027480175'] };
+        sinon.stub(process, 'env').value({ ...process.env, DISCORD_BOT_TOKEN: 'test-bot', SPL_ID: 'guild', SOUNDBOARD_ROLE_ID: 'configured-role' });
+        const member = { user: { id: 'member', username: 'Verified user' }, roles: ['configured-role'] };
         const fetchMember = sinon.stub().resolves({ ok: true, status: 200, json: async () => member });
         expect(await grantMiddleware.getMember('member', fetchMember)).to.deep.equal(member.user);
         expect(fetchMember.firstCall.args[1].redirect).to.equal('error');
@@ -59,4 +59,12 @@ describe('Current Discord soundboard membership', () => {
         fetchMember.resolves({ status: 404, ok: false });
         expect(await grantMiddleware.getMember('member', fetchMember)).to.equal(null);
     });
+    it('requires role configuration before making a Discord request', async () => {
+        sinon.stub(process, 'env').value({ DISCORD_BOT_TOKEN: 'test-bot', SPL_ID: 'guild' });
+        const fetchMember = sinon.stub();
+        try { await grantMiddleware.getMember('member', fetchMember); throw new Error('Expected failure'); }
+        catch (error) { expect(error.message).to.equal('Discord member lookup is not configured.'); }
+        sinon.assert.notCalled(fetchMember);
+    });
+
 });

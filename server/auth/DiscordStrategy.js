@@ -99,7 +99,7 @@ Strategy.prototype.userProfile = function(accessToken, done) {
                        else {
                             profile.isPlanetExpressMember = true;
                             const memberData = JSON.parse(body);
-                            profile.isSoundboardUser = memberData.roles.includes("1335694712027480175");
+                            profile.isSoundboardUser = Boolean(process.env.SOUNDBOARD_ROLE_ID && memberData.roles.includes(process.env.SOUNDBOARD_ROLE_ID));
                             profile.fetchedAt = new Date();
                         }
                         return done(null, profile)
