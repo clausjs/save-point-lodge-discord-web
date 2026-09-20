@@ -224,7 +224,7 @@ const getSoundboardTokenUser = async (streamdeck, token) => {
     return streamdeck.getUserByToken(token);
 }
 
-app.use('/api', require('./auth/extensionGrant')({ db, origin: new URL(callbackURL).origin, addClip: require('./soundboard/clips').addClip }));
+app.use('/api', require('./auth/extensionGrant')({ db, origin: new URL(callbackURL).origin, addClip: require('./api/soundboard/clips').addClip }));
 
 app.use('/api', async function(req, res, next) {
     req.db = db;

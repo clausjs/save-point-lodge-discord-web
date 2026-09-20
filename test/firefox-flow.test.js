@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const firefox = require('../server/auth/firefox');
 const ExtensionAuth = require('../server/data/sources/extensionAuth');
 const extensionGrant = require('../server/auth/extensionGrant');
-const { addClip } = require('../server/soundboard/clips');
+const { addClip } = require('../server/api/soundboard/clips');
 const database = require('./helpers/firestore');
 
 describe('Firefox connection to clip creation', () => {
