@@ -2,7 +2,6 @@ const UserOpts = require('./sources/userOpts');
 const Soundboard = require('./sources/soundboard');
 const SoundboardOpts = require('./sources/soundboardOpts');
 const Commands = require('./sources/commands');
-const ExtensionAuth = require('./sources/extensionAuth');
 const StreamDeck = require('./sources/streamdeck');
 
 class FirebaseData {
@@ -13,7 +12,6 @@ class FirebaseData {
         this.soundboardOpts = new SoundboardOpts(store);
         this.commands = new Commands(store);
         this.streamdeck = new StreamDeck(store);
-        this.extensionAuth = new ExtensionAuth(store);
     }
     isAuthenticated = async () => {
         await this.userOpts._init();

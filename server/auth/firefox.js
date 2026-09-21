@@ -22,7 +22,7 @@ module.exports = ({ db, origin }) => {
         if (req.body.grant_type === 'refresh_token') {
             if (typeof req.body.refresh_token !== 'string') return res.status(400).json({ error: 'invalid_request' });
             try {
-                const result = await db.firebase.extensionAuth.refresh(req.body.refresh_token, origin);
+                const result = await db.extensionAuth.refresh(req.body.refresh_token, origin);
                 return result ? res.json(result) : res.status(400).json({ error: 'invalid_grant' });
             } catch { return res.status(503).json({ error: 'temporarily_unavailable' }); }
         }
@@ -31,7 +31,7 @@ module.exports = ({ db, origin }) => {
             return res.status(400).json({ error: 'invalid_request' });
         }
         try {
-            const result = await db.firebase.extensionAuth.exchange(code, code_verifier, redirect_uri, origin);
+            const result = await db.extensionAuth.exchange(code, code_verifier, redirect_uri, origin);
             return result ? res.json(result) : res.status(400).json({ error: 'invalid_grant' });
         } catch {
             return res.status(503).json({ error: 'temporarily_unavailable' });
@@ -41,14 +41,14 @@ module.exports = ({ db, origin }) => {
     router.post('/revoke', async (req, res) => {
         const refresh = /^Bearer (spl_refresh_[a-f0-9]{32}\.[a-f0-9]{64})$/.exec(req.get('authorization') || '')?.[1];
         if (refresh) {
-            try { await db.firebase.extensionAuth.revokeRefresh(refresh, origin); return res.sendStatus(204); }
+            try { await db.extensionAuth.revokeRefresh(refresh, origin); return res.sendStatus(204); }
             catch { return res.sendStatus(503); }
         }
         const token = /^Bearer (spl_ext_[a-f0-9]{32}\.[a-f0-9]{64})$/.exec(req.get('authorization') || '')?.[1];
         if (!token) return res.sendStatus(401);
         try {
-            const grant = await db.firebase.extensionAuth.authenticate(token, origin);
-            if (grant) await db.firebase.extensionAuth.revoke(grant.id, grant.userId, origin);
+            const grant = await db.extensionAuth.authenticate(token, origin);
+            if (grant) await db.extensionAuth.revoke(grant.id, grant.userId, origin);
             return res.sendStatus(204);
         } catch {
             return res.sendStatus(503);
@@ -63,7 +63,7 @@ module.exports = ({ db, origin }) => {
         }
         req.session.extensionCsrf = randomBytes(32).toString('hex');
         try {
-            const grants = await db.firebase.extensionAuth.list(req.user.id, origin);
+            const grants = await db.extensionAuth.list(req.user.id, origin);
             const forms = grants.map(grant => `<form method="post" action="/login-extension/connections">
 <input type="hidden" name="csrf" value="${req.session.extensionCsrf}"><input type="hidden" name="id" value="${grant.id}">
 <button>Revoke Firefox connection</button></form>`).join('');
@@ -75,7 +75,7 @@ module.exports = ({ db, origin }) => {
     router.post('/connections', async (req, res) => {
         if (!req.isAuthenticated() || !req.user?.id || !req.session.extensionCsrf || req.body.csrf !== req.session.extensionCsrf) return res.sendStatus(403);
         try {
-            await db.firebase.extensionAuth.revoke(req.body.id, req.user.id, origin);
+            await db.extensionAuth.revoke(req.body.id, req.user.id, origin);
             return res.redirect(303, '/login-extension/connections');
         } catch {
             return res.sendStatus(503);
@@ -147,7 +147,7 @@ module.exports = ({ db, origin }) => {
                 result.set('error', 'access_denied');
             } else {
                 try {
-                    const code = await db.firebase.extensionAuth.issueCode({ userId: req.user.id, sessionId: req.sessionID, challenge: pending.challenge, redirectUri, audience: origin });
+                    const code = await db.extensionAuth.issueCode({ userId: req.user.id, sessionId: req.sessionID, challenge: pending.challenge, redirectUri, audience: origin });
                     result.set('code', code);
                 } catch {
                     return res.status(503).send('Could not authorize Firefox. Start again from Firefox settings.');

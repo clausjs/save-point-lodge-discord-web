@@ -124,7 +124,17 @@ const store = devMode ? new MemoryStore() : new RedisStore({
     client: redisClient
 });
 
-if (db.firebase) db.firebase.extensionAuth.sessionStore = store;
+db.extensionAuth = new (require('./auth/extensionAuth'))(redisClient, store);
+if (redisClient) {
+    let cleaning = false;
+    setInterval(async () => {
+        if (cleaning) return;
+        cleaning = true;
+        try { await db.extensionAuth.cleanup(); }
+        catch { console.error('Could not clean up extension authorizations.'); }
+        finally { cleaning = false; }
+    }, 15 * 60 * 1000).unref();
+}
 
 app.use(session({
     store, 

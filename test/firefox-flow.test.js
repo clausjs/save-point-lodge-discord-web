@@ -4,25 +4,28 @@ const request = require('supertest');
 const { createHash } = require('node:crypto');
 const sinon = require('sinon');
 const firefox = require('../server/auth/firefox');
-const ExtensionAuth = require('../server/data/sources/extensionAuth');
+const ExtensionAuth = require('../server/auth/extensionAuth');
 const extensionGrant = require('../server/auth/extensionGrant');
 const { addClip } = require('../server/api/soundboard/clips');
-const database = require('./helpers/firestore');
+const database = require('./helpers/redis');
 
 describe('Firefox connection to clip creation', () => {
+    let redis;
+    afterEach(async () => { if (redis) await redis.close(); });
     it('approves, exchanges, renews, adds, rejects an ended session, and revokes', async () => {
         const origin = 'https://savepointlodge.com';
         const verifier = 'v'.repeat(64);
         const challenge = createHash('sha256').update(verifier).digest('base64url');
         const add = sinon.stub().resolves();
-        const db = { firebase: { extensionAuth: new ExtensionAuth(database()), soundboard: { add } } };
+        redis = await database();
+        const db = { extensionAuth: new ExtensionAuth(redis.client, null, redis.prefix), firebase: { soundboard: { add } } };
         const user = { id: 'user', username: 'Member', isSoundboardUser: true };
         let sessionId;
         const app = express();
         app.use(express.json());
         app.use(express.urlencoded({ extended: false }));
         const store = new session.MemoryStore();
-        db.firebase.extensionAuth.sessionStore = store;
+        db.extensionAuth.sessionStore = store;
         app.use(session({ store, secret: 'test-secret', cookie: { maxAge: 10800000 }, resave: false, saveUninitialized: false }));
         app.use((req, res, next) => { if (req.path === '/login-extension/confirm') sessionId = req.sessionID;
             req.session.passport = { user }; req.user = user; req.isAuthenticated = () => true; next(); });

@@ -11,7 +11,7 @@ describe('Extension API permission boundary', () => {
         memberLookup = sinon.stub().resolves({ id: 'member', username: 'Verified user' });
         addClip = sinon.spy((req, res) => res.json({ id: req.user.id, username: req.user.username }));
         app = express();
-        app.use('/api', grantMiddleware({ db: { firebase: { extensionAuth: { authenticate } } }, memberLookup, addClip }));
+        app.use('/api', grantMiddleware({ db: { extensionAuth: { authenticate } }, memberLookup, addClip }));
         app.use((req, res) => res.status(418).send('session fallback'));
     });
     it('permits only add and obtains user identity from Discord', async () => {

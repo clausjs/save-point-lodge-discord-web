@@ -21,7 +21,7 @@ module.exports = ({ db, origin, addClip, memberLookup = getMember }) => async (r
     const token = /^Bearer (spl_ext_[a-f0-9]{32}\.[a-f0-9]{64})$/.exec(authorization)?.[1];
     if (!token) return res.status(401).send('Invalid extension credential.');
     try {
-        const grant = await db.firebase.extensionAuth.authenticate(token, origin);
+        const grant = await db.extensionAuth.authenticate(token, origin);
         if (!grant) return res.status(401).send('Extension connection expired or revoked.');
         if (req.method !== 'POST' || req.path !== '/soundboard/add') return res.status(403).send('This connection can only add clips.');
         const user = await memberLookup(grant.userId);
