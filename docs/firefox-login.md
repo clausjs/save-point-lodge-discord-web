@@ -2,6 +2,22 @@
 
 Firefox reuses the SPL website session/Discord login to request permission to **add soundboard clips only**. No Stream Deck token is handed to the extension, and no client secret is embedded in it. This PR depends on [soundboard write-security PR #10](https://github.com/clausjs/save-point-lodge-discord-web/pull/10); merge/deploy that first.
 
+## Code map
+
+| File | Responsibility |
+| --- | --- |
+| `server/auth/firefox.js` | HTTP endpoints, consent forms, callback validation, and response errors |
+| `server/auth/extensionAuth.js` | Redis records, code redemption, token rotation, session checks, revocation, and cleanup |
+| `server/auth/extensionGrant.js` | Add-only API permission and current Discord membership checks |
+| Extension `src/auth.ts` | PKCE login, credential storage, shared renewal, and disconnect |
+| Extension `src/background.ts` | Trusted message senders and clip submission |
+
+The lifecycle is **SPL consent → single-use code → access/refresh pair → clip additions → renewal or revocation**. `state` ties the browser callback to its request; PKCE proves the exchange comes from the extension that began it; the consent form's CSRF nonce protects the user's approval. These values serve different checks and should not be combined.
+
+Redis stores three kinds of keys under `spl:extension:`: `code:<hash>` (60-second TTL), `grant:<id>` (hashed secrets and session binding), and `owner:<hash>` (grant IDs for the account/environment management page). The owner index makes listing independent of a global scan. Cleanup scans only grant keys in batches.
+
+The Lua update compares the exact record a request read before writing. Two redemptions or rotations cannot both succeed, and a refresh cannot recreate a revoked grant. Owner-authorized revocation deliberately deletes the grant even if a concurrent refresh changed its secrets. No grant operation extends the website session. Expired access tokens can still be refreshed, so cleanup checks the originating session rather than access-token expiry.
+
 ## Protocol
 
 `GET /login-extension` accepts the fixed Firefox callback, a random state, an S256 challenge, and `code_challenge_method=S256`. It keeps the confirmation in the website session for five minutes. A member with the soundboard role must explicitly approve the session-bound form. Normal Discord callbacks resume the confirmation without a new Discord redirect registration.

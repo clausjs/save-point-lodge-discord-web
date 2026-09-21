@@ -6,17 +6,21 @@ const lifetime = 15 * 60 * 1000;
 // Compare the exact record read by this request before consuming, rotating, or deleting it.
 // This keeps concurrent requests atomic without WATCH state on the shared Redis client.
 const update = `
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
-if ARGV[2] == '' then
-    redis.call('DEL', KEYS[1])
-    redis.call('SREM', KEYS[3], ARGV[3])
+local source, destination, ownerIndex = KEYS[1], KEYS[2], KEYS[3]
+local expected, replacement, grantId = ARGV[1], ARGV[2], ARGV[3]
+if redis.call('GET', source) ~= expected then return 0 end
+if replacement == '' then
+    redis.call('DEL', source)
+    redis.call('SREM', ownerIndex, grantId)
 else
-    redis.call('SET', KEYS[2], ARGV[2])
-    redis.call('SADD', KEYS[3], ARGV[3])
-    if KEYS[1] ~= KEYS[2] then redis.call('DEL', KEYS[1]) end
+    redis.call('SET', destination, replacement)
+    redis.call('SADD', ownerIndex, grantId)
+    if source ~= destination then redis.call('DEL', source) end
 end
 return 1`;
 
+// Stores extension permissions, not website sessions. Credentials are stored as hashes;
+// the session store remains authoritative for whether a connection can still be used.
 class ExtensionAuth {
     constructor(client, sessionStore, prefix = 'spl:extension:') {
         this.client = client;
@@ -27,6 +31,11 @@ class ExtensionAuth {
         if (!this.client) return Promise.reject(new Error('Redis authorization storage is not configured.'));
         return new Promise((resolve, reject) => this.client[command](...args, (error, result) => error ? reject(error) : resolve(result)));
     }
+    async read(key) {
+        const raw = await this.call('get', key);
+        // Keep the original JSON for the atomic comparison; reserializing can change it.
+        return { raw, record: JSON.parse(raw) };
+    }
     grantKey(id) { return `${this.prefix}grant:${id}`; }
     ownerKey(record) { return `${this.prefix}owner:${hash(JSON.stringify([record.audience, record.userId]))}`; }
     async activeSession(record) {
@@ -35,6 +44,8 @@ class ExtensionAuth {
         const session = await new Promise((resolve, reject) => this.sessionStore.get(record.sessionId, (error, value) => error ? reject(error) : resolve(value)));
         return session?.passport?.user?.id === record.userId && new Date(session.cookie?.expires).getTime() > Date.now();
     }
+    // Exchange moves a code into a grant; refresh replaces that same grant key.
+    // A changed/missing source means another request already consumed or revoked it.
     async replace(key, raw, id, record, replacement) {
         return this.call('eval', update, 3, key, this.grantKey(id), this.ownerKey(record), raw, replacement ? JSON.stringify(replacement) : '', id);
     }
@@ -52,10 +63,11 @@ class ExtensionAuth {
     async exchange(code, verifier, redirectUri, audience) {
         if (typeof audience !== 'string' || !audience || !/^[a-f0-9]{64}$/.test(code) || !/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) return null;
         const key = `${this.prefix}code:${hash(code)}`;
-        const raw = await this.call('get', key);
-        const record = JSON.parse(raw);
+        const { raw, record } = await this.read(key);
         const challenge = createHash('sha256').update(verifier).digest('base64url');
-        if (!record || !Number.isFinite(record.expiresAt) || record.expiresAt <= Date.now() || record.challenge !== challenge || record.redirectUri !== redirectUri || record.audience !== audience || !await this.activeSession(record)) return null;
+        if (!record || !Number.isFinite(record.expiresAt) || record.expiresAt <= Date.now()
+            || record.challenge !== challenge || record.redirectUri !== redirectUri || record.audience !== audience
+            || !await this.activeSession(record)) return null;
         const id = randomBytes(16).toString('hex');
         const credentials = this.credentials(id);
         const grant = { userId: record.userId, sessionId: record.sessionId, audience, scope, createdAt: Date.now(), ...this.secrets(credentials) };
@@ -64,17 +76,19 @@ class ExtensionAuth {
     async authenticate(token, audience) {
         const match = /^spl_ext_([a-f0-9]{32})\.[a-f0-9]{64}$/.exec(token);
         if (!match || typeof audience !== 'string' || !audience) return null;
-        const record = JSON.parse(await this.call('get', this.grantKey(match[1])));
-        if (!record || !Number.isFinite(record.expiresAt) || record.tokenHash !== hash(token) || record.scope !== scope || record.audience !== audience || record.expiresAt <= Date.now() || !await this.activeSession(record)) return null;
+        const { record } = await this.read(this.grantKey(match[1]));
+        if (!record || !Number.isFinite(record.expiresAt) || record.tokenHash !== hash(token)
+            || record.scope !== scope || record.audience !== audience || record.expiresAt <= Date.now()
+            || !await this.activeSession(record)) return null;
         return { ...record, id: match[1] };
     }
     async refresh(token, audience) {
         const match = /^spl_refresh_([a-f0-9]{32})\.[a-f0-9]{64}$/.exec(token);
         if (!match || !audience) return null;
         const key = this.grantKey(match[1]);
-        const raw = await this.call('get', key);
-        const record = JSON.parse(raw);
-        if (!record || record.refreshHash !== hash(token) || record.audience !== audience || record.scope !== scope || !await this.activeSession(record)) return null;
+        const { raw, record } = await this.read(key);
+        if (!record || record.refreshHash !== hash(token) || record.audience !== audience
+            || record.scope !== scope || !await this.activeSession(record)) return null;
         const credentials = this.credentials(match[1]);
         return await this.replace(key, raw, match[1], record, { ...record, ...this.secrets(credentials) }) ? credentials : null;
     }
@@ -82,15 +96,13 @@ class ExtensionAuth {
         const match = /^spl_refresh_([a-f0-9]{32})\.[a-f0-9]{64}$/.exec(token);
         if (!match) return;
         const key = this.grantKey(match[1]);
-        const raw = await this.call('get', key);
-        const record = JSON.parse(raw);
+        const { record } = await this.read(key);
         if (record?.refreshHash === hash(token) && record.audience === audience) await this.revoke(match[1], record.userId, audience);
     }
     async revoke(id, userId, audience) {
         if (!/^[a-f0-9]{32}$/.test(id)) return;
         const key = this.grantKey(id);
-        const raw = await this.call('get', key);
-        const record = JSON.parse(raw);
+        const { record } = await this.read(key);
         if (record?.userId === userId && record.audience === audience) {
             // Owner revocation must win even if a refresh rotated the secrets after our read.
             await new Promise((resolve, reject) => this.client.multi().del(key).srem(this.ownerKey(record), id).exec(error => error ? reject(error) : resolve()));
@@ -99,19 +111,20 @@ class ExtensionAuth {
     async list(userId, audience) {
         const ids = await this.call('smembers', this.ownerKey({ userId, audience }));
         const active = await Promise.all(ids.map(async id => {
-            const record = JSON.parse(await this.call('get', this.grantKey(id)));
+            const { record } = await this.read(this.grantKey(id));
             return record?.userId === userId && record.audience === audience && await this.activeSession(record) ? { id, expiresAt: record.expiresAt } : null;
         }));
         return active.filter(Boolean);
     }
+    // Access expiry is renewable, so it cannot be the grant's Redis TTL. Remove grants
+    // only when their SPL session ends; SCAN avoids blocking Redis with a full key listing.
     async cleanup() {
         let cursor = '0';
         do {
             const result = await this.call('scan', cursor, 'MATCH', `${this.prefix}grant:*`, 'COUNT', 100);
             cursor = result[0];
             for (const key of result[1]) {
-                const raw = await this.call('get', key);
-                const record = JSON.parse(raw);
+                const { raw, record } = await this.read(key);
                 if (record && !await this.activeSession(record)) await this.replace(key, raw, key.slice(`${this.prefix}grant:`.length), record, null);
             }
         } while (cursor !== '0');

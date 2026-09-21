@@ -18,20 +18,18 @@ module.exports = ({ db, origin }) => {
         next();
     });
 
+    // These background-only endpoints use credentials, not the browser session cookie.
+    // Keep them before the middleware that requires a pending interactive approval.
     router.post('/token', async (req, res) => {
-        if (req.body.grant_type === 'refresh_token') {
-            if (typeof req.body.refresh_token !== 'string') return res.status(400).json({ error: 'invalid_request' });
-            try {
-                const result = await db.extensionAuth.refresh(req.body.refresh_token, origin);
-                return result ? res.json(result) : res.status(400).json({ error: 'invalid_grant' });
-            } catch { return res.status(503).json({ error: 'temporarily_unavailable' }); }
-        }
-        const { grant_type, code, code_verifier, redirect_uri } = req.body;
-        if (grant_type !== 'authorization_code' || redirect_uri !== redirectUri || typeof code !== 'string' || typeof code_verifier !== 'string') {
-            return res.status(400).json({ error: 'invalid_request' });
-        }
+        const { grant_type, code, code_verifier, redirect_uri, refresh_token } = req.body;
+        const refreshing = grant_type === 'refresh_token';
+        const valid = refreshing ? typeof refresh_token === 'string'
+            : grant_type === 'authorization_code' && redirect_uri === redirectUri && typeof code === 'string' && typeof code_verifier === 'string';
+        if (!valid) return res.status(400).json({ error: 'invalid_request' });
         try {
-            const result = await db.extensionAuth.exchange(code, code_verifier, redirect_uri, origin);
+            const result = refreshing
+                ? await db.extensionAuth.refresh(refresh_token, origin)
+                : await db.extensionAuth.exchange(code, code_verifier, redirect_uri, origin);
             return result ? res.json(result) : res.status(400).json({ error: 'invalid_grant' });
         } catch {
             return res.status(503).json({ error: 'temporarily_unavailable' });
@@ -97,6 +95,7 @@ module.exports = ({ db, origin }) => {
         res.redirect(req.isAuthenticated() ? '/login-extension/confirm' : '/login-discord');
     });
 
+    // Everything below belongs to the short-lived, session-bound consent flow.
     router.use((req, res, next) => {
         if (!req.session.firefoxAuth || req.session.firefoxAuth.expiresAt <= Date.now()) {
             delete req.session.firefoxAuth;
@@ -139,7 +138,8 @@ module.exports = ({ db, origin }) => {
             return res.status(403).send('Your Discord account does not have soundboard access.');
         }
         delete req.session.firefoxAuth;
-        // Save consumption before redirecting so a refresh cannot repeat the handoff.
+        // Persist removal of the pending approval before issuing the code. Code exchange
+        // also checks this stored SPL session, so it must be saved before the redirect.
         req.session.save(async (error) => {
             if (error) return res.status(500).send('Could not complete extension login. Please try again.');
             const result = new URLSearchParams({ state: pending.state });
