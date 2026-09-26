@@ -16,6 +16,8 @@ import PostAuth from './Auth/PostAuth';
 import ArcWorkbench from './ArcWorkbench/ArcWorkbench';
 import StreamDeck from './Members/StreamDeck';
 
+import Settings from './Settings/Settings';
+
 const theme = createTheme({
     components: {
         MuiAppBar: {
@@ -59,6 +61,7 @@ const App: React.FC = () => {
                             <Routes>
                                 <Route path="/" element={<Home />} />
                                 <Route path="/our-bots" element={<Bots />} />
+                                <Route path="/settings" element={<Settings />} />
                                 <Route path="/members" element={<Members />} />
                                 <Route path="/streamdeck-setup" element={<StreamDeck />} />
                                 <Route path="/commands" element={<Commands />} />
