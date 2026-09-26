@@ -5,7 +5,7 @@ const { createHash } = require('node:crypto');
 const sinon = require('sinon');
 const firefox = require('../server/auth/firefox');
 const ExtensionAuth = require('../server/auth/extensionAuth');
-const extensionGrant = require('../server/auth/extensionGrant');
+const bearer = require('../server/auth/bearer');
 const { addClip } = require('../server/api/soundboard/clips');
 const database = require('./helpers/redis');
 
@@ -30,7 +30,9 @@ describe('Firefox connection to clip creation', () => {
         app.use((req, res, next) => { if (req.path === '/login-extension/confirm') sessionId = req.sessionID;
             req.session.passport = { user }; req.user = user; req.isAuthenticated = () => true; next(); });
         app.use('/login-extension', firefox({ db, origin }));
-        app.use('/api', extensionGrant({ db, origin, addClip, memberLookup: async () => user }));
+        app.use('/api', bearer({ db, origin, memberLookup: async () => user }));
+        app.post('/api/soundboard/add', require('../server/auth/permission')('api:user', 'soundboard:clips:add'), require('../server/auth/soundboard')(origin), addClip);
+        app.use('/api', require('../server/auth/permission')('api:user'));
         const browser = request.agent(app);
         await browser.get('/login-extension').query({ redirect_uri: firefox.redirectUri, state: 'a'.repeat(64), code_challenge: challenge, code_challenge_method: 'S256' }).expect(302);
         const page = await browser.get('/login-extension/confirm').expect(200);

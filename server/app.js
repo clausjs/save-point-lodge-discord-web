@@ -124,6 +124,7 @@ const store = devMode ? new MemoryStore() : new RedisStore({
     client: redisClient
 });
 
+db.apiTokens = new (require('./auth/apiTokens'))(redisClient);
 db.extensionAuth = new (require('./auth/extensionAuth'))(redisClient, store);
 if (redisClient) {
     let cleaning = false;
@@ -234,10 +235,12 @@ const getSoundboardTokenUser = async (streamdeck, token) => {
     return streamdeck.getUserByToken(token);
 }
 
-app.use('/api', require('./auth/extensionGrant')({ db, origin: new URL(callbackURL).origin, addClip: require('./api/soundboard/clips').addClip }));
+app.use('/api/user/api-token', require('./api/apiToken')({ tokens: db.apiTokens, origin: new URL(callbackURL).origin }));
+app.use('/api', require('./auth/bearer')({ db, origin: new URL(callbackURL).origin }));
 
 app.use('/api', async function(req, res, next) {
     req.db = db;
+    if (req.auth) return next();
 
     if (req.isAuthenticated() && req.user) {
         req.isTesting = devMode;
@@ -270,26 +273,29 @@ app.use('/api', async function(req, res, next) {
     next();
 });
 
-app.use('/api/user', require(`${API_DIR}/user`));
+app.use('/api/user', require('./auth/permission')('api:user'), require(`${API_DIR}/user`));
 
-app.use('/api/commands', require(`${API_DIR}/commands`));
+app.use('/api/commands', require('./auth/permission')('api:user'), require(`${API_DIR}/commands`));
 
-app.use('/api/giphy', require(`${API_DIR}/giphy`));
+app.use('/api/giphy', require('./auth/permission')('api:user'), require(`${API_DIR}/giphy`));
 
-app.use('/api/status', require(`${API_DIR}/status`));
+app.use('/api/status', require('./auth/permission')('api:user'), require(`${API_DIR}/status`));
 
-app.use('/api/discord', require(`${API_DIR}/discord`));
+app.use('/api/discord', require('./auth/permission')('api:user'), require(`${API_DIR}/discord`));
 
 app.use('/api/soundboard', require('./auth/soundboard')(new URL(callbackURL).origin), require(`${API_DIR}/soundboard/soundboard`));
 
-app.use('/api/download', require(`${API_DIR}/download`));
+app.use('/api/download', require('./auth/permission')('api:user'), require(`${API_DIR}/download`));
 
-app.use('/api/arcdb', function(req, res, next) {
+app.use('/api/arcdb', require('./auth/permission')('api:user'), function(req, res, next) {
     if (redisClient) {
         req.redisClient = redisClient;
     }
     next();
 }, require(`${API_DIR}/arcdb`));
+
+// Unknown API routes cannot implicitly inherit bearer permissions.
+app.use('/api', (req, res, next) => req.auth ? res.sendStatus(403) : next());
 
 if (devMode) {
     console.info("Execution directory: ", __dirname);

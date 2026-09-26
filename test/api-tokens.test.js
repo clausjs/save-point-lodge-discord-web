@@ -1,0 +1,63 @@
+const express = require('express');
+const session = require('express-session');
+const request = require('supertest');
+const sinon = require('sinon');
+const ApiTokens = require('../server/auth/apiTokens');
+const database = require('./helpers/redis');
+const origin = 'https://savepointlodge.com';
+
+describe('Personal API tokens', () => {
+    let redis, tokens;
+    beforeEach(async () => { redis = await database(); tokens = new ApiTokens(redis.client, redis.prefix); });
+    afterEach(async () => { sinon.restore(); if (redis) await redis.close(); });
+    it('stores only a hash, expires after 90 days, and isolates owners and environments', async () => {
+        const issued = await tokens.generate('member', origin);
+        expect(issued.expiresAt - issued.createdAt).to.be.closeTo(90 * 86400000, 10);
+        expect(await redis.call('ttl', (await redis.keys())[0])).to.be.within(7775990, 7776000);
+        expect(JSON.stringify(await redis.dump())).not.to.include(issued.token);
+        expect(await tokens.get('member', origin)).not.to.have.property('token');
+        expect(await tokens.authenticate(issued.token, origin)).to.include({ userId: 'member', scope: 'api:user' });
+        expect(await tokens.authenticate(issued.token, 'https://other.example')).to.equal(null);
+        await tokens.revoke('other', origin);
+        expect(await tokens.authenticate(issued.token, origin)).not.to.equal(null);
+        sinon.stub(Date, 'now').returns(issued.expiresAt);
+        expect(await tokens.authenticate(issued.token, origin)).to.equal(null);
+    });
+    it('replaces and revokes credentials immediately', async () => {
+        const first = await tokens.generate('member', origin);
+        const second = await tokens.generate('member', origin);
+        expect(await tokens.authenticate(first.token, origin)).to.equal(null);
+        expect(await tokens.authenticate(second.token, origin)).not.to.equal(null);
+        await tokens.revoke('member', origin);
+        expect(await tokens.authenticate(second.token, origin)).to.equal(null);
+    });
+    it('requires a session and CSRF for management, and authenticates API calls without a cookie', async () => {
+        const app = express();
+        app.use(session({ secret: 'test-secret', resave: false, saveUninitialized: false }));
+        app.use((req, res, next) => { req.isAuthenticated = () => !!req.session.user; req.user = req.session.user; next(); });
+        app.post('/test-login', (req, res) => { req.session.user = { id: 'member' }; res.sendStatus(204); });
+        app.use('/api/user/api-token', require('../server/api/apiToken')({ tokens, origin }));
+        const memberLookup = sinon.stub().resolves({ id: 'member', isSoundboardUser: false });
+        app.use('/api', require('../server/auth/bearer')({ db: { apiTokens: tokens }, origin, memberLookup }));
+        app.use('/api/user', require('../server/auth/permission')('api:user'), require('../server/api/user'));
+        app.post('/api/soundboard/add', require('../server/auth/soundboard')(origin), (req, res) => res.sendStatus(200));
+        const browser = request.agent(app);
+        await browser.get('/api/user/api-token').expect(401);
+        await browser.post('/test-login').expect(204);
+        const settings = await browser.get('/api/user/api-token').expect(200);
+        await browser.post('/api/user/api-token').set('Origin', origin).expect(403);
+        await browser.post('/api/user/api-token').set('Origin', 'https://evil.example').set('X-CSRF-Token', settings.body.csrf).expect(403);
+        const issued = await browser.post('/api/user/api-token').set('Origin', origin).set('X-CSRF-Token', settings.body.csrf).expect(201);
+        const authorization = `Bearer ${issued.body.token}`;
+        await request(app).get('/api/user').set('Authorization', authorization).expect(200);
+        await request(app).get('/api/user/streamdeck/token').set('Authorization', authorization).expect(403);
+        await request(app).post('/api/soundboard/add').set('Authorization', authorization).expect(403);
+        memberLookup.resolves({ id: 'member', isSoundboardUser: true });
+        await request(app).post('/api/soundboard/add').set('Authorization', authorization).expect(200);
+        await browser.post('/api/user/api-token').set('Authorization', authorization).set('Origin', origin).set('X-CSRF-Token', settings.body.csrf).expect(401);
+        const metadata = await browser.get('/api/user/api-token').expect(200);
+        expect(metadata.body.credential).not.to.have.property('token');
+        await browser.delete('/api/user/api-token').set('Origin', origin).set('X-CSRF-Token', settings.body.csrf).expect(204);
+        await request(app).get('/api/user').set('Authorization', authorization).expect(401);
+    });
+});

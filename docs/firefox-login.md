@@ -8,7 +8,9 @@ Firefox reuses the SPL website session/Discord login to request permission to **
 | --- | --- |
 | `server/auth/firefox.js` | HTTP endpoints, consent forms, callback validation, and response errors |
 | `server/auth/extensionAuth.js` | Redis records, code redemption, token rotation, session checks, revocation, and cleanup |
-| `server/auth/extensionGrant.js` | Add-only API permission and current Discord membership checks |
+| `server/auth/bearer.js` | Shared bearer authentication and current Discord identity |
+| `server/auth/permission.js` | Route scope checks (Firefox stays add-only) |
+| `server/auth/discordMember.js` | Fresh guild membership and soundboard role lookup |
 | Extension `src/auth.ts` | PKCE login, credential storage, shared renewal, and disconnect |
 | Extension `src/background.ts` | Trusted message senders and clip submission |
 
