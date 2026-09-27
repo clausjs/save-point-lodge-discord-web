@@ -4,11 +4,14 @@ const fs = require('fs');
 const sinon = require('sinon');
 
 describe('API token settings page', () => {
-    let dom, React, render, screen, fireEvent, cleanup, Settings, fetchStub;
+    let dom, React, render, screen, fireEvent, cleanup, Settings, fetchStub, navigatorDescriptor;
     before(() => {
         dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://savepointlodge.com', pretendToBeVisual: true });
         global.window = dom.window; global.document = dom.window.document;
         global.HTMLElement = dom.window.HTMLElement;
+        // Node 18 has no navigator; newer Node versions expose a getter. Use JSDOM in both.
+        navigatorDescriptor = Object.getOwnPropertyDescriptor(global, 'navigator');
+        Object.defineProperty(global, 'navigator', { configurable: true, value: dom.window.navigator });
         global.requestAnimationFrame = dom.window.requestAnimationFrame.bind(dom.window);
         global.cancelAnimationFrame = dom.window.cancelAnimationFrame.bind(dom.window);
         React = require('react');
@@ -21,7 +24,13 @@ describe('API token settings page', () => {
     });
     beforeEach(() => { fetchStub = sinon.stub(global, 'fetch'); });
     afterEach(() => { cleanup(); sinon.restore(); });
-    after(() => { dom.window.close(); delete global.window; delete global.document; delete global.HTMLElement; delete global.requestAnimationFrame; delete global.cancelAnimationFrame; });
+    after(() => {
+        dom.window.close();
+        if (navigatorDescriptor) Object.defineProperty(global, 'navigator', navigatorDescriptor);
+        else delete global.navigator;
+        delete global.window; delete global.document; delete global.HTMLElement;
+        delete global.requestAnimationFrame; delete global.cancelAnimationFrame;
+    });
     const reply = body => ({ ok: true, status: 200, json: async () => body });
     it('shows the generated secret once and revokes it with the session CSRF value', async () => {
         fetchStub.onCall(0).resolves(reply({ credential: null, csrf: 'nonce' }));
