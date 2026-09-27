@@ -20,7 +20,9 @@ describe('Firefox soundboard login', () => {
             req.isAuthenticated = () => Boolean(user);
             next();
         });
-        app.use('/login-extension', firefox({ origin: 'https://savepointlodge.com', db: { extensionAuth: { issueCode } } }));
+        app.locals.origin = 'https://savepointlodge.com';
+        app.use((req, res, next) => { req.db = { extensionAuth: { issueCode } }; next(); });
+        app.use('/login-extension', firefox);
         agent = supertest.agent(app);
     });
     afterEach(() => { if (clock) { clock.restore(); clock = null; } });

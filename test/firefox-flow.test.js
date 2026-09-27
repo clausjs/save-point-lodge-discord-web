@@ -29,7 +29,9 @@ describe('Firefox connection to clip creation', () => {
         app.use(session({ store, secret: 'test-secret', cookie: { maxAge: 10800000 }, resave: false, saveUninitialized: false }));
         app.use((req, res, next) => { if (req.path === '/login-extension/confirm') sessionId = req.sessionID;
             req.session.passport = { user }; req.user = user; req.isAuthenticated = () => true; next(); });
-        app.use('/login-extension', firefox({ db, origin }));
+        app.locals.origin = origin;
+        app.use((req, res, next) => { req.db = db; next(); });
+        app.use('/login-extension', firefox);
         app.use('/api', bearer({ db, origin, memberLookup: async () => user }));
         app.post('/api/soundboard/add', require('../server/auth/permission')('api:user', 'soundboard:clips:add'), require('../server/auth/soundboard')(origin), addClip);
         app.use('/api', require('../server/auth/permission')('api:user'));

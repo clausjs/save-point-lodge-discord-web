@@ -36,7 +36,9 @@ describe('Personal API tokens', () => {
         app.use(session({ secret: 'test-secret', resave: false, saveUninitialized: false }));
         app.use((req, res, next) => { req.isAuthenticated = () => !!req.session.user; req.user = req.session.user; next(); });
         app.post('/test-login', (req, res) => { req.session.user = { id: 'member' }; res.sendStatus(204); });
-        app.use('/api/user/api-token', require('../server/api/apiToken')({ tokens, origin }));
+        app.locals.origin = origin;
+        app.use((req, res, next) => { req.db = { apiTokens: tokens }; next(); });
+        app.use('/api/user/api-token', require('../server/api/apiToken'));
         const memberLookup = sinon.stub().resolves({ id: 'member', isSoundboardUser: false });
         app.use('/api', require('../server/auth/bearer')({ db: { apiTokens: tokens }, origin, memberLookup }));
         app.use('/api/user', require('../server/auth/permission')('api:user'), require('../server/api/user'));

@@ -152,7 +152,12 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/login-extension', require('./auth/firefox')({ db, origin: new URL(callbackURL).origin }));
+app.locals.origin = new URL(callbackURL).origin;
+app.use(function(req, res, next) {
+    req.db = db;
+    next();
+});
+app.use('/login-extension', require('./auth/firefox'));
 
 if (devMode) {
     app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), function(req, res) {
@@ -235,11 +240,10 @@ const getSoundboardTokenUser = async (streamdeck, token) => {
     return streamdeck.getUserByToken(token);
 }
 
-app.use('/api/user/api-token', require('./api/apiToken')({ tokens: db.apiTokens, origin: new URL(callbackURL).origin }));
+app.use('/api/user/api-token', require('./api/apiToken'));
 app.use('/api', require('./auth/bearer')({ db, origin: new URL(callbackURL).origin }));
 
 app.use('/api', async function(req, res, next) {
-    req.db = db;
     if (req.auth) return next();
 
     if (req.isAuthenticated() && req.user) {

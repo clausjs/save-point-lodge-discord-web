@@ -1,7 +1,7 @@
 const getMember = require('./discordMember');
 
 // Authentication only: route policies decide what this identity can do.
-module.exports = ({ db, origin, memberLookup = getMember }) => async (req, res, next) => {
+const bearer = ({ db, origin, memberLookup = getMember }) => async (req, res, next) => {
     const authorization = req.get('authorization');
     if (!authorization) return next();
     res.set('Cache-Control', 'no-store');
@@ -23,3 +23,5 @@ module.exports = ({ db, origin, memberLookup = getMember }) => async (req, res, 
     // Do not mark this as a Passport login or fall back to a cookie on failure.
     next();
 };
+
+module.exports = bearer;

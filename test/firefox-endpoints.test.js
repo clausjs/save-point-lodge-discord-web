@@ -22,7 +22,9 @@ describe('Firefox exchange and revocation endpoints', () => {
         app.use(express.json());
         app.use(session({ secret: 'test-secret', resave: false, saveUninitialized: false }));
         app.use((req, res, next) => { req.user = user; req.isAuthenticated = () => Boolean(user); next(); });
-        app.use('/login-extension', firefox({ origin: 'https://savepointlodge.com', db: { extensionAuth: auth } }));
+        app.locals.origin = 'https://savepointlodge.com';
+        app.use((req, res, next) => { req.db = { extensionAuth: auth }; next(); });
+        app.use('/login-extension', firefox);
     });
     it('exchanges without a cookie, returning credentials only in a non-cacheable JSON response', async () => {
         user = null;

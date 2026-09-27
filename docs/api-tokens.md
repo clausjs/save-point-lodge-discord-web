@@ -18,6 +18,8 @@ No caller-supplied user ID is accepted. The CSRF value belongs to the website se
 
 ## Code map
 
+Route files instantiate an Express router, define their routes, and export the router directly. Application middleware supplies `req.db`, matching the existing API routes. `app.locals.origin` holds the configured SPL origin for credential audiences and Origin checks; it is never derived from request headers.
+
 `auth/apiTokens.js` owns Redis persistence. `auth/bearer.js` authenticates both personal and Firefox credentials and assigns `req.user` and `req.auth`; it never dispatches a clip handler or turns a bearer into a Passport session. `auth/permission.js` enforces allowed scopes at route boundaries. `auth/soundboard.js` enforces the soundboard role and cookie-request Origin protection. The clip route invokes its own handler normally.
 
 Firefox authorization remains in `auth/firefox.js` and `auth/extensionAuth.js`: its credentials are session-bound, renewable, and limited to `POST /api/soundboard/add`. Personal tokens do not change that protocol. See [Firefox login](firefox-login.md).
