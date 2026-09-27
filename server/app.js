@@ -54,7 +54,7 @@ app.use(history({
         {
             from: /\/login/,
             to: function(context) {
-                return context.parsedUrl.pathname;
+                return context.parsedUrl.path;
             }
         },
         {
@@ -94,6 +94,7 @@ if (!devMode) {
         tokenURL: 'https://discord.com/api/oauth2/token',
         callbackURL,
         scope: scopes,
+        state: true,
         prompt: prompt
     }, function(accessToken, refreshToken, profile, done) {
         process.nextTick(function() {
@@ -123,6 +124,18 @@ const store = devMode ? new MemoryStore() : new RedisStore({
     client: redisClient
 });
 
+db.extensionAuth = new (require('./auth/extensionAuth'))(redisClient, store);
+if (redisClient) {
+    let cleaning = false;
+    setInterval(async () => {
+        if (cleaning) return;
+        cleaning = true;
+        try { await db.extensionAuth.cleanup(); }
+        catch { console.error('Could not clean up extension authorizations.'); }
+        finally { cleaning = false; }
+    }, 15 * 60 * 1000).unref();
+}
+
 app.use(session({
     store, 
     saveUninitialized: false,
@@ -138,6 +151,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/login-extension', require('./auth/firefox')({ db, origin: new URL(callbackURL).origin }));
+
 if (devMode) {
     app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), function(req, res) {
         if (req.user) {
@@ -150,14 +165,23 @@ if (devMode) {
 
 if (!devMode) {
     app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
-    app.get('/login-redirect', passport.authenticate('discord', { successRedirect: '/postAuth', failureRedirect: '/' }));
+    app.get('/login-redirect', passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) {
+        const target = req.session.firefoxAuth?.expiresAt > Date.now() ? '/login-extension/confirm'
+            : req.session.firefoxConnections ? '/login-extension/connections' : '/postAuth';
+        delete req.session.firefoxConnections;
+        res.redirect(target);
+    });
     app.get('/login-sdauth', passport.authenticate('streamdeck', { scope: scopes, prompt: prompt }));
     app.get('/login-streamdeck', passport.authenticate('streamdeck', { successRedirect: "/streamdeck-setup?broadcast=yes", failureRedirect: '/' }));
 }
 
 app.get('/logout', function(req, res) {
     req.logout();
-    res.redirect('/');
+    req.session.destroy(error => {
+        if (error) return res.status(503).send('Could not end the session. Please try again.');
+        res.clearCookie('_savepointlodgesession');
+        res.redirect('/');
+    });
 });
 
 // this middleware will be executed for every request to the app
@@ -209,6 +233,8 @@ const getSoundboardTokenUser = async (streamdeck, token) => {
 
     return streamdeck.getUserByToken(token);
 }
+
+app.use('/api', require('./auth/extensionGrant')({ db, origin: new URL(callbackURL).origin, addClip: require('./api/soundboard/clips').addClip }));
 
 app.use('/api', async function(req, res, next) {
     req.db = db;
