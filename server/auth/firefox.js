@@ -67,24 +67,28 @@ router.get('/connections', async function(req, res) {
         req.session.firefoxConnections = true;
         return res.redirect('/login-discord');
     }
-    req.session.extensionCsrf = randomBytes(32).toString('hex');
+    return res.redirect('/settings');
+});
+
+router.get('/connections/data', async function(req, res) {
+    if (req.get('authorization') || !req.isAuthenticated() || !req.user?.id) {
+        return res.sendStatus(401);
+    }
+    req.session.extensionCsrf ||= randomBytes(32).toString('hex');
     try {
-        const grants = await req.db.extensionAuth.list(req.user.id, req.app.locals.origin);
-        const forms = grants.map(grant => `<form method="post" action="/login-extension/connections">
-<input type="hidden" name="csrf" value="${req.session.extensionCsrf}"><input type="hidden" name="id" value="${grant.id}">
-<button>Revoke Firefox connection</button></form>`).join('');
-        return res.type('html').send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Firefox connections</title></head><body><h1>Firefox connections</h1>${forms || '<p>No active connections.</p>'}</body></html>`);
+        const connections = await req.db.extensionAuth.list(req.user.id, req.app.locals.origin);
+        return res.json({ connections, csrf: req.session.extensionCsrf });
     } catch {
         return res.status(503).send('Could not load connections.');
     }
 });
 router.post('/connections', async function(req, res) {
-    if (!req.isAuthenticated() || !req.user?.id || !req.session.extensionCsrf || req.body.csrf !== req.session.extensionCsrf) {
+    if (req.get('authorization') || req.get('origin') !== req.app.locals.origin || !req.isAuthenticated() || !req.user?.id || !req.session.extensionCsrf || req.body.csrf !== req.session.extensionCsrf) {
         return res.sendStatus(403);
     }
     try {
         await req.db.extensionAuth.revoke(req.body.id, req.user.id, req.app.locals.origin);
-        return res.redirect(303, '/login-extension/connections');
+        return res.sendStatus(204);
     } catch {
         return res.sendStatus(503);
     }
@@ -122,20 +126,15 @@ router.get('/confirm', function(req, res) {
         delete req.session.firefoxAuth;
         return res.status(403).send('Your Discord account does not have soundboard access.');
     }
-    // The form contains only a session-bound nonce. Credentials never enter page HTML or scripts.
-    const username = String(req.user.username || 'your account').replace(/[&<>"']/g, character => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[character]));
-    res.type('html').send(`<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Connect Firefox to Savepoint Lodge</title></head>
-<body><main><h1>Connect Firefox</h1>
-<p>Allow the Savepoint Lodge Firefox extension to add clips as <strong>${username}</strong>?</p>
-<p>This connection can only add clips, renews automatically while this SPL session is active, and can be revoked independently. It cannot edit, delete, or play clips.</p>
-<form method="post" action="/login-extension/confirm">
-<input type="hidden" name="csrf" value="${req.session.firefoxAuth.csrf}">
-<button name="decision" value="allow">Connect Firefox</button>
-<button name="decision" value="deny">Cancel</button>
-</form></main></body></html>`);
+    return res.redirect('/extension-consent');
+});
+
+router.get('/consent', function(req, res) {
+    if (req.get('authorization') || req.user.isSoundboardUser !== true) {
+        return res.sendStatus(403);
+    }
+    // Only display data and the session-bound nonce reach React, never grant credentials.
+    return res.json({ username: req.user.username, csrf: req.session.firefoxAuth.csrf });
 });
 
 router.post('/confirm', async function(req, res) {

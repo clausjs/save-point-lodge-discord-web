@@ -17,6 +17,7 @@ import ArcWorkbench from './ArcWorkbench/ArcWorkbench';
 import StreamDeck from './Members/StreamDeck';
 
 import Settings from './Settings/Settings';
+import ExtensionConsent from './Auth/ExtensionConsent';
 
 const theme = createTheme({
     components: {
@@ -61,6 +62,7 @@ const App: React.FC = () => {
                             <Routes>
                                 <Route path="/" element={<Home />} />
                                 <Route path="/our-bots" element={<Bots />} />
+                                <Route path="/extension-consent" element={<ExtensionConsent />} />
                                 <Route path="/settings" element={<Settings />} />
                                 <Route path="/members" element={<Members />} />
                                 <Route path="/streamdeck-setup" element={<StreamDeck />} />

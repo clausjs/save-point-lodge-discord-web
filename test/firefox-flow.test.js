@@ -37,8 +37,8 @@ describe('Firefox connection to clip creation', () => {
         app.use('/api', require('../server/auth/permission')('api:user'));
         const browser = request.agent(app);
         await browser.get('/login-extension').query({ redirect_uri: firefox.redirectUri, state: 'a'.repeat(64), code_challenge: challenge, code_challenge_method: 'S256' }).expect(302);
-        const page = await browser.get('/login-extension/confirm').expect(200);
-        const csrf = page.text.match(/name="csrf" value="([a-f0-9]+)"/)[1];
+        const page = await browser.get('/login-extension/consent').expect(200);
+        const csrf = page.body.csrf;
         const confirmation = await browser.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(303);
         const code = new URL(confirmation.headers.location).searchParams.get('code');
         // Exchange and API calls deliberately use a new client with no website session cookie.

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 
+import ExtensionConnections from './ExtensionConnections';
+
 type Credential = { createdAt: number; expiresAt: number; token?: string };
 const endpoint = '/api/user/api-token';
 
@@ -11,6 +13,7 @@ const Settings: React.FC = () => {
     const [error, setError] = useState('');
     const [signedOut, setSignedOut] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
         let active = true;
@@ -21,7 +24,7 @@ const Settings: React.FC = () => {
             const data = await response.json();
             if (active) { setCredential(data.credential); setCsrf(data.csrf); }
         }).catch(() => { if (active) setError('Could not load API token settings. Reload to try again.'); })
-            .finally(() => { if (active) setBusy(false); });
+            .finally(() => { if (active) { setBusy(false); setLoaded(true); } });
         return () => { active = false; };
     }, []);
 
@@ -61,6 +64,8 @@ const Settings: React.FC = () => {
                 <Typography variant="body2">Send it as Authorization: Bearer YOUR_TOKEN. Generating a replacement immediately invalidates the previous token.</Typography>
             </>}
         </Stack></Paper>
+        {/* Initialize session CSRF values in sequence so parallel responses cannot overwrite them. */}
+        {loaded && <ExtensionConnections />}
     </Container>;
 };
 export default Settings;

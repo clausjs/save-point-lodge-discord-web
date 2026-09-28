@@ -1,5 +1,7 @@
 # Personal API tokens
 
+Settings also lists Firefox extension connections with individual revocation controls. Revoking a connection stops both its access token and renewal.
+
 Open **Account → Settings** (`/settings`) while signed in to generate a personal token. Copy the secret immediately: it is shown only in that response and held in page memory. Reloading shows only its expiry. Regenerate replaces the previous token immediately; revoke removes it. Each account has one token per SPL environment.
 
 Tokens expire after 90 days, independently of the browser session. Signing out does not revoke them and there is no refresh endpoint. Redis stores a SHA-256 hash, owner, audience, scope and timestamps under `spl:api-token:` with a 90-day TTL. Redis loss invalidates tokens; persistence uses the deployment's existing Redis configuration.

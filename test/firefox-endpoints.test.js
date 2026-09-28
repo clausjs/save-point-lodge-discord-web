@@ -49,15 +49,18 @@ describe('Firefox exchange and revocation endpoints', () => {
     });
     it('allows website revocation only with a session-bound nonce and owner identity', async () => {
         const agent = request.agent(app);
-        const page = await agent.get('/login-extension/connections').expect(200);
+        await agent.get('/login-extension/connections').expect(302).expect('Location', '/settings');
+        const page = await agent.get('/login-extension/connections/data').expect(200);
         expect(page.text).not.to.include(token);
-        const csrf = page.text.match(/name="csrf" value="([a-f0-9]+)"/)[1];
-        await agent.post('/login-extension/connections').type('form').send({ id: 'a'.repeat(32), csrf: 'wrong' }).expect(403);
+        const csrf = page.body.csrf;
+        await agent.post('/login-extension/connections').set('Origin', 'https://savepointlodge.com').type('form').send({ id: 'a'.repeat(32), csrf: 'wrong' }).expect(403);
         sinon.assert.notCalled(auth.revoke);
-        await agent.post('/login-extension/connections').type('form').send({ id: 'a'.repeat(32), csrf }).expect(303);
+        await agent.post('/login-extension/connections').set('Origin', 'https://evil.example').type('form').send({ id: 'a'.repeat(32), csrf }).expect(403);
+        await agent.get('/login-extension/connections/data').set('Authorization', `Bearer ${token}`).expect(401);
+        await agent.post('/login-extension/connections').set('Origin', 'https://savepointlodge.com').type('form').send({ id: 'a'.repeat(32), csrf }).expect(204);
         sinon.assert.calledOnceWithExactly(auth.revoke, 'a'.repeat(32), 'user', 'https://savepointlodge.com');
         user = null;
-        await agent.post('/login-extension/connections').type('form').send({ id: 'a'.repeat(32), csrf }).expect(403);
+        await agent.post('/login-extension/connections').set('Origin', 'https://savepointlodge.com').type('form').send({ id: 'a'.repeat(32), csrf }).expect(403);
     });
     it('refreshes without cookies and fails closed on ended sessions or store failures', async () => {
         user = null;

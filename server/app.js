@@ -43,6 +43,12 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static(ASSET_DIR));
 app.use(favicon(path.join(ASSET_DIR, 'img', 'favicon.ico')));
+// Protect account and consent views while allowing the normal React bundle to load.
+app.use(['/settings', '/extension-consent'], function(req, res, next) {
+    res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer',
+        'X-Frame-Options': 'DENY', 'Content-Security-Policy': "frame-ancestors 'none'; base-uri 'self'" });
+    next();
+});
 app.use(history({
     rewrites: [
         {
@@ -173,7 +179,7 @@ if (!devMode) {
     app.get('/login-discord', passport.authenticate('discord', { scope: scopes, prompt: prompt }));
     app.get('/login-redirect', passport.authenticate('discord', { failureRedirect: '/' }), function(req, res) {
         const target = req.session.firefoxAuth?.expiresAt > Date.now() ? '/login-extension/confirm'
-            : req.session.firefoxConnections ? '/login-extension/connections' : '/postAuth';
+            : req.session.firefoxConnections ? '/settings' : '/postAuth';
         delete req.session.firefoxConnections;
         res.redirect(target);
     });
