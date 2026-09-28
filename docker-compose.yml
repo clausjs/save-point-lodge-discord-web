@@ -7,6 +7,11 @@ services:
       - .env
     environment:
       - NODE_ENV=prod_test
+      # Match the frontend environment in spl-deployment (dev uses DISCORDTOKENDEV).
+      - DISCORD_BOT_TOKEN=${DISCORDTOKEN}
+      - SPL_ID=${SPL_ID}
+      - SOUNDBOARD_ROLE_ID=${SOUNDBOARD_ROLE_ID}
+      - OWNER_ID=${OWNER_ID}
     ports:
       - "3000:3000"
   redis:
