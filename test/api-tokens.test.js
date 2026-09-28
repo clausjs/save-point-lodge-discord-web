@@ -8,7 +8,7 @@ const origin = 'https://savepointlodge.com';
 
 describe('Personal API tokens', () => {
     let redis, tokens;
-    beforeEach(async () => { redis = await database(); tokens = new ApiTokens(redis.client, redis.prefix); });
+    beforeEach(async () => { sinon.stub(process, 'env').value({ ...process.env, OWNER_ID: 'member' }); redis = await database(); tokens = new ApiTokens(redis.client, redis.prefix); });
     afterEach(async () => { sinon.restore(); if (redis) await redis.close(); });
     it('stores only a hash, expires after 90 days, and isolates owners and environments', async () => {
         const issued = await tokens.generate('member', origin);
@@ -61,5 +61,29 @@ describe('Personal API tokens', () => {
         expect(metadata.body.credential).not.to.have.property('token');
         await browser.delete('/api/user/api-token').set('Origin', origin).set('X-CSRF-Token', settings.body.csrf).expect(204);
         await request(app).get('/api/user').set('Authorization', authorization).expect(401);
+    });
+    it('denies token management to non-owners and when OWNER_ID is missing', async () => {
+        const app = express();
+        let user = { id: 'other', isAdmin: true };
+        app.use((req, res, next) => {
+            req.user = user; req.isAuthenticated = () => true;
+            req.session = { apiTokenCsrf: 'nonce' }; req.db = { apiTokens: tokens }; next();
+        });
+        app.locals.origin = origin;
+        app.use('/token', require('../server/api/apiToken'));
+        for (const owner of ['member', '']) {
+            process.env.OWNER_ID = owner;
+            for (const method of ['get', 'post', 'delete']) {
+                await request(app)[method]('/token').set('Origin', origin).set('X-CSRF-Token', 'nonce').expect(403);
+            }
+        }
+        expect(await redis.keys()).to.deep.equal([]);
+    });
+    it('derives the frontend admin flag from the configured Discord owner', () => {
+        const { reduceUser } = require('../server/auth/utils');
+        expect(reduceUser({ id: 'member' }).isAdmin).to.equal(true);
+        expect(reduceUser({ id: 'other', isAdmin: true }).isAdmin).to.equal(false);
+        delete process.env.OWNER_ID;
+        expect(reduceUser({ id: 'member' }).isAdmin).to.equal(false);
     });
 });

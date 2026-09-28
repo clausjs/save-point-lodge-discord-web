@@ -24,6 +24,7 @@ export interface CommandState {
 }
 
 export interface User {
+    isAdmin?: boolean;
     id: string;
     username: string;
     avatar: string;

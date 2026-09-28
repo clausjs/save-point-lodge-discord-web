@@ -2,7 +2,7 @@
 
 Settings also lists Firefox extension connections with individual revocation controls. Revoking a connection stops both its access token and renewal.
 
-Open **Account → Settings** (`/settings`) while signed in to generate a personal token. Copy the secret immediately: it is shown only in that response and held in page memory. Reloading shows only its expiry. Regenerate replaces the previous token immediately; revoke removes it. Each account has one token per SPL environment.
+Open **Account → API Settings** (`/settings`) while signed in to manage your own extension connections. Only the admin account whose Discord ID matches `OWNER_ID` can view, generate, replace or revoke a personal bearer token. Missing `OWNER_ID` denies personal-token management. The server derives `isAdmin` for the shared user state and independently checks the authenticated Discord ID on every management request. Copy the secret immediately: it is shown only in that response and held in page memory. Reloading shows only its expiry. Regenerate replaces the previous token immediately; revoke removes it. Each account has one token per SPL environment.
 
 Tokens expire after 90 days, independently of the browser session. Signing out does not revoke them and there is no refresh endpoint. Redis stores a SHA-256 hash, owner, audience, scope and timestamps under `spl:api-token:` with a 90-day TTL. Redis loss invalidates tokens; persistence uses the deployment's existing Redis configuration.
 
@@ -10,7 +10,7 @@ Send `Authorization: Bearer YOUR_TOKEN` over HTTPS. Personal tokens have `api:us
 
 ## Management endpoints
 
-All `/api/user/api-token` endpoints require an authenticated website session, reject Authorization headers, and return `Cache-Control: no-store`.
+All `/api/user/api-token` endpoints require the configured owner’s authenticated website session, reject Authorization headers, and return `Cache-Control: no-store`.
 
 - `GET`: returns `{ credential: { createdAt, expiresAt } | null, csrf }`. Timestamps are Unix milliseconds; the secret is never returned here.
 - `POST`: requires the exact SPL `Origin` and `X-CSRF-Token` from GET. Creates/replaces the caller's token, returning status 201 and `{ token, createdAt, expiresAt }`.

@@ -19,8 +19,8 @@ const Settings: React.FC = () => {
 
     useEffect(() => {
         setToken('');
-        if (user) dispatch(fetchTokenSettings());
-    }, [user?.id, dispatch]);
+        if (user?.isAdmin) dispatch(fetchTokenSettings());
+    }, [user?.id, user?.isAdmin, dispatch]);
 
     const updateToken = async (method: 'POST' | 'DELETE') => {
         if (credential && !window.confirm(method === 'DELETE' ? 'Revoke your API token?' : 'Replace your API token? Applications using the current token will lose access.')) return;
@@ -35,12 +35,12 @@ const Settings: React.FC = () => {
     };
 
     if (!user) return <Container sx={{ py: 4 }}>
-        {userFetchState === 'pending' || !userFetchState ? <Typography role="status">Loading account…</Typography> : <Button href="/login-discord">Sign in to manage your token</Button>}
+        {userFetchState === 'pending' || !userFetchState ? <Typography role="status">Loading account…</Typography> : <Button href="/login-discord">Sign in to manage API settings</Button>}
     </Container>;
 
     return <Container maxWidth="sm" sx={{ py: 4 }}>
-        <Paper sx={{ p: 3 }}><Stack spacing={2}>
-            <Typography variant="h4" component="h1">Settings</Typography>
+        <Typography variant="h4" component="h1" gutterBottom>API Settings</Typography>
+        {user.isAdmin && <Paper sx={{ p: 3 }}><Stack spacing={2}>
             <Typography variant="h6" component="h2">API token</Typography>
             <Typography>Use a personal token to access the API with your current SPL permissions. Tokens expire after 90 days and remain active when you sign out.</Typography>
             {(tokenError || copyError) && <Alert severity="error">{tokenError || copyError}</Alert>}
@@ -54,9 +54,9 @@ const Settings: React.FC = () => {
             <Button variant="contained" disabled={busy || !csrf} onClick={() => updateToken('POST')}>{credential ? 'Regenerate token' : 'Generate token'}</Button>
             {credential && <Button color="error" disabled={busy} onClick={() => updateToken('DELETE')}>Revoke token</Button>}
             <Typography variant="body2">Send it as Authorization: Bearer YOUR_TOKEN. Generating a replacement immediately invalidates the previous token.</Typography>
-        </Stack></Paper>
+        </Stack></Paper>}
         {/* Initialize session CSRF values in sequence so parallel responses cannot overwrite them. */}
-        {tokenFetchState === 'fulfilled' && <ExtensionConnections />}
+        {(!user.isAdmin || tokenFetchState === 'fulfilled' || tokenFetchState === 'rejected') && <ExtensionConnections />}
     </Container>;
 };
 export default Settings;

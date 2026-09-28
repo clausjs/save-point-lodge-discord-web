@@ -17,6 +17,8 @@ const ApiTokens = require('../../server/auth/apiTokens');
 (async () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'spl-settings-'));
     let redis, server, browser;
+    const previousOwner = process.env.OWNER_ID;
+    process.env.OWNER_ID = 'different-admin';
     try {
         const entry = path.join(directory, 'entry.tsx');
         fs.writeFileSync(entry, `import React from 'react'; import {Provider} from 'react-redux'; import {store} from ${JSON.stringify(path.resolve('src/state/store'))}; import {fetchUser} from ${JSON.stringify(path.resolve('src/state/reducers/user'))}; import {createRoot} from 'react-dom/client'; import Settings from ${JSON.stringify(path.resolve('src/components/Settings/Settings'))}; import Consent from ${JSON.stringify(path.resolve('src/components/Auth/ExtensionConsent'))}; store.dispatch(fetchUser()); createRoot(document.getElementById('root')).render(<Provider store={store}>{location.pathname === '/extension-consent' ? <Consent/> : <Settings/>}</Provider>);`);
@@ -38,7 +40,7 @@ const ApiTokens = require('../../server/auth/apiTokens');
         const origin = `http://127.0.0.1:${server.address().port}`;
         app.locals.origin = origin;
         app.use((req, res, next) => { req.db = { apiTokens: tokens, extensionAuth }; next(); });
-        app.get('/api/user', (req, res) => res.json(req.user));
+        app.get('/api/user', (req, res) => res.json(require('../../server/auth/utils').reduceUser(req.user)));
         app.get(['/api/user/lodgeguest', '/api/user/soundboarder'], (req, res) => res.json(true));
         app.use('/login-extension', firefox);
         app.use('/api/user/api-token', require('../../server/api/apiToken'));
@@ -72,6 +74,10 @@ const ApiTokens = require('../../server/auth/apiTokens');
         await page.getByText('No active extension connections.').waitFor();
         assert.equal(await extensionAuth.authenticate(grant.access_token, origin), null);
         assert.equal(await extensionAuth.refresh(grant.refresh_token, origin), null);
+        assert.equal(await page.getByRole('button', { name: 'Generate token', exact: true }).count(), 0);
+        assert.equal((await page.request.post(origin + '/api/user/api-token')).status(), 403);
+        process.env.OWNER_ID = 'fixture-user';
+        await page.reload();
         await page.getByText('No active API token.').waitFor();
         await page.getByRole('button', { name: 'Generate token', exact: true }).click();
         const field = page.getByLabel('API token', { exact: true });
@@ -91,6 +97,8 @@ const ApiTokens = require('../../server/auth/apiTokens');
         assert.equal(await tokens.authenticate(second, origin), null);
         console.log('Browser flows passed: Firefox consent and revocation; personal token generation, reload, replacement and revocation.');
     } finally {
+        if (previousOwner === undefined) delete process.env.OWNER_ID;
+        else process.env.OWNER_ID = previousOwner;
         if (browser) await browser.close();
         if (server) await new Promise(resolve => server.close(resolve));
         if (redis) await redis.close();

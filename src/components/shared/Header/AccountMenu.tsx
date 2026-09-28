@@ -52,7 +52,7 @@ const AccountMenu: React.FC = () => {
                     </IconButton>
                 }
                 items={[
-                    { node: <span>Settings</span>, onClick: () => history('/settings') },
+                    { node: <span>API Settings</span>, onClick: () => history('/settings') },
                     user && user.isPlanetExpressMember === true ? (
                         {
                             node: <span>Discord Options</span>,

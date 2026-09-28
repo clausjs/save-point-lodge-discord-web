@@ -38,7 +38,7 @@ describe('API token settings page', () => {
         delete global.window; delete global.document; delete global.HTMLElement;
         delete global.requestAnimationFrame; delete global.cancelAnimationFrame;
     });
-    const member = { id: 'user', username: 'Member', isSoundboardUser: true };
+    const member = { id: 'user', username: 'Member', isSoundboardUser: true, isAdmin: true };
     const renderView = (Component, user = member, userFetchState = 'fulfilled') => {
         actions = [];
         reduxStore = configureStore({
@@ -68,7 +68,7 @@ describe('API token settings page', () => {
     it('shows a sign-in action for an expired session', async () => {
         renderView(Settings, null);
         sinon.assert.notCalled(fetchStub);
-        expect((await screen.findByText('Sign in to manage your token')).getAttribute('href')).to.equal('/login-discord');
+        expect((await screen.findByText('Sign in to manage API settings')).getAttribute('href')).to.equal('/login-discord');
     });
     it('shows load failures without enabling generation', async () => {
         fetchStub.withArgs('/api/user/api-token').rejects(new Error('offline'));
@@ -122,5 +122,16 @@ describe('API token settings page', () => {
         renderView(Consent, { ...member, isSoundboardUser: false });
         await screen.findByText('You must have soundboard access to connect Firefox.');
         sinon.assert.notCalled(fetchStub);
+    });
+    it('shows ordinary users their extension connections without loading admin tokens', async () => {
+        fetchStub.withArgs('/login-extension/connections/data').resolves(reply({ connections: [{ id: 'connection-id' }], csrf: 'nonce' }));
+        fetchStub.withArgs('/login-extension/connections').resolves(reply(null));
+        sinon.stub(window, 'confirm').returns(true);
+        renderView(Settings, { ...member, isAdmin: false });
+        fireEvent.click(await screen.findByRole('button', { name: 'Revoke Firefox connection connecti' }));
+        await screen.findByText('No active extension connections.');
+        sinon.assert.notCalled(fetchStub.withArgs('/api/user/api-token'));
+        expect(screen.queryByText('Generate token')).to.equal(null);
+        expect(screen.queryByText('Revoke token')).to.equal(null);
     });
 });

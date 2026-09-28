@@ -7,6 +7,9 @@ router.use(function(req, res, next) {
     if (req.get('authorization') || !req.isAuthenticated() || !req.user?.id) {
         return res.sendStatus(401);
     }
+    if (!process.env.OWNER_ID || req.user.id !== process.env.OWNER_ID) {
+        return res.sendStatus(403);
+    }
     if (req.method !== 'GET' && (req.get('origin') !== req.app.locals.origin || !req.session.apiTokenCsrf || req.get('x-csrf-token') !== req.session.apiTokenCsrf)) {
         return res.sendStatus(403);
     }
