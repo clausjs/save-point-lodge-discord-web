@@ -3,7 +3,8 @@ const reduceUser = (user, getElevatedStatuses = false) => {
         id: user.id,
         username: user.username,
         avatar: user.avatar,
-        avatarUrl: user.avatarUrl
+        avatarUrl: user.avatarUrl,
+        isAdmin: Boolean(process.env.OWNER_ID && user.id === process.env.OWNER_ID)
     };
 
     if (getElevatedStatuses) {

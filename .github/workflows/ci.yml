@@ -47,6 +47,12 @@ jobs:
           FIREBASE_CLIENT_PASSWORD: dummy
         run: npm run test
 
+      - name: Install browser for settings test
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify API token settings in browser
+        run: npm run test:browser
+
   build:
     name: Webpack build check
     runs-on: ubuntu-latest

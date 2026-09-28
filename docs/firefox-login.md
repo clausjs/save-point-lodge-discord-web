@@ -6,9 +6,11 @@ Firefox reuses the SPL website session/Discord login to request permission to **
 
 | File | Responsibility |
 | --- | --- |
-| `server/auth/firefox.js` | HTTP endpoints, consent forms, callback validation, and response errors |
+| `server/auth/firefox.js` | HTTP endpoints, consent metadata, callback validation, and response errors |
 | `server/auth/extensionAuth.js` | Redis records, code redemption, token rotation, session checks, revocation, and cleanup |
-| `server/auth/extensionGrant.js` | Add-only API permission and current Discord membership checks |
+| `server/auth/bearer.js` | Shared bearer authentication and current Discord identity |
+| `server/auth/permission.js` | Route scope checks (Firefox stays add-only) |
+| `server/auth/discordMember.js` | Fresh guild membership and soundboard role lookup |
 | Extension `src/auth.ts` | PKCE login, credential storage, shared renewal, and disconnect |
 | Extension `src/background.ts` | Trusted message senders and clip submission |
 
@@ -50,3 +52,9 @@ The Firefox options page gets status only. Content scripts cannot access session
 Run `npm test` for atomic redemption, wrong PKCE/callback/origin, expiry, automatic renewal, rotation, logout/session loss, revocation, permissions, and the complete approval → exchange → add → revoke HTTP flow. The companion extension runs `npm run check`. Authorization tests use real Redis, including Lua concurrency and cleanup, with mock Discord. Start a local Redis server and run `REDIS_TEST_URL=redis://127.0.0.1:6379 npm test` (that URL is the default). Tests isolate and remove only random test namespaces; CI supplies Redis 7. Verify the live Firefox/Discord flow before release.
 
 References: [OAuth security guidance](https://www.rfc-editor.org/rfc/rfc9700.html), [Firefox identity API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/identity).
+
+## React account views
+
+`GET /login-extension/connections` redirects signed-in users to `/settings`, where the Extension connections section lists and revokes their grants. Signed-out users return there after Discord login. `GET /login-extension/connections/data` returns only connection metadata and a session-bound CSRF nonce. Revocation POSTs to `/login-extension/connections`, requires the website session, matching Origin and nonce, and returns 204. Bearer credentials cannot manage website-owned connections.
+
+`GET /login-extension/confirm` now redirects to the React `/extension-consent` page. It loads display data from `GET /login-extension/consent` and submits a native form to the existing confirmation POST so the server can redirect the PKCE code to Firefox. Pending-login expiry, role checks and CSRF validation still run on the server. These routes no longer build HTML strings. Account and consent views disable caching and framing.

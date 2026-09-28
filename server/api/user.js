@@ -3,7 +3,7 @@ const { reduceUser } = require('../auth/utils');
 const router = require('express').Router();
 
 router.get('/', function(req, res) {
-    if (req.isAuthenticated() && req.user) {
+    if ((req.auth || req.isAuthenticated()) && req.user) {
         return res.status(200).json(reduceUser(req.user));
     }
 
@@ -51,7 +51,7 @@ router.post('/soundboard/opts', async function(req, res) {
 router.get('/soundboarder', function(req, res) {
     if (req.isTesting) return res.status(200).send(true);
     
-    if (req.isAuthenticated() && req.user) {
+    if ((req.auth || req.isAuthenticated()) && req.user) {
         return res.status(200).send(req.user.isSoundboardUser);
     }
 
@@ -60,14 +60,14 @@ router.get('/soundboarder', function(req, res) {
 
 router.get('/lodgeguest', function(req, res) {
     if (req.isTesting) return res.status(200).send(true);
-    if (req.isAuthenticated() && req.user) {
+    if ((req.auth || req.isAuthenticated()) && req.user) {
         return res.status(200).send(req.user.isPlanetExpressMember);
     }
 
     res.status(200).send(false);
 });
 
-router.get('/streamdeck/token', async function(req, res) {
+router.get('/streamdeck/token', require('../auth/permission')(), async function(req, res) {
     if (req.isTesting || req.fakeAuth) {
         const token = await new Promise(resolve => {
             const slowResponse = setTimeout(() => {
@@ -80,7 +80,7 @@ router.get('/streamdeck/token', async function(req, res) {
     }
 
     try {
-        if (req.isAuthenticated() && req.user) {
+        if ((req.auth || req.isAuthenticated()) && req.user) {
             return res.status(200).send(await req.db.firebase.streamdeck.get(req.user.id));
         }
     } catch (err) {

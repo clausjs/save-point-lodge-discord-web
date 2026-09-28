@@ -1,12 +1,13 @@
 const dotenv = require('dotenv').config;
 dotenv();
 const router = require('express').Router();
+const permission = require('../../auth/permission');
 
 const { getTrending, getRecent, getByCategory, search } = require('../myinstants');
 
 const clips = require('../testData').clips;
 
-router.get('/', async function(req, res) {
+router.get('/', permission('api:user'), async function(req, res) {
     if (req.isTesting) {
         return res.status(200).send(clips);
     }
@@ -19,7 +20,7 @@ router.get('/', async function(req, res) {
     }
 });
 
-router.get('/random', async function(req, res) {
+router.get('/random', permission('api:user'), async function(req, res) {
     if (req.isTesting) {
         const randomIndex = Math.floor(Math.random() * clips.length);
         return res.status(200).send(clips[randomIndex]);
@@ -33,7 +34,7 @@ router.get('/random', async function(req, res) {
     }
 });
 
-router.get('/myinstants', async function(req, res) {
+router.get('/myinstants', permission('api:user'), async function(req, res) {
     try {
         const lang = req.query.lang;
         const countryCode = req.query.cc;
@@ -45,7 +46,7 @@ router.get('/myinstants', async function(req, res) {
     }
 });
 
-router.get('/myinstants/recent', async function(req, res) {
+router.get('/myinstants/recent', permission('api:user'), async function(req, res) {
     try {
         const lang = req.query.lang;
         const page = req.query.page ?? 1;
@@ -56,7 +57,7 @@ router.get('/myinstants/recent', async function(req, res) {
     }
 });
 
-router.get('/myinstants/search', async function(req, res) {
+router.get('/myinstants/search', permission('api:user'), async function(req, res) {
     try {
         const lang = req.query.lang;
         const page = req.query.page ?? 1;
@@ -67,7 +68,7 @@ router.get('/myinstants/search', async function(req, res) {
     }
 });
 
-router.get('/myinstants/:category', async function(req, res) {
+router.get('/myinstants/:category', permission('api:user'), async function(req, res) {
     try {
         const lang = req.query.lang;
         const page = req.query.page ?? 1;
@@ -78,7 +79,7 @@ router.get('/myinstants/:category', async function(req, res) {
     }
 });
 
-router.post('/favorite/:id', async function(req, res) {
+router.post('/favorite/:id', permission('api:user'), async function(req, res) {
     if (req.isTesting) {
         return res.status(200).send({ id: req.params.id, favoritedBy: [req.user.id] });
     }
@@ -91,7 +92,7 @@ router.post('/favorite/:id', async function(req, res) {
     }
 });
 
-router.put('/:id', async function(req, res) {
+router.put('/:id', permission('api:user'), async function(req, res) {
     if (req.isTesting) {
         return res.status(200).send(req.body);
     }
@@ -107,7 +108,7 @@ router.put('/:id', async function(req, res) {
     }
 });
 
-router.delete('/:id', async function(req, res) {
+router.delete('/:id', permission('api:user'), async function(req, res) {
     if (req.isTesting) {
         return res.status(200).send("success");
     }
@@ -120,6 +121,6 @@ router.delete('/:id', async function(req, res) {
     }
 });
 
-router.post('/add', require('./clips').addClip);
+router.post('/add', permission('api:user', 'soundboard:clips:add'), require('./clips').addClip);
 
 module.exports = router;

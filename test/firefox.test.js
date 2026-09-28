@@ -20,14 +20,17 @@ describe('Firefox soundboard login', () => {
             req.isAuthenticated = () => Boolean(user);
             next();
         });
-        app.use('/login-extension', firefox({ origin: 'https://savepointlodge.com', db: { extensionAuth: { issueCode } } }));
+        app.locals.origin = 'https://savepointlodge.com';
+        app.use((req, res, next) => { req.db = { extensionAuth: { issueCode } }; next(); });
+        app.use('/login-extension', firefox);
         agent = supertest.agent(app);
     });
     afterEach(() => { if (clock) { clock.restore(); clock = null; } });
     const consent = async () => {
         await agent.get(beginUrl).expect(302).expect('Location', '/login-extension/confirm');
-        const page = await agent.get('/login-extension/confirm').expect(200);
-        return { page, csrf: page.text.match(/name="csrf" value="([a-f0-9]+)"/)[1] };
+        await agent.get('/login-extension/confirm').expect(302).expect('Location', '/extension-consent');
+        const page = await agent.get('/login-extension/consent').expect(200);
+        return { page, csrf: page.body.csrf };
     };
 
     it('sends signed-out users through the existing Discord login', async () => {
@@ -41,7 +44,8 @@ describe('Firefox soundboard login', () => {
         expect(page.headers['cache-control']).to.equal('no-store');
         expect(page.headers['referrer-policy']).to.equal('no-referrer');
         expect(page.headers['content-security-policy']).to.include("frame-ancestors 'none'");
-        expect(page.text).to.include('&lt;test-user&gt;');
+        expect(page.body.username).to.equal('<test-user>');
+        expect(page.headers['content-type']).to.include('application/json');
         expect(page.text).not.to.include('existing-soundboard-token');
         expect(issueCode.called).to.equal(false);
         const response = await agent.post('/login-extension/confirm').type('form').send({ csrf, decision: 'allow' }).expect(303);
@@ -58,7 +62,7 @@ describe('Firefox soundboard login', () => {
         user = null;
         await agent.get(beginUrl).expect(302);
         user = { id: 'discord-user', isSoundboardUser: true };
-        await agent.get('/login-extension/confirm').expect(200);
+        await agent.get('/login-extension/confirm').expect(302).expect('Location', '/extension-consent');
     });
     it('cancels without reading or returning the token', async () => {
         const { csrf } = await consent();
