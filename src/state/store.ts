@@ -6,6 +6,7 @@ import user from "./reducers/user";
 import commands from "./reducers/commands";
 import soundboard from "./reducers/soundboard";
 import streamdeck from "./reducers/streamdeck";
+import settings from "./reducers/settings";
 
 export const store = configureStore({
     reducer: {
@@ -14,7 +15,8 @@ export const store = configureStore({
         user,
         commands,
         soundboard,
-        streamdeck
+        streamdeck,
+        settings
     }
 });
 

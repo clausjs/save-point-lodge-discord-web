@@ -1,25 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Alert, Button, Container, Paper, Stack, Typography } from '@mui/material';
 
-type Consent = { username: string; csrf: string };
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../state/store';
+import { fetchExtensionConsent } from '../../state/reducers/settings';
 
 const ExtensionConsent: React.FC = () => {
-    const [consent, setConsent] = useState<Consent | null>(null);
-    const [error, setError] = useState('');
+    const dispatch = useDispatch<AppDispatch>();
+    const user = useSelector((state: RootState) => state.user.user);
+    const userFetchState = useSelector((state: RootState) => state.user.userFetchState);
+    const { consent, consentFetchState } = useSelector((state: RootState) => state.settings);
 
     useEffect(() => {
-        let active = true;
-        fetch('/login-extension/consent', { credentials: 'same-origin', cache: 'no-store' }).then(async response => {
-            if (!response.ok) throw new Error('Could not load approval.');
-            const data = await response.json();
-            if (active) setConsent(data);
-        }).catch(() => { if (active) setError('This login could not be approved. Start again from Firefox settings and check your soundboard access.'); });
-        return () => { active = false; };
-    }, []);
+        if (user?.isSoundboardUser) dispatch(fetchExtensionConsent());
+    }, [user?.id, user?.isSoundboardUser, dispatch]);
+
+    if (!user) return <Container sx={{ py: 4 }}>
+        {userFetchState === 'pending' || !userFetchState ? <Typography role="status">Loading account…</Typography> : <Button href="/login-discord">Sign in to connect Firefox</Button>}
+    </Container>;
+    if (!user.isSoundboardUser) return <Container sx={{ py: 4 }}><Alert severity="error">You must have soundboard access to connect Firefox.</Alert></Container>;
 
     return <Container maxWidth="sm" sx={{ py: 4 }}><Paper sx={{ p: 3 }}><Stack spacing={2}>
         <Typography variant="h4" component="h1">Connect Firefox</Typography>
-        {error ? <Alert severity="error">{error}</Alert> : !consent ? <Typography role="status">Loading approval…</Typography> : <>
+        {consentFetchState === 'rejected' ? <Alert severity="error">This login could not be approved. Start again from Firefox settings and check your soundboard access.</Alert> : !consent ? <Typography role="status">Loading approval…</Typography> : <>
             <Typography>Allow the Savepoint Lodge Firefox extension to add clips as <strong>{consent.username}</strong>?</Typography>
             <Typography>This connection can only add clips. It renews while this SPL session is active and cannot edit, delete, or play clips. You can revoke it in Settings.</Typography>
             {/* Native navigation lets the server redirect the PKCE code to Firefox's fixed callback. */}

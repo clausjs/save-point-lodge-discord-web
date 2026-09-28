@@ -19,7 +19,7 @@ const ApiTokens = require('../../server/auth/apiTokens');
     let redis, server, browser;
     try {
         const entry = path.join(directory, 'entry.tsx');
-        fs.writeFileSync(entry, `import React from 'react'; import {createRoot} from 'react-dom/client'; import Settings from ${JSON.stringify(path.resolve('src/components/Settings/Settings'))}; import Consent from ${JSON.stringify(path.resolve('src/components/Auth/ExtensionConsent'))}; createRoot(document.getElementById('root')).render(location.pathname === '/extension-consent' ? <Consent/> : <Settings/>);`);
+        fs.writeFileSync(entry, `import React from 'react'; import {Provider} from 'react-redux'; import {store} from ${JSON.stringify(path.resolve('src/state/store'))}; import {fetchUser} from ${JSON.stringify(path.resolve('src/state/reducers/user'))}; import {createRoot} from 'react-dom/client'; import Settings from ${JSON.stringify(path.resolve('src/components/Settings/Settings'))}; import Consent from ${JSON.stringify(path.resolve('src/components/Auth/ExtensionConsent'))}; store.dispatch(fetchUser()); createRoot(document.getElementById('root')).render(<Provider store={store}>{location.pathname === '/extension-consent' ? <Consent/> : <Settings/>}</Provider>);`);
         await new Promise((resolve, reject) => webpack({
             mode: 'development', entry, output: { path: directory, filename: 'bundle.js' },
             resolve: { extensions: ['.tsx', '.ts', '.js'], modules: [path.resolve('node_modules')] },
@@ -38,6 +38,8 @@ const ApiTokens = require('../../server/auth/apiTokens');
         const origin = `http://127.0.0.1:${server.address().port}`;
         app.locals.origin = origin;
         app.use((req, res, next) => { req.db = { apiTokens: tokens, extensionAuth }; next(); });
+        app.get('/api/user', (req, res) => res.json(req.user));
+        app.get(['/api/user/lodgeguest', '/api/user/soundboarder'], (req, res) => res.json(true));
         app.use('/login-extension', firefox);
         app.use('/api/user/api-token', require('../../server/api/apiToken'));
         app.use(express.static(directory));
